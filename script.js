@@ -1,9 +1,18 @@
 // GitVize – URL Builder & Editor
+// what are you doing here ?
+// are you trying to copy my code ? or looking if its ai generated ?
+// if you are, you are not gonna find anything here.
+// this is a custom code that i wrote for my own use.
+// if you want to use it, you can, but you need to ask me for permission.
+// if you are not trying to copy my code, or looking if its ai generated, then you can continue.
+// i hope you enjoy my code.
+// if you have any questions, feel free to ask me.
+// if you have any suggestions, feel free to suggest them.
+// if you have any bugs, feel free to report them.
 (() => {
     const $ = (sel, ctx=document) => ctx.querySelector(sel);
     const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
 
-    // Template definitions and expected params
     const TEMPLATES = {
         chat: {
             label: 'Chat',
@@ -77,7 +86,6 @@
         }
     };
 
-    // Utilities
     const baseUrl = () => new URL('.', window.location.href); // folder of index.html
     const makeUrl = (path, paramsObj) => {
         const url = new URL(path, baseUrl());
@@ -94,14 +102,12 @@
         if (p.includes('/overlay/chat')) return 'chat';
         if (p.includes('/overlay/valorant')) return 'valorant';
         if (p.includes('/overlay/sub')) return 'sub';
-        // Relative paths on GH Pages may not include repo root; check endsWith too
         if (p.endsWith('overlay/chat/') || p.endsWith('overlay/chat')) return 'chat';
         if (p.endsWith('overlay/valorant/') || p.endsWith('overlay/valorant')) return 'valorant';
         if (p.endsWith('overlay/sub/') || p.endsWith('overlay/sub')) return 'sub';
         return null;
     };
 
-    // DOM refs – Builder
     const templateSelection = $('#templateSelection');
     const generatorForm = $('#generatorForm');
     const backToSelection = $('#backToSelection');
@@ -110,10 +116,8 @@
     const copyUrlBtn = $('#copyUrlBtn');
     const openUrlBtn = $('#openUrlBtn');
 
-    // Track current selected template
     let currentTemplateKey = null;
 
-    // DOM refs – Editor
     const existingUrl = $('#existingUrl');
     const loadUrlBtn = $('#loadUrlBtn');
     const editorFields = $('#editorFields');
@@ -121,7 +125,6 @@
     const copyEditedUrlBtn = $('#copyEditedUrlBtn');
     const openEditedUrlBtn = $('#openEditedUrlBtn');
 
-    // Template selection handlers
     const showTemplateSelection = () => {
         templateSelection.style.display = 'block';
         generatorForm.classList.add('hidden');
@@ -130,20 +133,17 @@
     const showGeneratorForm = (templateKey) => {
         templateSelection.style.display = 'none';
         generatorForm.classList.remove('hidden');
-        // Trigger animation by removing and re-adding the class
         generatorForm.style.animation = 'none';
         setTimeout(() => {
             generatorForm.style.animation = '';
         }, 10);
         currentTemplateKey = templateKey;
 
-        // Show API key help only for Valorant template
         const apiKeyHelp = document.getElementById('apiKeyHelp');
         if (apiKeyHelp) {
             apiKeyHelp.style.display = templateKey === 'valorant' ? 'block' : 'none';
         }
 
-        // Show Twitch credentials help only for Chat and Sub templates
         const twitchCredentialsHelp = document.getElementById('twitchCredentialsHelp');
         const chatModsVipsSection = document.getElementById('chatModsVipsSection');
         const chatBroadcasterIdSection = document.getElementById('chatBroadcasterIdSection');
@@ -153,7 +153,6 @@
             twitchCredentialsHelp.style.display = (templateKey === 'chat' || templateKey === 'sub') ? 'block' : 'none';
         }
 
-        // Update token link based on template
         if (twitchTokenLink) {
             if (templateKey === 'sub') {
                 twitchTokenLink.href = 'https://twitchtokengenerator.com/quick/YBwXGzxVmZ';
@@ -162,7 +161,6 @@
             }
         }
 
-        // Show sections 2 and 3 only for Chat template
         if (chatModsVipsSection) {
             chatModsVipsSection.style.display = templateKey === 'chat' ? 'block' : 'none';
         }
@@ -170,7 +168,6 @@
             chatBroadcasterIdSection.style.display = templateKey === 'chat' ? 'block' : 'none';
         }
 
-        // Show preview section for Valorant, Chat, and Sub templates
         const previewSection = document.getElementById('previewSection');
         const valorantPreviewContainer = document.getElementById('valorantPreviewContainer');
         const chatPreviewContainer = document.getElementById('chatPreviewContainer');
@@ -196,7 +193,6 @@
         renderBuilder();
     };
 
-    // Handle template card clicks
     $$('.template-choice').forEach(btn => {
         btn.addEventListener('click', () => {
             const templateKey = btn.dataset.template;
@@ -206,13 +202,11 @@
         });
     });
 
-    // Handle back button
     backToSelection?.addEventListener('click', () => {
         showTemplateSelection();
     });
 
 
-    // Create a field control from definition
     const createField = (def, scopeName) => {
         const wrap = document.createElement('div');
         wrap.className = 'form-row';
@@ -245,7 +239,6 @@
         return wrap;
     };
 
-    // Read values from a fields container
     const readValues = (fieldsContainer) => {
         const inputs = $$('input, select', fieldsContainer);
         const vals = {};
@@ -258,7 +251,6 @@
         return vals;
     };
 
-    // Render builder fields for selected template
     const renderBuilder = () => {
         const tKey = currentTemplateKey || Object.keys(TEMPLATES)[0];
         const t = TEMPLATES[tKey];
@@ -281,20 +273,16 @@
         generatedUrl.value = url;
         if (openUrlBtn) openUrlBtn.href = url;
 
-        // Update preview iframe for Valorant template
         if (tKey === 'valorant') {
             const previewIframe = document.getElementById('valorantPreview');
             const previewCardIframe = document.getElementById('valorantPreviewCard');
 
-            // Build preview URL with current values
             const previewParams = new URLSearchParams();
             previewParams.set('name', vals.name || 'Player');
             previewParams.set('tag', vals.tag || 'TAG');
-            // Add API configuration for real data loading
             if (vals.api_key) previewParams.set('api_key', vals.api_key);
             if (vals.region) previewParams.set('region', vals.region);
             if (vals.platform) previewParams.set('platform', vals.platform);
-            // Font value - URLSearchParams will automatically encode spaces
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
             previewParams.set('update_interval', vals.update_interval || '3000');
@@ -303,11 +291,9 @@
             const previewUrl = `overlay/valorant/rang/rank-preview.html?${previewParams.toString()}`;
             console.log('🔤 Font value in URL:', fontValue, 'URL:', previewUrl);
 
-            // Force reload by adding timestamp to URL to bypass cache
             const timestamp = Date.now();
             const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
 
-            // Always force reload to ensure preview updates
             if (previewIframe) {
                 previewIframe.src = '';
                 setTimeout(() => {
@@ -322,12 +308,10 @@
             }
         }
 
-        // Update preview iframe for Sub template
         if (tKey === 'sub') {
             const previewIframe = document.getElementById('subPreview');
             const previewCardIframe = document.getElementById('subPreviewCard');
 
-            // Build preview URL with current values (preview doesn't need API credentials)
             const previewParams = new URLSearchParams();
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
@@ -336,11 +320,9 @@
             const previewUrl = `overlay/sub/sub-count-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Sub preview URL:', previewUrl);
 
-            // Force reload by adding timestamp to URL to bypass cache
             const timestamp = Date.now();
             const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
 
-            // Always force reload to ensure preview updates
             if (previewIframe) {
                 previewIframe.src = '';
                 setTimeout(() => {
@@ -355,12 +337,10 @@
             }
         }
 
-        // Update preview iframe for Chat template
         if (tKey === 'chat') {
             const previewIframe = document.getElementById('chatPreview');
             const previewCardIframe = document.getElementById('chatPreviewCard');
 
-            // Build preview URL with current values (preview doesn't need API credentials)
             const previewParams = new URLSearchParams();
             previewParams.set('channel', vals.channel || 'streamer_channel');
             const fontValue = vals.font || 'Arial';
@@ -371,11 +351,9 @@
             const previewUrl = `overlay/chat/chat-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Chat preview URL:', previewUrl);
 
-            // Force reload by adding timestamp to URL to bypass cache
             const timestamp = Date.now();
             const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
 
-            // Always force reload to ensure preview updates
             if (previewIframe) {
                 previewIframe.src = '';
                 setTimeout(() => {
@@ -398,7 +376,6 @@
         setTimeout(() => (copyUrlBtn.textContent = 'Copier'), 1200);
     });
 
-    // Editor logic
     const loadUrlIntoEditor = () => {
         editorFields.innerHTML = '';
         editedUrl.value = '';
@@ -407,14 +384,12 @@
 
         const tKey = guessTemplateFromUrl(urlObj);
         if (!tKey || !TEMPLATES[tKey]) {
-            // Fallback: try chat
             existingUrl.setCustomValidity('Template introuvable dans l’URL.');
             existingUrl.reportValidity();
             setTimeout(() => existingUrl.setCustomValidity(''), 1500);
             return;
         }
         const t = TEMPLATES[tKey];
-        // Render fields with values
         t.params.forEach(def => {
             const el = createField(def, 'editor');
             const input = $('input, select', el);
@@ -441,8 +416,6 @@
         setTimeout(() => (copyEditedUrlBtn.textContent = 'Copier'), 1200);
     });
 
-    // Init
-    // Initially show template selection, hide form
     if (templateSelection && generatorForm) {
         showTemplateSelection();
     }

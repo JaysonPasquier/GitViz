@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!-- GitVize – URL Builder & Editor
+* what are you doing here ?
+* are you trying to copy my code ? or looking if its ai generated ?
+* if you are, you are not gonna find anything here.
+* this is a custom code that i wrote for my own use.
+* if you want to use it, you can, but you need to ask me for permission.
+* if you are not trying to copy my code, or looking if its ai generated, then you can continue.
+* i hope you enjoy my code.
+* if you have any questions, feel free to ask me.
+* if you have any suggestions, feel free to suggest them.
+* if you have any bugs, feel free to report them.
+-->
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
@@ -45,7 +57,6 @@
                     <p class="muted">Sélectionnez un template, complétez les options, puis copiez l'URL générée.</p>
                 </div>
 
-                <!-- Template Selection -->
                 <div id="templateSelection" class="template-selection">
                     <div class="card-grid">
                         <button class="template-card template-choice" data-template="chat">
@@ -89,7 +100,6 @@
                     </div>
                 </div>
 
-                <!-- Generator Form (hidden initially) -->
                 <div id="generatorForm" class="generator-form hidden">
                     <button id="backToSelection" class="btn btn-ghost back-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -98,7 +108,6 @@
                         Retour aux templates
                     </button>
                     <div class="card">
-                        <!-- API Key Help Section (only for Valorant template) -->
                         <div id="apiKeyHelp" class="api-key-help" style="display: none;">
                             <div class="api-key-help-content">
                                 <h3 class="h3">🔑 Besoin d'une clé API ?</h3>
@@ -111,7 +120,6 @@
                                 </a>
                             </div>
                         </div>
-                        <!-- Twitch Credentials Help Section (only for Chat and Sub templates) -->
                         <div id="twitchCredentialsHelp" class="api-key-help" style="display: none;">
                             <div class="api-key-help-content">
                                 <h3 class="h3">🔑 Besoin de vos credentials Twitch ?</h3>
@@ -139,7 +147,6 @@
                                     </a>
                                 </div>
 
-                                <!-- Sections 2 and 3 only for Chat template -->
                                 <div id="chatModsVipsSection" style="margin-bottom: 16px; display: none;">
                                     <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text);">2. Obtenir votre liste de modérateurs et VIPs</h4>
                                     <p class="muted" style="margin-bottom: 8px;">Utilisez cet outil pour récupérer facilement la liste de tous vos modérateurs et VIPs :</p>
@@ -163,18 +170,14 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Preview Section (for Valorant and Chat templates) -->
                         <div id="previewSection" class="preview-section" style="display: none; margin-bottom: 20px;">
                             <label style="margin-bottom: 8px; display: block;">Aperçu en direct</label>
-                            <!-- Valorant Preview -->
                             <div id="valorantPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background-image: url('overlay/valorant/rang/valorant-preview-background.jpg'); display: none;">
                                 <iframe id="valorantPreview" src="overlay/valorant/rang/rank-preview.html?name=Player&tag=TAG&font=Arial&update_interval=3000&show_leaderboard=true"></iframe>
                             </div>
-                            <!-- Chat Preview -->
                             <div id="chatPreviewContainer" class="preview-container" style="width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
                                 <iframe id="chatPreview" src="overlay/chat/chat-widget-preview.html?channel=streamer_channel&font=Arial"></iframe>
                             </div>
-                            <!-- Sub Count Preview -->
                             <div id="subPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
                                 <iframe id="subPreview" src="overlay/sub/sub-count-widget-preview.html?goals=25:24h stream,50:something else&font=Arial"></iframe>
                             </div>
