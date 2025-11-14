@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GitVize • Générateur d’URL d’overlays</title>
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="script.js"></script>
+    <link rel="icon" href="GitVize-logo.png" />
+    <meta name="description" content="Créez et éditez des URLs d’overlays Twitch (Chat, Valorant, Sub Goal) directement depuis GitVize. Pas d’installation, prêt pour OBS." />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#9146ff" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <img class="brand-logo" src="GitVize-logo.png" alt="GitVize" />
+                <span class="brand-name">GitVize</span>
+            </div>
+            <nav class="nav">
+                <a href="#builder" class="nav-link">Générateur</a>
+                <a href="#editor" class="nav-link">Éditeur d'URL</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" id="hero" aria-label="Présentation">
+            <div class="container">
+                <h1 class="h1">Overlays Twitch sans prise de tête</h1>
+                <p class="lead">Choisissez un template, remplissez quelques champs, et obtenez une URL prête à coller dans OBS. Modifiez-la à tout moment avec l’éditeur.</p>
+                <div class="cta-row">
+                    <a class="btn btn-primary" href="#builder">Créer une URL</a>
+                    <a class="btn btn-ghost" href="#editor">Modifier une URL existante</a>
+                </div>
+            </div>
+            <div class="hero-glow" aria-hidden="true"></div>
+        </section>
+
+        <section id="builder" class="section">
+            <div class="container">
+                <div class="section-head">
+                    <h2 class="h2">Générateur d'URL</h2>
+                    <p class="muted">Sélectionnez un template, complétez les options, puis copiez l'URL générée.</p>
+                </div>
+
+                <!-- Template Selection -->
+                <div id="templateSelection" class="template-selection">
+                    <div class="card-grid">
+                        <button class="template-card template-choice" data-template="chat">
+                            <div class="template-image">
+                                <div class="preview-overlay-container">
+                                    <iframe id="chatPreviewCard" src="overlay/chat/chat-widget-preview.html?channel=streamer_channel&font=Arial"></iframe>
+                                </div>
+                            </div>
+                            <div class="template-icon">💬</div>
+                            <div class="template-body">
+                                <h3 class="h3">Chat</h3>
+                                <p class="muted">Overlay du chat Twitch. Options: canal, police, modérateurs, VIPs.</p>
+                            </div>
+                        </button>
+
+                        <button class="template-card template-choice" data-template="valorant">
+                            <div class="template-image">
+                                <div class="preview-overlay-container" style="background-image: url('overlay/valorant/rang/valorant-preview-background.jpg');">
+                                    <iframe id="valorantPreviewCard" src="overlay/valorant/rang/rank-preview.html?name=Player&tag=TAG&font=Arial&update_interval=3000&show_leaderboard=true"></iframe>
+                                </div>
+                            </div>
+                            <div class="template-icon">🎯</div>
+                            <div class="template-body">
+                                <h3 class="h3">Valorant Rang + Classement</h3>
+                                <p class="muted">Rang + classement. options d'ispo: font, linterval de refresh du rang, affichage du classement ou pas.</p>
+                            </div>
+                        </button>
+
+                        <button class="template-card template-choice" data-template="sub">
+                            <div class="template-image">
+                                <div class="preview-overlay-container">
+                                    <iframe id="subPreviewCard" src="overlay/sub/sub-count-widget-preview.html?goals=25:24h stream,50:something else&font=Arial"></iframe>
+                                </div>
+                            </div>
+                            <div class="template-icon">🎉</div>
+                            <div class="template-body">
+                                <h3 class="h3">Sub Goal</h3>
+                                <p class="muted">Compteur d'abonnés avec objectifs. Options: broadcaster_id, access_token, client_id, canal, police, objectifs.</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generator Form (hidden initially) -->
+                <div id="generatorForm" class="generator-form hidden">
+                    <button id="backToSelection" class="btn btn-ghost back-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                        Retour aux templates
+                    </button>
+                    <div class="card">
+                        <!-- API Key Help Section (only for Valorant template) -->
+                        <div id="apiKeyHelp" class="api-key-help" style="display: none;">
+                            <div class="api-key-help-content">
+                                <h3 class="h3">🔑 Besoin d'une clé API ?</h3>
+                                <p class="muted">Pour obtenir votre clé API Valorant, rejoignez le serveur Discord de HenrikDev et générez votre clé API dans le salon #get-a-key</p>
+                                <a href="https://discord.gg/2TECxRaV7y" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: 12px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+                                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                                    </svg>
+                                    HenrikDev Discord
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Twitch Credentials Help Section (only for Chat and Sub templates) -->
+                        <div id="twitchCredentialsHelp" class="api-key-help" style="display: none;">
+                            <div class="api-key-help-content">
+                                <h3 class="h3">🔑 Besoin de vos credentials Twitch ?</h3>
+                                <p class="muted" style="margin-bottom: 16px;">Suivez ces étapes pour obtenir vos tokens et identifiants Twitch :</p>
+
+                                <div style="margin-bottom: 16px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text);">1. Obtenir vos tokens Twitch (Access Token, Refresh Token, Client ID)</h4>
+                                    <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li>Cliquez sur le lien ci-dessous pour accéder au générateur de tokens</li>
+                                        <li>Allez en bas de la page et cliquez sur le grand bouton vert <strong>"Generate Token!"</strong></li>
+                                        <li>Faites défiler vers le bas et cliquez sur <strong>"Authorize"</strong></li>
+                                        <li>Vous serez redirigé vers une page où vous devrez valider un captcha</li>
+                                        <li>Une fois validé, vous verrez vos tokens :</li>
+                                    </ol>
+                                    <ul style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li><strong>ACCESS TOKEN</strong> : xxxxxxxxxxxxxxxx</li>
+                                        <li><strong>REFRESH TOKEN</strong> : xxxxxxxxxxxxxxxxxxxxxxxxxx</li>
+                                        <li><strong>CLIENT ID</strong> : xxxxxxxxxxxxxxx</li>
+                                    </ul>
+                                    <a id="twitchTokenLink" href="https://twitchtokengenerator.com/quick/mM9XnCBQf9" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: 8px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                                        </svg>
+                                        Générer mes tokens Twitch
+                                    </a>
+                                </div>
+
+                                <!-- Sections 2 and 3 only for Chat template -->
+                                <div id="chatModsVipsSection" style="margin-bottom: 16px; display: none;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text);">2. Obtenir votre liste de modérateurs et VIPs</h4>
+                                    <p class="muted" style="margin-bottom: 8px;">Utilisez cet outil pour récupérer facilement la liste de tous vos modérateurs et VIPs :</p>
+                                    <a href="https://betterbanned.com/en/tools/twitch-channel-chat-mods-vips" target="_blank" rel="noopener" class="btn btn-secondary" style="margin-top: 4px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"/>
+                                        </svg>
+                                        Liste des Mods/VIPs
+                                    </a>
+                                </div>
+
+                                <div id="chatBroadcasterIdSection" style="display: none;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text);">3. Obtenir votre Broadcaster ID</h4>
+                                    <p class="muted" style="margin-bottom: 8px;">Entrez votre nom d'utilisateur Twitch dans cet outil pour obtenir votre Broadcaster ID :</p>
+                                    <a href="https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/" target="_blank" rel="noopener" class="btn btn-secondary" style="margin-top: 4px;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                                            <path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z"/>
+                                        </svg>
+                                        Convertir Username → User ID
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Preview Section (for Valorant and Chat templates) -->
+                        <div id="previewSection" class="preview-section" style="display: none; margin-bottom: 20px;">
+                            <label style="margin-bottom: 8px; display: block;">Aperçu en direct</label>
+                            <!-- Valorant Preview -->
+                            <div id="valorantPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background-image: url('overlay/valorant/rang/valorant-preview-background.jpg'); display: none;">
+                                <iframe id="valorantPreview" src="overlay/valorant/rang/rank-preview.html?name=Player&tag=TAG&font=Arial&update_interval=3000&show_leaderboard=true"></iframe>
+                            </div>
+                            <!-- Chat Preview -->
+                            <div id="chatPreviewContainer" class="preview-container" style="width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                                <iframe id="chatPreview" src="overlay/chat/chat-widget-preview.html?channel=streamer_channel&font=Arial"></iframe>
+                            </div>
+                            <!-- Sub Count Preview -->
+                            <div id="subPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                                <iframe id="subPreview" src="overlay/sub/sub-count-widget-preview.html?goals=25:24h stream,50:something else&font=Arial"></iframe>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div id="dynamicFields" class="fields"></div>
+                        </div>
+
+                        <div class="output">
+                            <label for="generatedUrl">URL générée</label>
+                            <div class="output-row">
+                                <input id="generatedUrl" class="input mono" type="text" readonly aria-live="polite" />
+                                <button id="copyUrlBtn" class="btn btn-secondary">Copier</button>
+                                <a id="openUrlBtn" class="btn btn-primary" target="_blank" rel="noopener">Ouvrir</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="editor" class="section">
+            <div class="container">
+                <div class="section-head">
+                    <h2 class="h2">Éditeur d’URL</h2>
+                    <p class="muted">Collez votre URL d’overlay ci-dessous pour la recharger et la modifier facilement.</p>
+                </div>
+
+                <div class="card">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <label for="existingUrl">URL existante</label>
+                            <input id="existingUrl" class="input mono" type="text" placeholder="Collez ici l’URL de votre overlay" />
+                        </div>
+                        <div class="form-row actions">
+                            <button id="loadUrlBtn" class="btn btn-secondary">Charger</button>
+                        </div>
+                    </div>
+
+                    <div id="editorFields" class="fields"></div>
+
+                    <div class="output">
+                        <label for="editedUrl">URL mise à jour</label>
+                        <div class="output-row">
+                            <input id="editedUrl" class="input mono" type="text" readonly />
+                            <button id="copyEditedUrlBtn" class="btn btn-secondary">Copier</button>
+                            <a id="openEditedUrlBtn" class="btn btn-primary" target="_blank" rel="noopener">Ouvrir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p class="muted">Hébergé sur GitHub Pages • Collez l’URL dans OBS (Source Navigateur)</p>
+        </div>
+    </footer>
+</body>
+</html>
+

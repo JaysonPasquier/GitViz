@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sub Count Widget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        body {
+            font-family: var(--custom-font, Arial, sans-serif);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #sub-count-container {
+            text-align: center;
+            width: 100%;
+        }
+
+        .sub-count-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+        }
+
+        .sub-count-display .goal-number {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .sub-count-display .goal-number.achieved {
+            animation: goalAchieved 0.6s ease;
+        }
+
+        @keyframes goalAchieved {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); color: #00ff88; }
+        }
+
+        .sub-count-display .goal-text {
+            display: inline-block;
+            transition: opacity 0.5s ease;
+        }
+
+        .sub-count-display .goal-text.changing {
+            opacity: 0;
+        }
+
+        .test-mode-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 165, 0, 0.8);
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="sub-count-container">
+        <div id="sub-count-display" class="sub-count-display">0/0 subgoal</div>
+    </div>
+    <div id="test-mode-indicator" class="test-mode-indicator" style="display: none;">MODE TEST</div>
+
+    <script>
+        class SubCountWidget {
+            constructor() {
+                // Parse URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                this.broadcasterId = urlParams.get('broadcaster_id') || '';
+                this.accessToken = urlParams.get('access_token') || '';
+                this.clientId = urlParams.get('client_id') || '';
+                this.channel = urlParams.get('channel') || '';
+                this.font = urlParams.get('font') || 'Arial';
+                this.testMode = urlParams.get('test_mode') === 'true';
+                this.updateInterval = parseInt(urlParams.get('update_interval')) || 30000; // 30 secondes par défaut
+
+                // Apply font
+                this.applyFont(this.font);
+
+                // Parse multiple goals from URL
+                // Format: goals=3:24 h stream,10:something else
+                const goalsParam = urlParams.get('goals') || urlParams.get('goal') || '';
+                this.goals = this.parseGoals(goalsParam);
+                this.currentGoalIndex = 0;
+                this.achievedGoals = new Set(); // Track achieved goals - once achieved, never go back
+
+                // State
+                this.currentCount = 0;
+                this.socket = null;
+                this.updateIntervalId = null;
+                this.testIntervalId = null;
+
+                // Elements
+                this.countDisplay = document.getElementById('sub-count-display');
+                this.testIndicator = document.getElementById('test-mode-indicator');
+
+                // Show test mode indicator if enabled
+                if (this.testMode) {
+                    this.testIndicator.style.display = 'block';
+                    console.log('🧪 Mode test activé - Simulation d\'abonnements');
+                }
+
+                // Validate required parameters
+                if (!this.broadcasterId || !this.accessToken || !this.clientId) {
+                    this.showError('Paramètres manquants: broadcaster_id, access_token et client_id sont requis');
+                    return;
+                }
+
+                // Initial display
+                this.updateDisplayText(0, false);
+
+                // Initialize
+                this.init();
+            }
+
+            parseGoals(goalsParam) {
+                if (!goalsParam) return [];
+
+                // Support old format: single number
+                if (/^\d+$/.test(goalsParam.trim())) {
+                    return [{ number: parseInt(goalsParam), text: 'subgoal' }];
+                }
+
+                // New format: "3:24 h stream,10:something else"
+                const goals = [];
+                const parts = goalsParam.split(',');
+
+                for (const part of parts) {
+                    const [numberStr, ...textParts] = part.split(':');
+                    const number = parseInt(numberStr.trim());
+                    const text = textParts.join(':').trim() || 'subgoal';
+
+                    if (!isNaN(number) && number > 0) {
+                        goals.push({ number, text });
+                    }
+                }
+
+                // Sort by number (ascending)
+                return goals.sort((a, b) => a.number - b.number);
+            }
+
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    fontFamily = fontName;
+                } else {
+                    fontFamily = `'${fontName}'`;
+                }
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            }
+
+            async init() {
+                console.log('🚀 Initialisation du Sub Count Widget');
+                console.log(`📊 Broadcaster ID: ${this.broadcasterId}`);
+                console.log(`📺 Canal: ${this.channel || 'N/A'}`);
+
+                // Fetch initial count
+                await this.fetchSubCount();
+
+                // Connect to Twitch chat to listen for subscription events
+                if (this.channel) {
+                    this.connectToTwitchChat();
+                } else {
+                    console.warn('⚠️ Aucun canal spécifié, impossible d\'écouter les événements d\'abonnement en temps réel');
+                }
+
+                // Set up periodic API updates
+                this.updateIntervalId = setInterval(() => {
+                    console.log('🔄 Mise à jour périodique du nombre d\'abonnés...');
+                    this.fetchSubCount();
+                }, this.updateInterval);
+
+                // Start test mode if enabled
+                if (this.testMode) {
+                    this.startTestMode();
+                }
+            }
+
+            async fetchSubCount() {
+                try {
+                    console.log('📡 Récupération du nombre d\'abonnés via l\'API...');
+
+                    let totalSubs = 0;
+                    let cursor = null;
+                    let pageCount = 0;
+                    const maxPages = 100; // Limite de sécurité pour éviter les boucles infinies
+
+                    do {
+                        const url = `https://api.twitch.tv/helix/subscriptions?broadcaster_id=${this.broadcasterId}${cursor ? `&after=${cursor}` : ''}`;
+
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': `Bearer ${this.accessToken}`,
+                                'Client-Id': this.clientId
+                            }
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            console.error('❌ Erreur API:', response.status, response.statusText, errorData);
+
+                            if (response.status === 401) {
+                                this.showError('Token d\'accès invalide ou expiré');
+                            } else if (response.status === 403) {
+                                this.showError('Permissions insuffisantes. Scope requis: channel:read:subscriptions');
+                            } else {
+                                this.showError(`Erreur API: ${response.status} ${response.statusText}`);
+                            }
+                            return;
+                        }
+
+                        const data = await response.json();
+
+                        // Display API response in console
+                        console.log(`📡 Réponse API - Page ${pageCount + 1}:`, data);
+                        console.log(`📊 Données brutes:`, JSON.stringify(data, null, 2));
+
+                        if (data.data && data.data.length > 0) {
+                            totalSubs += data.data.length;
+                            console.log(`📄 Page ${pageCount + 1}: ${data.data.length} abonnés (Total: ${totalSubs})`);
+
+                            // Log each subscriber
+                            data.data.forEach((sub, index) => {
+                                console.log(`  👤 Abonné ${index + 1}:`, {
+                                    user_id: sub.user_id,
+                                    user_name: sub.user_name,
+                                    user_login: sub.user_login,
+                                    tier: sub.tier,
+                                    is_gift: sub.is_gift || false,
+                                    gifter_id: sub.gifter_id || null,
+                                    gifter_name: sub.gifter_name || null
+                                });
+                            });
+                        }
+
+                        cursor = data.pagination?.cursor || null;
+                        pageCount++;
+
+                        // Safety check
+                        if (pageCount >= maxPages) {
+                            console.warn(`⚠️ Limite de pages atteinte (${maxPages}), arrêt de la pagination`);
+                            break;
+                        }
+
+                    } while (cursor);
+
+                    console.log(`✅ Nombre total d'abonnés récupéré: ${totalSubs}`);
+
+                    // Update count if it changed
+                    if (totalSubs !== this.currentCount) {
+                        const oldCount = this.currentCount;
+
+                        // Always animate if there's a change (even from 0)
+                        if (totalSubs > oldCount) {
+                            await this.animateCount(oldCount, totalSubs);
+                            this.checkGoalAchievement(oldCount, totalSubs);
+                        } else if (totalSubs < oldCount) {
+                            // Count decreased, just update without animation
+                            this.currentCount = totalSubs;
+                            this.updateDisplayText(totalSubs, true);
+                        } else {
+                            // Same count, just update display
+                            this.currentCount = totalSubs;
+                            this.updateDisplayText(totalSubs, true);
+                        }
+
+                        if (oldCount > 0) {
+                            console.log(`📈 Mise à jour: ${oldCount} → ${totalSubs} (+${totalSubs - oldCount})`);
+                        } else {
+                            console.log(`📈 Initialisation: 0 → ${totalSubs}`);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('❌ Erreur lors de la récupération du nombre d\'abonnés:', error);
+                    this.showError(`Erreur: ${error.message}`);
+                }
+            }
+
+            connectToTwitchChat() {
+                if (!this.channel) return;
+
+                console.log(`🔗 Connexion au chat Twitch de ${this.channel} pour écouter les abonnements...`);
+
+                try {
+                    this.socket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+
+                    this.socket.onopen = () => {
+                        console.log('✅ Connecté au chat Twitch');
+                        // Connexion anonyme au chat IRC de Twitch
+                        this.socket.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+                        this.socket.send('PASS SCHMOOPIIE');
+                        this.socket.send('NICK justinfan12345');
+                        this.socket.send(`JOIN #${this.channel}`);
+                    };
+
+                    this.socket.onmessage = (event) => {
+                        const message = event.data;
+
+                        // Répondre aux PING pour maintenir la connexion
+                        if (message.startsWith('PING')) {
+                            this.socket.send('PONG :tmi.twitch.tv');
+                            return;
+                        }
+
+                        // Détecter les messages d'abonnement
+                        this.detectSubscriptionEvent(message);
+                    };
+
+                    this.socket.onerror = (error) => {
+                        console.error('❌ Erreur de connexion au chat Twitch:', error);
+                    };
+
+                    this.socket.onclose = () => {
+                        console.log('🔌 Connexion au chat Twitch fermée, tentative de reconnexion dans 5 secondes...');
+                        setTimeout(() => {
+                            this.connectToTwitchChat();
+                        }, 5000);
+                    };
+
+                } catch (error) {
+                    console.error('❌ Erreur lors de la connexion au chat:', error);
+                }
+            }
+
+            async detectSubscriptionEvent(message) {
+                // Patterns pour détecter les abonnements dans le chat IRC
+                // Les messages d'abonnement peuvent avoir différents formats selon les tags
+                const subscriptionPatterns = [
+                    /subscribed/i,
+                    /just subscribed/i,
+                    /subscribed for/i,
+                    /sub gift/i,
+                    /gifted a sub/i,
+                    /continuing the Gift-a-Sub/i
+                ];
+
+                // Vérifier si le message contient des patterns d'abonnement
+                const isSubscription = subscriptionPatterns.some(pattern => pattern.test(message));
+
+                if (isSubscription) {
+                    console.log('🎉 Nouvel abonnement détecté dans le chat!');
+                    const oldCount = this.currentCount;
+                    this.currentCount++;
+                    await this.animateCount(oldCount, this.currentCount);
+                    this.checkGoalAchievement(oldCount, this.currentCount);
+                }
+
+                // Détecter aussi les messages avec des tags spécifiques
+                // Format: @badges=subscriber/...;subscriber=1;...
+                if (message.includes('subscriber=') && message.includes('USERNOTICE')) {
+                    console.log('🎉 Événement d\'abonnement détecté (USERNOTICE)');
+                    const oldCount = this.currentCount;
+                    this.currentCount++;
+                    await this.animateCount(oldCount, this.currentCount);
+                    this.checkGoalAchievement(oldCount, this.currentCount);
+                }
+            }
+
+            async animateCount(from, to, duration = 800) {
+                return new Promise((resolve) => {
+                    const steps = Math.abs(to - from);
+                    if (steps === 0) {
+                        resolve();
+                        return;
+                    }
+
+                    // Calculate step duration - faster for more steps, but with a minimum
+                    const minStepDuration = 50; // Minimum 50ms per step
+                    const maxStepDuration = 200; // Maximum 200ms per step
+                    const totalDuration = Math.min(duration, steps * maxStepDuration);
+                    const stepDuration = Math.max(minStepDuration, totalDuration / steps);
+
+                    let current = from;
+                    const increment = to > from ? 1 : -1;
+
+                    const interval = setInterval(() => {
+                        current += increment;
+                        this.updateDisplayText(current, false);
+
+                        if ((increment > 0 && current >= to) || (increment < 0 && current <= to)) {
+                            clearInterval(interval);
+                            // Ensure final value is set
+                            this.currentCount = to;
+                            this.updateDisplayText(to, false);
+                            resolve();
+                        }
+                    }, stepDuration);
+                });
+            }
+
+            getCurrentGoal(count = null) {
+                if (this.goals.length === 0) return null;
+
+                const checkCount = count !== null ? count : this.currentCount;
+
+                // Find the first goal that hasn't been achieved yet
+                // Once a goal is achieved, we never go back to it, even if count decreases
+                for (let i = 0; i < this.goals.length; i++) {
+                    if (!this.achievedGoals.has(this.goals[i].number)) {
+                        this.currentGoalIndex = i;
+                        return this.goals[i];
+                    }
+                }
+
+                // All goals achieved, show the last one
+                this.currentGoalIndex = this.goals.length - 1;
+                return this.goals[this.currentGoalIndex];
+            }
+
+            checkGoalAchievement(oldCount, newCount) {
+                if (this.goals.length === 0) return;
+
+                // Check all goals to see if any were just achieved
+                for (const goal of this.goals) {
+                    // If goal was just achieved (crossed the threshold) and not already marked
+                    if (oldCount < goal.number && newCount >= goal.number && !this.achievedGoals.has(goal.number)) {
+                        console.log(`🎉 Objectif atteint: ${goal.number} - ${goal.text}`);
+                        this.achievedGoals.add(goal.number); // Mark as achieved permanently
+                        this.animateGoalAchievement();
+                        break; // Only animate once per achievement
+                    }
+                }
+            }
+
+            async animateGoalAchievement() {
+                const goalNumberEl = this.countDisplay.querySelector('.goal-number');
+                const goalTextEl = this.countDisplay.querySelector('.goal-text');
+
+                if (goalNumberEl) {
+                    goalNumberEl.classList.add('achieved');
+                    setTimeout(() => {
+                        goalNumberEl.classList.remove('achieved');
+                    }, 600);
+                }
+
+                // Fade out current text
+                if (goalTextEl) {
+                    goalTextEl.classList.add('changing');
+
+                    // Wait for fade out, then update and fade in
+                    setTimeout(() => {
+                        this.updateDisplayText(this.currentCount, false);
+                        goalTextEl.classList.remove('changing');
+                    }, 500);
+                } else {
+                    this.updateDisplayText(this.currentCount, false);
+                }
+            }
+
+            updateDisplayText(count, checkAchievement = true) {
+                const oldCount = this.currentCount;
+
+                // Only update currentCount if we're not just displaying
+                if (checkAchievement) {
+                    this.currentCount = count;
+                }
+
+                if (checkAchievement && oldCount !== count) {
+                    this.checkGoalAchievement(oldCount, count);
+                }
+
+                // Use the passed count for display
+                const displayCount = checkAchievement ? this.currentCount : count;
+                const currentGoal = this.getCurrentGoal(displayCount);
+
+                if (currentGoal) {
+                    const formattedCount = displayCount.toLocaleString('fr-FR');
+                    const formattedGoal = currentGoal.number.toLocaleString('fr-FR');
+                    this.countDisplay.innerHTML = `${formattedCount}/<span class="goal-number">${formattedGoal}</span> <span class="goal-text">${currentGoal.text}</span>`;
+                } else {
+                    const formattedCount = displayCount.toLocaleString('fr-FR');
+                    this.countDisplay.textContent = formattedCount;
+                }
+            }
+
+            async updateDisplay(animated = false) {
+                if (animated && this.currentCount > 0) {
+                    // Animate from previous count to new count
+                    const previousCount = parseInt(this.countDisplay.textContent.split('/')[0].replace(/\s/g, '')) || 0;
+                    await this.animateCount(previousCount, this.currentCount);
+                } else {
+                    this.updateDisplayText(this.currentCount, false);
+                }
+            }
+
+            showError(message) {
+                this.countDisplay.textContent = 'Erreur';
+                console.error('❌', message);
+            }
+
+            startTestMode() {
+                console.log('🧪 Démarrage du mode test - Simulation d\'abonnements toutes les 5-10 secondes');
+
+                // Simulate first subscription after 3 seconds
+                setTimeout(async () => {
+                    const oldCount = this.currentCount;
+                    this.currentCount++;
+                    await this.animateCount(oldCount, this.currentCount);
+                    this.checkGoalAchievement(oldCount, this.currentCount);
+                    console.log(`🧪 [TEST] Abonnement simulé #${this.currentCount}`);
+                }, 3000);
+
+                // Then simulate subscriptions every 5-10 seconds
+                this.testIntervalId = setInterval(() => {
+                    const delay = 5000 + Math.random() * 5000; // 5-10 seconds
+                    setTimeout(async () => {
+                        const oldCount = this.currentCount;
+                        this.currentCount++;
+                        await this.animateCount(oldCount, this.currentCount);
+                        this.checkGoalAchievement(oldCount, this.currentCount);
+                        console.log(`🧪 [TEST] Abonnement simulé #${this.currentCount}`);
+                    }, delay);
+                }, 10000);
+            }
+
+            destroy() {
+                if (this.socket) {
+                    this.socket.close();
+                }
+                if (this.updateIntervalId) {
+                    clearInterval(this.updateIntervalId);
+                }
+                if (this.testIntervalId) {
+                    clearInterval(this.testIntervalId);
+                }
+            }
+        }
+
+        // Initialize widget when page loads
+        let subCountWidget;
+        window.addEventListener('DOMContentLoaded', () => {
+            subCountWidget = new SubCountWidget();
+            window.subCountWidget = subCountWidget; // Expose for debugging
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (subCountWidget) {
+                subCountWidget.destroy();
+            }
+        });
+    </script>
+</body>
+</html>
+

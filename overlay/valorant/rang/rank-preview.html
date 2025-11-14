@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Rank Widget</title>
+    <!-- Google Fonts for custom font selection -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+        <!--
+        ========================================
+        PARAMÈTRES URL DISPONIBLES
+        ========================================
+
+        🎮 CONFIGURATION DU JOUEUR:
+        ?name=JoueurName&tag=TagName
+
+        🔑 CONFIGURATION API:
+        ?api_key=YOUR_API_KEY&region=eu&platform=pc
+
+        ⏰ INTERVALLE DE MISE À JOUR:
+        ?update_interval=30000 (en millisecondes, défaut: 60000)
+
+        📺 CONFIGURATION TWITCH:
+        ?channel=nom_canal&nick=nom_utilisateur&pass=mot_de_passe
+
+        👮 CONFIGURATION DES PERMISSIONS:
+        ?moderators=user1,user2,user3&vips=user1,user2&blacklist=user1,user2
+
+        🏆 AFFICHAGE LEADERBOARD:
+        ?show_leaderboard=true  (affiche la position ~#3042)
+        ?show_leaderboard=false (masque la position, affiche seulement rang + RR)
+
+        📝 EXEMPLE COMPLET:
+        ?name=ANAKINSKYWALKER&tag=HARR&api_key=YOUR_KEY&region=na&platform=pc&&update_interval=30000&show_leaderboard=true
+
+        ========================================
+        COMMANDES DE CHAT DISPONIBLES
+        ========================================
+
+        🎮 !showrank    - Affiche le widget de rang (Modérateurs + VIPs uniquement)
+        🙈 !hiderank    - Masque le widget de rang (Modérateurs + VIPs uniquement)
+        🔄 !refreshrank - Recharge la page (Modérateurs + VIPs uniquement)
+        🔄 !rankreload  - Recharge la page (Modérateurs + VIPs uniquement)
+
+        🧪 TESTS (Console):
+        window.valorantWidget.testCommandPermissions('username')
+        window.valorantWidget.testRefreshRank()
+        window.valorantWidget.reloadConfiguration()
+        window.valorantWidget.generateConfigURL()
+        ========================================
+        -->
+    <style>
+        /* Fonts are loaded via Google Fonts in the head */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent !important;
+        }
+
+        body {
+            font-family: var(--custom-font, 'Arial', sans-serif);
+            color: #ffffff;
+            position: relative;
+            min-height: 100%;
+        }
+
+        .preview-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .rank-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transform-origin: center;
+            z-index: 10;
+        }
+
+        .rank-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-icon img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .rank-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .leaderboard-position {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ff6b6b;
+            position: relative;
+        }
+
+        .rr-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+            position: relative;
+        }
+
+        .rr-change {
+            position: absolute;
+            left: -80px;
+            top: 0;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(0);
+            animation: slideAndFade 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .rr-change.positive {
+            color: #00ff00;
+        }
+
+        .rr-change.negative {
+            color: #ff0000;
+        }
+
+        .position-change {
+            position: absolute;
+            top: -30px;
+            right: 0;
+            font-size: 16px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(0);
+            animation: slideAndFade 3s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .position-change.up {
+            color: #00ff00;
+        }
+
+        .position-change.down {
+            color: #ff0000;
+        }
+
+        @keyframes slideAndFade {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        .loading {
+            font-size: 16px;
+        }
+
+        .error {
+            color: #ff0000;
+        }
+
+        /* Command feedback styles */
+        .command-feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .command-feedback.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .command-feedback.success {
+            background-color: #00ff00;
+            color: #000;
+        }
+
+        .command-feedback.error {
+            background-color: #ff0000;
+        }
+
+        /* Overlay visibility control */
+        body.hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <img src="valorant-preview-background.jpg" alt="" class="preview-background" />
+    <div class="rank-container" id="rankContainer">
+        <div class="rank-icon" id="rankIcon">
+            <!-- Will be populated dynamically -->
+        </div>
+        <div class="rank-info">
+            <div class="leaderboard-position" id="leaderboardPosition" style="position: relative;">#----</div>
+            <div class="rr-display" id="rrDisplay">-- RR</div>
+        </div>
+    </div>
+
+    <!-- Command feedback element -->
+    <div class="command-feedback" id="commandFeedback"></div>
+
+    <script>
+        class ValorantRankWidget {
+            constructor() {
+                // Get all customizable values from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // Player info
+                this.playerName = urlParams.get('name') || 'username';
+                this.playerTag = urlParams.get('tag') || 'tags';
+
+                // API configuration - check if values are actually in URL
+                const apiKeyParam = urlParams.get('api_key');
+                const regionParam = urlParams.get('region');
+                const platformParam = urlParams.get('platform');
+
+                this.apiKey = apiKeyParam || 'api_key';
+                this.apiRegion = regionParam || 'region';
+                this.apiPlatform = platformParam || 'plateforme';
+
+                // Font configuration
+                const fontParam = urlParams.get('font') || 'Arial';
+                console.log('🔤 Font parameter from URL:', fontParam);
+                // Apply font immediately
+                this.applyFont(fontParam);
+
+                // Update interval (in milliseconds) - default to 3000ms for preview mode, 60000ms for real mode
+                this.updateInterval = parseInt(urlParams.get('update_interval')) || 3000; // 3 seconds default for preview
+
+                // Check if we have all required information for real data
+                // Values must be present in URL and not be default/empty values
+                const hasAllInfo = this.playerName &&
+                                   this.playerName !== 'username' &&
+                                   this.playerTag &&
+                                   this.playerTag !== 'tags' &&
+                                   apiKeyParam && // Must be present in URL
+                                   apiKeyParam !== 'api_key' &&
+                                   apiKeyParam !== 'HDEV-6e8ce2b6-0be9-4653-81f6-ee2f4faf32a4' &&
+                                   apiKeyParam.trim() !== '' &&
+                                   regionParam && // Must be present in URL
+                                   regionParam !== 'region' &&
+                                   regionParam.trim() !== '' &&
+                                   platformParam && // Must be present in URL
+                                   platformParam !== 'plateforme' &&
+                                   platformParam.trim() !== '';
+
+                console.log('🔍 Détection des informations:', {
+                    playerName: this.playerName,
+                    playerTag: this.playerTag,
+                    apiKey: apiKeyParam ? 'présent' : 'manquant',
+                    region: regionParam ? 'présent' : 'manquant',
+                    platform: platformParam ? 'présent' : 'manquant',
+                    hasAllInfo: hasAllInfo
+                });
+
+                // Always use preview mode for now (to avoid CORS issues)
+                // Preview mode - use mock data
+                this.isPreviewMode = true;
+
+                if (this.isPreviewMode) {
+                    console.log('🎭 Mode preview activé - données mockées (informations manquantes)');
+                    this.previewStateIndex = 0;
+                    this.previewStates = [
+                        {
+                            rank: 'Ascendant 3',
+                            rr: 67,
+                            tier: 23,
+                            leaderboard: null
+                        },
+                        {
+                            rank: 'Immortal 1',
+                            rr: 67,
+                            tier: 24,
+                            leaderboard: 1111
+                        }
+                    ];
+                } else {
+                    console.log('✅ Mode réel activé - chargement des vraies données depuis l\'API');
+                    // Use longer default interval for real mode
+                    if (!urlParams.get('update_interval')) {
+                        this.updateInterval = 60000; // 1 minute default for real mode
+                    }
+                }
+
+                // Twitch chat configuration
+                this.twitchChannel = urlParams.get('channel') || 'twitch_channel';
+                this.twitchNick = urlParams.get('nick') || 'justinfan12345';
+                this.twitchPass = urlParams.get('pass') || 'SCHMOOPIIE';
+
+                // Leaderboard display configuration
+                const showLeaderboardParam = urlParams.get('show_leaderboard');
+                this.showLeaderboard = showLeaderboardParam === null ? true : showLeaderboardParam === 'true';
+
+                // Role-based access control system
+                this.moderators = this.parseUserList(urlParams.get('moderators'));
+                this.vips = this.parseUserList(urlParams.get('vips'));
+                this.blacklist = this.parseUserList(urlParams.get('blacklist'));
+
+                // Default user lists if none provided
+                if (this.moderators.length === 0) {
+                    this.moderators = ['sc0rpio74890']; // Default moderator
+                }
+                if (this.vips.length === 0) {
+                    this.vips = ['sc0rpio74890']; // Default VIP
+                }
+                if (this.blacklist.length === 0) {
+                    this.blacklist = ['banned_user1', 'banned_user2']; // Default blacklist
+                }
+
+                // Overlay visibility state
+                this.isOverlayVisible = true;
+
+                // Données actuelles du rang (preview mode)
+                const initialState = this.previewStates[0];
+                this.currentRankData = {
+                    rank: initialState.rank,
+                    rr: initialState.rr,
+                    tier: initialState.tier
+                };
+                this.currentLeaderboardData = initialState.leaderboard ? {
+                    leaderboard_rank: initialState.leaderboard,
+                    estimated: false
+                } : null;
+
+                // Leaderboard data
+                this.previousPosition = null;
+
+                // Store previous values for comparison
+                this.previousRR = initialState.rr;
+                this.lastChange = null;
+                this.isAnimating = false;
+                this.isPositionAnimating = false;
+
+                // Store interval ID for preview mode
+                this.previewIntervalId = null;
+                // Store interval ID for real data refresh
+                this.realDataIntervalId = null;
+
+                // Mapping des rangs avec les images locales
+                this.rankImages = {
+                    3: 'images/Iron_1_Rank.png',
+                    4: 'images/Iron_2_Rank.png',
+                    5: 'images/Iron_3_Rank.png',
+                    6: 'images/Bronze_1_Rank.png',
+                    7: 'images/Bronze_2_Rank.png',
+                    8: 'images/Bronze_3_Rank.png',
+                    9: 'images/Silver_1_Rank.png',
+                    10: 'images/Silver_2_Rank.png',
+                    11: 'images/Silver_3_Rank.png',
+                    12: 'images/Gold_1_Rank.png',
+                    13: 'images/Gold_2_Rank.png',
+                    14: 'images/Gold_3_Rank.png',
+                    15: 'images/Platinum_1_Rank.png',
+                    16: 'images/Platinum_2_Rank.png',
+                    17: 'images/Platinum_3_Rank.png',
+                    18: 'images/Diamond_1_Rank.png',
+                    19: 'images/Diamond_2_Rank.png',
+                    20: 'images/Diamond_3_Rank.png',
+                    21: 'images/Ascendant_1_Rank.png',
+                    22: 'images/Ascendant_2_Rank.png',
+                    23: 'images/Ascendant_3_Rank.png',
+                    24: 'images/Immortal_1_Rank.png',
+                    25: 'images/Immortal_2_Rank.png',
+                    26: 'images/Immortal_3_Rank.png',
+                    27: 'images/Radiant_Rank.png'
+                };
+
+                // Mapping inverse des noms de rangs vers les IDs
+                this.rankNameToId = {
+                    'Iron 1': 3, 'Iron 2': 4, 'Iron 3': 5,
+                    'Bronze 1': 6, 'Bronze 2': 7, 'Bronze 3': 8,
+                    'Silver 1': 9, 'Silver 2': 10, 'Silver 3': 11,
+                    'Gold 1': 12, 'Gold 2': 13, 'Gold 3': 14,
+                    'Platinum 1': 15, 'Platinum 2': 16, 'Platinum 3': 17,
+                    'Diamond 1': 18, 'Diamond 2': 19, 'Diamond 3': 20,
+                    'Ascendant 1': 21, 'Ascendant 2': 22, 'Ascendant 3': 23,
+                    'Immortal 1': 24, 'Immortal 2': 25, 'Immortal 3': 26,
+                    'Radiant': 27
+                };
+
+                // Log configuration
+                this.logConfiguration();
+
+                // Set up URL change detection
+                this.setupURLChangeDetection();
+
+                this.init();
+            }
+
+            // Helper method to parse comma-separated user lists from URL parameters
+            parseUserList(paramValue) {
+                if (!paramValue) return [];
+                return paramValue.split(',').map(user => user.trim().toLowerCase()).filter(user => user.length > 0);
+            }
+
+            // Log current configuration for debugging
+            logConfiguration() {
+                console.log('🔧 Configuration du widget:');
+                console.log(`   👤 Joueur: ${this.playerName}#${this.playerTag}`);
+                console.log(`   🌐 API: ${this.apiRegion}/${this.apiPlatform} (Key: ${this.apiKey ? '✅' : '❌'})`);
+                console.log(`   ⏰ Mise à jour: ${this.updateInterval}ms`);
+                console.log(`   📺 Canal Twitch: #${this.twitchChannel}`);
+                console.log(`   🏆 Afficher leaderboard: ${this.showLeaderboard ? '✅' : '❌'}`);
+                console.log(`   👮 Modérateurs: ${this.moderators.join(', ')}`);
+                console.log(`   👑 VIPs: ${this.vips.join(', ')}`);
+                console.log(`   🚫 Blacklist: ${this.blacklist.join(', ')}`);
+
+                // Show configuration status in the display
+                if (this.validateConfiguration()) {
+                    console.log('✅ Configuration valide, affichage des données...');
+                } else {
+                    console.log('❌ Configuration invalide, vérifiez les paramètres URL');
+                }
+            }
+
+            // Clear old cached data for different players
+            clearOldCachedData() {
+                console.log('🧹 Nettoyage des anciennes données en cache...');
+
+                // Get all localStorage keys
+                const keys = Object.keys(localStorage);
+                const currentPlayerKey = `valorant-rank-data-${this.playerName}-${this.playerTag}`;
+                const currentLeaderboardKey = `valorant-leaderboard-${this.playerName}-${this.playerTag}`;
+
+                // Remove old rank data for different players
+                keys.forEach(key => {
+                    if (key.startsWith('valorant-rank-data-') && key !== currentPlayerKey) {
+                        console.log(`🗑️ Suppression des anciennes données de rang: ${key}`);
+                        localStorage.removeItem(key);
+                    }
+                    if (key.startsWith('valorant-leaderboard-') && key !== currentLeaderboardKey) {
+                        console.log(`🗑️ Suppression des anciennes données de leaderboard: ${key}`);
+                        localStorage.removeItem(key);
+                    }
+                });
+
+                console.log('✅ Nettoyage des anciennes données terminé');
+            }
+
+            // Force refresh data for new player configuration
+            async forceRefreshData() {
+                console.log('🔄 Forçage de la mise à jour des données pour', this.playerName, this.playerTag);
+
+                try {
+                    // Clear current data to force fresh fetch
+                    this.currentRankData = {
+                        rank: 'Loading...',
+                        rr: 0,
+                        tier: 0
+                    };
+                    this.currentLeaderboardData = null;
+
+                    // Clear display and show loading state
+                    this.clearDisplay();
+
+                    // Fetch fresh data
+                    await this.fetchRealRankData();
+
+                    // Wait a bit before fetching leaderboard data
+                    setTimeout(async () => {
+                        await this.fetchLeaderboardData();
+                    }, 2000);
+
+                    console.log('✅ Données forcément mises à jour pour', this.playerName, this.playerTag);
+                } catch (error) {
+                    console.error('❌ Erreur lors du forçage de la mise à jour:', error);
+                }
+            }
+
+            // Clear display and show loading state
+            clearDisplay() {
+                console.log('🧹 Nettoyage de l\'affichage...');
+
+                const rankIcon = document.getElementById('rankIcon');
+                const rrDisplay = document.getElementById('rrDisplay');
+                const leaderboardPosition = document.getElementById('leaderboardPosition');
+
+                // Clear rank icon
+                rankIcon.innerHTML = '<div style="color: #888;">Loading...</div>';
+
+                // Clear RR display
+                rrDisplay.textContent = 'Loading...';
+
+                // Hide leaderboard position
+                if (leaderboardPosition) {
+                    leaderboardPosition.style.display = 'none';
+                }
+
+                console.log('✅ Affichage nettoyé');
+            }
+
+            // Validate configuration before making API calls
+            validateConfiguration() {
+                console.log('🔍 Validation de la configuration...');
+
+                // Check if player name and tag are provided
+                if (!this.playerName || !this.playerTag) {
+                    console.error('❌ Nom du joueur ou tag manquant');
+                    this.showConfigurationError('Nom du joueur ou tag manquant');
+                    return false;
+                }
+
+                // Check if API key is provided
+                if (!this.apiKey || this.apiKey === 'HDEV-6e8ce2b6-0be9-4653-81f6-ee2f4faf32a4') {
+                    console.error('❌ Clé API manquante ou clé par défaut utilisée');
+                    this.showConfigurationError('Clé API manquante ou clé par défaut utilisée');
+                    return false;
+                }
+
+                // Check if region and platform are valid
+                if (!this.apiRegion || !this.apiPlatform) {
+                    console.error('❌ Région ou plateforme manquante');
+                    this.showConfigurationError('Région ou plateforme manquante');
+                    return false;
+                }
+
+                console.log('✅ Configuration validée');
+                this.resetDisplayStyle();
+                return true;
+            }
+
+            // Show configuration error message
+            showConfigurationError(message) {
+                console.error('❌ Erreur de configuration:', message);
+
+                const rankIcon = document.getElementById('rankIcon');
+                const rrDisplay = document.getElementById('rrDisplay');
+
+                // Show error in rank icon
+                rankIcon.innerHTML = '<div style="color: #ff0000; font-size: 12px; text-align: center;">❌<br>Config<br>Error</div>';
+
+                // Show error in RR display
+                rrDisplay.textContent = message;
+                rrDisplay.style.color = '#ff0000';
+
+                // Hide leaderboard position
+                const leaderboardPosition = document.getElementById('leaderboardPosition');
+                if (leaderboardPosition) {
+                    leaderboardPosition.style.display = 'none';
+                }
+            }
+
+            // Reset display style after successful configuration
+            resetDisplayStyle() {
+                const rrDisplay = document.getElementById('rrDisplay');
+                if (rrDisplay) {
+                    rrDisplay.style.color = '#ffffff'; // Reset to default color
+                }
+            }
+
+            // Set up URL change detection for dynamic configuration updates
+            setupURLChangeDetection() {
+                console.log('🔍 Configuration de la détection des changements d\'URL...');
+
+                // Store initial URL
+                let currentURL = window.location.href;
+
+                // Check for URL changes every second
+                setInterval(() => {
+                    if (window.location.href !== currentURL) {
+                        console.log('🔄 Changement d\'URL détecté, rechargement de la configuration...');
+                        currentURL = window.location.href;
+                        this.reloadConfiguration();
+                    }
+                }, 1000);
+
+                console.log('✅ Détection des changements d\'URL configurée');
+            }
+
+            // Apply font from parameter
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+
+                // System fonts (don't need quotes)
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    // System fonts don't need quotes
+                    fontFamily = fontName;
+                } else {
+                    // Web fonts need quotes (especially those with spaces like "Open Sans")
+                    fontFamily = `'${fontName}'`;
+                }
+
+                // Apply the font to the CSS variable
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+
+                // Also apply directly to body for immediate effect
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+
+                console.log(`🔤 Police appliquée: ${fontName} (${fontFamily})`);
+            }
+
+            // Start preview cycle
+            startPreviewCycle() {
+                // Clear existing timeout/interval if any
+                if (this.previewIntervalId) {
+                    clearTimeout(this.previewIntervalId);
+                    clearInterval(this.previewIntervalId);
+                }
+
+                console.log(`🔄 Démarrage du cycle preview avec intervalle de ${this.updateInterval}ms`);
+
+                // Use recursive setTimeout instead of setInterval to wait for animations to complete
+                const cycleWithDelay = async () => {
+                    // Wait for any ongoing animation to complete
+                    while (this.isAnimating || this.isPositionAnimating) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+
+                    // Perform the cycle (this is async and will wait for animations to complete)
+                    await this.cyclePreviewState();
+
+                    // Wait for animations to fully complete
+                    while (this.isAnimating || this.isPositionAnimating) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+
+                    // Schedule next cycle after the interval (only after animation is done)
+                    this.previewIntervalId = setTimeout(cycleWithDelay, this.updateInterval);
+                };
+
+                // Start the first cycle after the interval
+                this.previewIntervalId = setTimeout(cycleWithDelay, this.updateInterval);
+            }
+
+            // Load real data when switching from preview to real mode
+            async loadRealData() {
+                console.log('📡 Chargement des vraies données depuis l\'API...');
+
+                // Clear old cached data for different players
+                this.clearOldCachedData();
+
+                // Initialize current rank data structure
+                this.currentRankData = {
+                    rank: 'Loading...',
+                    rr: 0,
+                    tier: 0
+                };
+                this.currentLeaderboardData = null;
+
+                // Clear display and show loading state
+                this.clearDisplay();
+
+                // Load cached data first if available
+                await this.loadRankData();
+                await this.loadLeaderboardData();
+
+                // Display cached data immediately
+                this.displayCurrentRank();
+                this.displayLeaderboardPosition();
+
+                // Fetch fresh data from API
+                console.log('🧪 Récupération des données depuis l\'API...');
+                await this.fetchBothAPIs();
+
+                // Set up periodic refresh
+                if (this.updateInterval > 0) {
+                    // Clear existing interval if any
+                    if (this.realDataIntervalId) {
+                        clearInterval(this.realDataIntervalId);
+                    }
+                    this.realDataIntervalId = setInterval(async () => {
+                        await this.fetchBothAPIs();
+                    }, this.updateInterval);
+                    console.log(`🔄 Rafraîchissement automatique configuré toutes les ${this.updateInterval}ms`);
+                }
+            }
+
+                        // Method to reload configuration from URL parameters (useful for testing)
+            reloadConfiguration() {
+                console.log('🔄 Rechargement de la configuration depuis les paramètres URL...');
+
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // Store old player info to detect changes
+                const oldPlayerName = this.playerName;
+                const oldPlayerTag = this.playerTag;
+                const oldIsPreviewMode = this.isPreviewMode;
+
+                // Update player info
+                this.playerName = urlParams.get('name') || this.playerName;
+                this.playerTag = urlParams.get('tag') || this.playerTag;
+
+                // Update API configuration - check if values are actually in URL
+                const apiKeyParam = urlParams.get('api_key');
+                const regionParam = urlParams.get('region');
+                const platformParam = urlParams.get('platform');
+
+                if (apiKeyParam) this.apiKey = apiKeyParam;
+                if (regionParam) this.apiRegion = regionParam;
+                if (platformParam) this.apiPlatform = platformParam;
+
+                // Check if we now have all required information for real data
+                // Values must be present in URL and not be default/empty values
+                const hasAllInfo = this.playerName &&
+                                   this.playerName !== 'username' &&
+                                   this.playerTag &&
+                                   this.playerTag !== 'tags' &&
+                                   apiKeyParam && // Must be present in URL
+                                   apiKeyParam !== 'api_key' &&
+                                   apiKeyParam !== 'HDEV-6e8ce2b6-0be9-4653-81f6-ee2f4faf32a4' &&
+                                   apiKeyParam.trim() !== '' &&
+                                   regionParam && // Must be present in URL
+                                   regionParam !== 'region' &&
+                                   regionParam.trim() !== '' &&
+                                   platformParam && // Must be present in URL
+                                   platformParam !== 'plateforme' &&
+                                   platformParam.trim() !== '';
+
+                console.log('🔍 Détection des informations (reload):', {
+                    playerName: this.playerName,
+                    playerTag: this.playerTag,
+                    apiKey: apiKeyParam ? 'présent' : 'manquant',
+                    region: regionParam ? 'présent' : 'manquant',
+                    platform: platformParam ? 'présent' : 'manquant',
+                    hasAllInfo: hasAllInfo
+                });
+
+                // Update preview mode status
+                this.isPreviewMode = !hasAllInfo;
+
+                // If we switched from preview to real mode, initialize real data
+                if (oldIsPreviewMode && !this.isPreviewMode) {
+                    console.log('🔄 Passage du mode preview au mode réel - chargement des vraies données...');
+                    // Stop preview cycle if running
+                    if (this.previewIntervalId) {
+                        clearInterval(this.previewIntervalId);
+                        this.previewIntervalId = null;
+                    }
+                    // Use longer default interval for real mode
+                    if (!urlParams.get('update_interval')) {
+                        this.updateInterval = 60000; // 1 minute default for real mode
+                    }
+                    // Initialize real data loading
+                    this.loadRealData();
+                    return; // loadRealData() will handle everything
+                }
+
+                // If we switched from real to preview mode, start preview cycle
+                if (!oldIsPreviewMode && this.isPreviewMode) {
+                    console.log('🔄 Passage du mode réel au mode preview - activation du cycle...');
+                    // Stop real data refresh interval if running
+                    if (this.realDataIntervalId) {
+                        clearInterval(this.realDataIntervalId);
+                        this.realDataIntervalId = null;
+                    }
+                    this.previewStateIndex = 0;
+                    this.previewStates = [
+                        {
+                            rank: 'Ascendant 3',
+                            rr: 67,
+                            tier: 23,
+                            leaderboard: null
+                        },
+                        {
+                            rank: 'Immortal 1',
+                            rr: 67,
+                            tier: 24,
+                            leaderboard: 1111
+                        }
+                    ];
+                    this.startPreviewCycle();
+                }
+
+                // Update update interval
+                const newInterval = urlParams.get('update_interval');
+                if (newInterval) {
+                    const oldInterval = this.updateInterval;
+                    this.updateInterval = parseInt(newInterval) || this.updateInterval;
+
+                    // Restart preview cycle if interval changed
+                    if (this.isPreviewMode && oldInterval !== this.updateInterval) {
+                        console.log(`🔄 Intervalle changé de ${oldInterval}ms à ${this.updateInterval}ms, redémarrage du cycle...`);
+                        // Clear current cycle and restart
+                        if (this.previewIntervalId) {
+                            clearTimeout(this.previewIntervalId);
+                            clearInterval(this.previewIntervalId);
+                            this.previewIntervalId = null;
+                        }
+                        this.startPreviewCycle();
+                    }
+
+                    // Restart real data refresh if interval changed
+                    if (!this.isPreviewMode && oldInterval !== this.updateInterval && this.realDataIntervalId) {
+                        console.log(`🔄 Intervalle changé de ${oldInterval}ms à ${this.updateInterval}ms, redémarrage du rafraîchissement...`);
+                        clearInterval(this.realDataIntervalId);
+                        this.realDataIntervalId = setInterval(async () => {
+                            await this.fetchBothAPIs();
+                        }, this.updateInterval);
+                    }
+                }
+
+                // Update font if changed
+                const newFont = urlParams.get('font') || 'Arial';
+                this.applyFont(newFont);
+
+                // Update Twitch configuration
+                this.twitchChannel = urlParams.get('channel') || this.twitchChannel;
+                this.twitchNick = urlParams.get('nick') || this.twitchNick;
+                this.twitchPass = urlParams.get('pass') || this.twitchPass;
+
+                // Update user lists
+                const newModerators = this.parseUserList(urlParams.get('moderators'));
+                const newVips = this.parseUserList(urlParams.get('vips'));
+                const newBlacklist = this.parseUserList(urlParams.get('blacklist'));
+
+                if (newModerators.length > 0) this.moderators = newModerators;
+                if (newVips.length > 0) this.vips = newVips;
+                if (newBlacklist.length > 0) this.blacklist = newBlacklist;
+
+                // Log updated configuration
+                this.logConfiguration();
+
+                // Check if player changed and force refresh if needed
+                if (oldPlayerName !== this.playerName || oldPlayerTag !== this.playerTag) {
+                    console.log('🔄 Joueur changé, forçage de la mise à jour des données...');
+                    this.forceRefreshData();
+                }
+
+                console.log('✅ Configuration rechargée avec succès!');
+            }
+
+            // Method to generate configuration URL for sharing
+            generateConfigURL() {
+                const params = new URLSearchParams();
+
+                // Add current configuration
+                params.set('name', this.playerName);
+                params.set('tag', this.playerTag);
+                params.set('api_key', this.apiKey);
+                params.set('region', this.apiRegion);
+                params.set('platform', this.apiPlatform);
+                params.set('update_interval', this.updateInterval.toString());
+                params.set('channel', this.twitchChannel);
+                params.set('nick', this.twitchNick);
+                params.set('pass', this.twitchPass);
+
+                if (this.moderators.length > 0) {
+                    params.set('moderators', this.moderators.join(','));
+                }
+                if (this.vips.length > 0) {
+                    params.set('vips', this.vips.join(','));
+                }
+                if (this.blacklist.length > 0) {
+                    params.set('blacklist', this.blacklist.join(','));
+                }
+
+                const configURL = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+                console.log('🔗 URL de configuration générée:', configURL);
+                return configURL;
+            }
+
+            // Method to update user lists (can be called from console for testing)
+            updateUserLists(newModerators = null, newVips = null, newBlacklist = null) {
+                if (newModerators) {
+                    this.moderators = newModerators.map(u => u.toLowerCase());
+                    console.log('📝 Liste des modérateurs mise à jour:', this.moderators);
+                }
+
+                if (newVips) {
+                    this.vips = newVips.map(u => u.toLowerCase());
+                    console.log('📝 Liste des VIPs mise à jour:', this.vips);
+                }
+
+                if (newBlacklist) {
+                    this.blacklist = newBlacklist.map(u => u.toLowerCase());
+                    console.log('📝 Blacklist mise à jour:', this.blacklist);
+                }
+            }
+
+            // Method to add/remove users from lists
+            addModerator(username) {
+                if (!this.moderators.includes(username.toLowerCase())) {
+                    this.moderators.push(username.toLowerCase());
+                    console.log(`✅ ${username} ajouté aux modérateurs`);
+                }
+            }
+
+            // Méthode de test pour vérifier les permissions (à appeler depuis la console)
+            testCommandPermissions(username) {
+                console.log(`🧪 Test des permissions pour: ${username}`);
+                console.log(`   👮 Modérateur: ${this.moderators.includes(username.toLowerCase())}`);
+                console.log(`   👑 VIP: ${this.vips.includes(username.toLowerCase())}`);
+                console.log(`   🚫 Blacklisté: ${this.blacklist.includes(username.toLowerCase())}`);
+                console.log(`   ✅ Peut utiliser les commandes: ${this.hasPermission(username)}`);
+            }
+
+                        // Méthode de test pour déclencher un refresh manuellement
+            testRefreshRank() {
+                console.log('🧪 Test de refresh manuel - Rechargement de la page...');
+                this.executePageReload();
+            }
+
+            // Méthode pour recharger la page entière
+            executePageReload() {
+                console.log('🔄 Rechargement forcé de la page...');
+
+                // Option 1: Rechargement simple
+                window.location.reload();
+
+                // Option 2: Rechargement forcé (ignorer le cache)
+                // window.location.reload(true);
+
+                // Option 3: Rechargement avec remplacement d'historique
+                // window.location.replace(window.location.href);
+            }
+
+            removeModerator(username) {
+                const index = this.moderators.indexOf(username.toLowerCase());
+                if (index > -1) {
+                    this.moderators.splice(index, 1);
+                    console.log(`❌ ${username} retiré des modérateurs`);
+                }
+            }
+
+            addVIP(username) {
+                if (!this.vips.includes(username.toLowerCase())) {
+                    this.vips.push(username.toLowerCase());
+                    console.log(`✅ ${username} ajouté aux VIPs`);
+                }
+            }
+
+            removeVIP(username) {
+                const index = this.vips.indexOf(username.toLowerCase());
+                if (index > -1) {
+                    this.vips.splice(index, 1);
+                    console.log(`❌ ${username} retiré des VIPs`);
+                }
+            }
+
+            addToBlacklist(username) {
+                if (!this.blacklist.includes(username.toLowerCase())) {
+                    this.blacklist.push(username.toLowerCase());
+                    console.log(`🚫 ${username} ajouté à la blacklist`);
+                }
+            }
+
+            removeFromBlacklist(username) {
+                const index = this.blacklist.indexOf(username.toLowerCase());
+                if (index > -1) {
+                    this.blacklist.splice(index, 1);
+                    console.log(`✅ ${username} retiré de la blacklist`);
+                }
+            }
+
+            // Check if user has permission to use commands
+            hasPermission(username, userTags) {
+                // Check blacklist first
+                if (this.blacklist.includes(username.toLowerCase())) {
+                    console.log(`🚫 Utilisateur ${username} est dans la blacklist`);
+                    return false;
+                }
+
+                // Check if user is moderator
+                if (this.moderators.includes(username.toLowerCase())) {
+                    console.log(`✅ ${username} est modérateur`);
+                    return true;
+                }
+
+                // Check if user is VIP
+                if (this.vips.includes(username.toLowerCase())) {
+                    console.log(`✅ ${username} est VIP`);
+                    return true;
+                }
+
+                // Check user tags for moderator or VIP status
+                if (userTags) {
+                    if (userTags.includes('moderator=1') || userTags.includes('vip=1')) {
+                        console.log(`✅ ${username} a les permissions via tags Twitch`);
+                        return true;
+                    }
+                }
+
+                console.log(`❌ ${username} n'a pas les permissions`);
+                return false;
+            }
+
+            // Show the overlay
+            showOverlay() {
+                if (!this.isOverlayVisible) {
+                    this.isOverlayVisible = true;
+                    document.body.classList.remove('hidden');
+                    console.log('👁️ Overlay affiché via commande');
+                }
+            }
+
+            // Hide the overlay
+            hideOverlay() {
+                if (this.isOverlayVisible) {
+                    this.isOverlayVisible = false;
+                    document.body.classList.add('hidden');
+                    console.log('🙈 Overlay masqué via commande');
+                }
+            }
+
+            // Show command feedback
+            showCommandFeedback(message, type = 'success') {
+                const feedback = document.getElementById('commandFeedback');
+                feedback.textContent = message;
+                feedback.className = `command-feedback ${type}`;
+
+                // Show the feedback
+                setTimeout(() => {
+                    feedback.classList.add('show');
+                }, 100);
+
+                // Hide the feedback after 3 seconds
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 3000);
+            }
+
+            // Parse and handle chat commands
+            parseChatCommand(username, message, userTags) {
+                const command = message.trim().toLowerCase();
+
+                if (command === '!showrank') {
+                    if (this.hasPermission(username, userTags)) {
+                        console.log(`🎮 Commande !showrank reçue de ${username}`);
+                        this.showOverlay();
+                    } else {
+                        console.log(`❌ ${username} a tenté d'utiliser !showrank sans permission`);
+                    }
+                    return;
+                }
+
+                if (command === '!hiderank') {
+                    if (this.hasPermission(username, userTags)) {
+                        console.log(`🎮 Commande !hiderank reçue de ${username}`);
+                        this.hideOverlay();
+                    } else {
+                        console.log(`❌ ${username} a tenté d'utiliser !hiderank sans permission`);
+                    }
+                    return;
+                }
+
+                                if (command === '!refreshrank' || command === '!rankreload') {
+                    if (this.hasPermission(username, userTags)) {
+                        console.log(`🔄 Commande ${command} reçue de ${username} - Rechargement forcé de la page...`);
+
+                        // Recharger la page entière (comme dans le chat widget)
+                        this.executePageReload();
+                    } else {
+                        console.log(`❌ ${username} a tenté d'utiliser ${command} sans permission`);
+                    }
+                    return;
+                }
+
+                // Log unknown commands for debugging
+                if (command.startsWith('!')) {
+                    console.log(`❓ Commande inconnue reçue de ${username}: ${command}`);
+                }
+            }
+
+            async init() {
+                const modeText = this.isPreviewMode ? 'Preview Mode' : 'Real Mode';
+                console.log(`🎮 Initialisation du widget Valorant (${modeText})...`);
+                console.log(`👤 Joueur: ${this.playerName}#${this.playerTag}`);
+
+                // Preview mode - display initial state
+                // Reset display style to ensure white text
+                this.resetDisplayStyle();
+                this.displayCurrentRank();
+                this.displayLeaderboardPosition();
+
+                // Preview mode - cycle through states
+                if (this.isPreviewMode) {
+                    console.log('🔄 Mode preview activé - cycle entre les états...');
+                    // Start cycle - it will handle the timing and wait for animations
+                    this.startPreviewCycle();
+                } else {
+                    // Normal mode - original logic
+                    // Log current user lists
+                    console.log('👑 Modérateurs:', this.moderators);
+                    console.log('⭐ VIPs:', this.vips);
+                    console.log('🚫 Blacklist:', this.blacklist);
+
+                    // Clear old cached data for different players
+                    this.clearOldCachedData();
+
+                    // Charger les données sauvegardées d'abord
+                    await this.loadRankData();
+                    await this.loadLeaderboardData();
+
+                    // Affichage initial avec les données chargées
+                    this.displayCurrentRank();
+                    this.displayLeaderboardPosition();
+
+                    // Test des APIs pour obtenir les données les plus récentes
+                    console.log('🧪 Test des APIs en cours...');
+                    await this.fetchBothAPIs();
+
+                    // Force refresh data for new player configuration
+                    console.log('🔄 Forçage de la mise à jour des données pour la nouvelle configuration...');
+                    await this.forceRefreshData();
+
+                    // Set up periodic refresh
+                    if (this.updateInterval > 0) {
+                        // Clear existing interval if any
+                        if (this.realDataIntervalId) {
+                            clearInterval(this.realDataIntervalId);
+                        }
+                        this.realDataIntervalId = setInterval(async () => {
+                            await this.fetchBothAPIs();
+                        }, this.updateInterval);
+                        console.log(`🔄 Rafraîchissement automatique configuré toutes les ${this.updateInterval}ms`);
+                    }
+
+                    // Connexion au chat Twitch pour écouter les commandes
+                    this.connectToTwitchChat();
+
+                    // Mise à jour périodique de l'affichage (juste au cas où)
+                    setInterval(() => {
+                        if (!this.isAnimating && !this.isPositionAnimating) {
+                            this.displayCurrentRank();
+                            this.displayLeaderboardPosition();
+                        }
+                    }, 30000); // Toutes les 30 secondes
+                }
+            }
+
+            async cyclePreviewState() {
+                // Cycle to next state
+                this.previewStateIndex = (this.previewStateIndex + 1) % this.previewStates.length;
+                const newState = this.previewStates[this.previewStateIndex];
+
+                const oldRR = this.currentRankData.rr;
+                const oldTier = this.currentRankData.tier;
+                const oldPosition = this.currentLeaderboardData ? this.currentLeaderboardData.leaderboard_rank : null;
+
+                // Update rank data
+                this.currentRankData = {
+                    rank: newState.rank,
+                    rr: newState.rr,
+                    tier: newState.tier
+                };
+
+                // Update leaderboard data
+                this.currentLeaderboardData = newState.leaderboard ? {
+                    leaderboard_rank: newState.leaderboard,
+                    estimated: false
+                } : null;
+
+                // Animate RR change (always animate in preview, especially when tier changes)
+                if (oldTier !== newState.tier || oldRR !== newState.rr) {
+                    // If tier changed, animate through rank boundaries
+                    await this.animateRRChange(oldRR, newState.rr, oldTier, newState.tier, newState.rr - oldRR);
+                    // Update rank image after animation completes
+                    if (oldTier !== newState.tier) {
+                        // Image already updated during animation, but ensure it's correct
+                        this.updateRankImage();
+                    }
+                } else {
+                    this.displayCurrentRank();
+                }
+
+                // Update leaderboard position with animation if changed
+                if (oldPosition !== (newState.leaderboard || null)) {
+                    if (oldPosition !== null && newState.leaderboard !== null) {
+                        await this.animatePositionChange(oldPosition, newState.leaderboard);
+                    } else {
+                        this.displayLeaderboardPosition();
+                    }
+                } else {
+                    this.displayLeaderboardPosition();
+                }
+
+                this.previousRR = newState.rr;
+                this.previousPosition = newState.leaderboard;
+
+                console.log(`🔄 Preview: Changement vers ${newState.rank} ${newState.rr} RR${newState.leaderboard ? ` (Leaderboard #${newState.leaderboard})` : ''}`);
+            }
+
+            async loadRankData() {
+                try {
+                    // Check if we have cached data for the current player
+                    const savedData = localStorage.getItem(`valorant-rank-data-${this.playerName}-${this.playerTag}`);
+                    if (savedData) {
+                        const loadedData = JSON.parse(savedData);
+                        this.currentRankData = {
+                            rank: loadedData.rank,
+                            rr: loadedData.rr,
+                            tier: loadedData.tier
+                        };
+                        this.previousRR = loadedData.rr;
+                        this.lastChange = loadedData.lastChange || null;
+                        console.log('✅ Données de rang chargées depuis localStorage pour', this.playerName, this.playerTag, ':', this.currentRankData);
+                        return true; // Indicate we have saved data
+                    } else {
+                        console.log('📄 Aucune donnée sauvegardée trouvée pour', this.playerName, this.playerTag, ', utilisation des données par défaut temporaires');
+                        this.previousRR = this.currentRankData.rr;
+                        return false; // Indicate no saved data
+                    }
+                } catch (error) {
+                    console.log('📄 Impossible de charger les données sauvegardées, utilisation des données par défaut temporaires');
+                    this.previousRR = this.currentRankData.rr;
+                    return false; // Indicate no saved data
+                }
+            }
+
+            async saveRankData() {
+                try {
+                    const dataToSave = {
+                        rank: this.currentRankData.rank,
+                        rr: this.currentRankData.rr,
+                        tier: this.currentRankData.tier,
+                        lastChange: this.lastChange,
+                        lastUpdated: new Date().toISOString()
+                    };
+
+                    // Sauvegarder dans localStorage
+                    localStorage.setItem(`valorant-rank-data-${this.playerName}-${this.playerTag}`, JSON.stringify(dataToSave));
+
+                    console.log('💾 Données de rang sauvegardées dans localStorage:', dataToSave);
+                } catch (error) {
+                    console.error('❌ Erreur lors de la sauvegarde:', error);
+                }
+            }
+
+            async loadLeaderboardData() {
+                try {
+                    const savedData = localStorage.getItem(`valorant-leaderboard-${this.playerName}-${this.playerTag}`);
+                    if (savedData) {
+                        const loadedData = JSON.parse(savedData);
+
+                        // Vérifier immédiatement si le joueur est encore dans le leaderboard
+                        // Si le rang actuel est trop bas, ne pas charger les données
+                        if (this.currentRankData && this.currentRankData.tier < 24) {
+                            console.log(`❌ Rang trop bas pour le leaderboard (tier ${this.currentRankData.tier}), suppression des anciennes données`);
+                            this.currentLeaderboardData = null;
+                            this.displayLeaderboardPosition(); // Cache immédiatement
+                            return false;
+                        }
+
+                        this.currentLeaderboardData = loadedData.playerData;
+                        this.previousPosition = loadedData.position;
+                        console.log('✅ Données du leaderboard chargées depuis localStorage pour', this.playerName, this.playerTag, ':', this.currentLeaderboardData);
+                        return true;
+                    }
+                } catch (error) {
+                    console.log('📄 Impossible de charger les données du leaderboard sauvegardées pour', this.playerName, this.playerTag);
+                }
+                return false;
+            }
+
+            async saveLeaderboardData() {
+                try {
+                    const dataToSave = {
+                        playerData: this.currentLeaderboardData,
+                        position: this.currentLeaderboardData ? this.currentLeaderboardData.leaderboard_rank : null,
+                        lastUpdated: new Date().toISOString()
+                    };
+
+                    localStorage.setItem(`valorant-leaderboard-${this.playerName}-${this.playerTag}`, JSON.stringify(dataToSave));
+                    console.log('💾 Données du leaderboard sauvegardées');
+                } catch (error) {
+                    console.error('❌ Erreur lors de la sauvegarde du leaderboard:', error);
+                }
+            }
+
+            connectToTwitchChat() {
+                console.log('🔗 Connexion au chat Twitch pour écouter les commandes...');
+
+                // Connexion WebSocket au chat IRC de Twitch
+                const socket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+
+                socket.onopen = () => {
+                    console.log('✅ Connecté au chat Twitch de fugu_fps');
+                    // Connexion anonyme au chat IRC de Twitch avec support des tags
+                    socket.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+                                    socket.send(`PASS ${this.twitchPass}`);
+                socket.send(`NICK ${this.twitchNick}`); // Utilisateur configuré
+                    socket.send(`JOIN #${this.twitchChannel}`); // Rejoindre le canal configuré
+                };
+
+                socket.onmessage = (event) => {
+                    const message = event.data;
+
+                    // Répondre aux PING pour maintenir la connexion
+                    if (message.startsWith('PING')) {
+                        socket.send('PONG :tmi.twitch.tv');
+                        return;
+                    }
+
+                    // Parse chat messages for commands
+                    this.parseChatMessage(message);
+                };
+
+                socket.onerror = (error) => {
+                    console.error('❌ Erreur de connexion au chat Twitch:', error);
+                };
+
+                socket.onclose = () => {
+                    console.log('🔌 Connexion au chat Twitch fermée');
+                    // Tentative de reconnexion après 10 secondes
+                    setTimeout(() => {
+                        console.log('🔄 Tentative de reconnexion...');
+                        this.connectToTwitchChat();
+                    }, 10000);
+                };
+            }
+
+            // Parse incoming chat messages
+            parseChatMessage(rawMessage) {
+                try {
+                    // Check if it's a PRIVMSG (chat message)
+                    if (!rawMessage.includes(`PRIVMSG #${this.twitchChannel} :`)) {
+                        return;
+                    }
+
+                    // Extract user tags (moderator, vip status, etc.)
+                    const tagsMatch = rawMessage.match(/@([^ ]+) /);
+                    let userTags = '';
+                    if (tagsMatch) {
+                        userTags = tagsMatch[1];
+                    }
+
+                    // Extract username
+                    const userMatch = rawMessage.match(/:([^!]+)!/);
+                    if (!userMatch) return;
+                    const username = userMatch[1].toLowerCase();
+
+                    // Extract message content
+                    const messageMatch = rawMessage.match(new RegExp(`PRIVMSG #${this.twitchChannel} :(.+)`));
+                    if (!messageMatch) return;
+                    const messageContent = messageMatch[1].trim();
+
+                    console.log(`💬 Message de ${username}: ${messageContent}`);
+
+                    // Check if it's a command
+                    if (messageContent.startsWith('!')) {
+                        this.parseChatCommand(username, messageContent, userTags);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Erreur lors du parsing du message:', error);
+                }
+            }
+
+            updateRankImage() {
+                const rankIcon = document.getElementById('rankIcon');
+                const data = this.currentRankData;
+
+                // Mettre à jour l'icône de rang avec l'image correspondante
+                const rankImagePath = this.rankImages[data.tier];
+                if (rankImagePath) {
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
+                    console.log(`🖼️ Image de rang mise à jour instantanément: ${rankImagePath} (${data.rank})`);
+                } else {
+                    rankIcon.innerHTML = `<div>${data.rank}</div>`;
+                    console.log(`⚠️ Pas d'image trouvée pour le rang ${data.tier} (${data.rank})`);
+                }
+            }
+
+            displayCurrentRank() {
+                const rrDisplay = document.getElementById('rrDisplay');
+                const rankIcon = document.getElementById('rankIcon');
+
+                // Utiliser les données actuelles
+                const data = this.currentRankData;
+
+                // Mettre à jour l'icône de rang avec l'image correspondante
+                const rankImagePath = this.rankImages[data.tier];
+                if (rankImagePath) {
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
+                    console.log(`🖼️ Image de rang chargée: ${rankImagePath}`);
+                } else {
+                    rankIcon.innerHTML = `<div>${data.rank}</div>`;
+                    console.log(`⚠️ Pas d'image trouvée pour le rang ${data.tier}`);
+                }
+
+                // Update RR display without animation if not changing
+                if (!this.isAnimating) {
+                    rrDisplay.textContent = `${data.rr} RR`;
+                }
+
+                console.log(`✅ Affichage mis à jour: ${data.rank} - ${data.rr} RR`);
+            }
+
+            async animateRRChange(oldRR, newRR, oldTier, newTier, changeValue = null) {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+
+                const rrDisplay = document.getElementById('rrDisplay');
+
+                // Show change indicator if we have a change value and it's different from last time
+                if (changeValue !== null && changeValue !== this.lastChange) {
+                    this.showChangeIndicator(changeValue);
+                    this.lastChange = changeValue;
+                }
+
+                // If tier changed, we need to animate through rank boundaries
+                if (oldTier !== newTier) {
+                    const stepDelay = 50; // ms between each step
+
+                    // Determine direction (ascending or descending rank)
+                    const isAscending = newTier > oldTier;
+
+                    if (isAscending) {
+                        // Going up: oldRR → 99 → 0 → newRR
+                        // Count from oldRR to 99
+                        for (let rr = oldRR; rr <= 99; rr++) {
+                            rrDisplay.textContent = `${rr} RR`;
+                            await new Promise(resolve => setTimeout(resolve, stepDelay));
+                        }
+
+                        // Change rank image at boundary
+                        this.updateRankImage();
+
+                        // Count from 0 to newRR
+                        for (let rr = 0; rr <= newRR; rr++) {
+                            rrDisplay.textContent = `${rr} RR`;
+                            await new Promise(resolve => setTimeout(resolve, stepDelay));
+                        }
+                    } else {
+                        // Going down: oldRR → 0 → 99 → newRR
+                        // Count from oldRR down to 0
+                        for (let rr = oldRR; rr >= 0; rr--) {
+                            rrDisplay.textContent = `${rr} RR`;
+                            await new Promise(resolve => setTimeout(resolve, stepDelay));
+                        }
+
+                        // Change rank image at boundary
+                        this.updateRankImage();
+
+                        // Count from 99 down to newRR
+                        for (let rr = 99; rr >= newRR; rr--) {
+                            rrDisplay.textContent = `${rr} RR`;
+                            await new Promise(resolve => setTimeout(resolve, stepDelay));
+                        }
+                    }
+                } else {
+                    // Same tier, just animate the RR difference
+                    const difference = newRR - oldRR;
+                    const steps = Math.min(Math.abs(difference), 50); // Limit steps for very large changes
+                    const stepSize = difference / steps;
+                    const stepDelay = 30; // ms between each step
+
+                    for (let i = 0; i <= steps; i++) {
+                        const currentRR = Math.round(oldRR + (stepSize * i));
+                        rrDisplay.textContent = `${currentRR} RR`;
+
+                        if (i < steps) {
+                            await new Promise(resolve => setTimeout(resolve, stepDelay));
+                        }
+                    }
+                }
+
+                this.isAnimating = false;
+            }
+
+            displayLeaderboardPosition() {
+                const leaderboardElement = document.getElementById('leaderboardPosition');
+
+                // Check if leaderboard display is disabled via URL parameter
+                if (!this.showLeaderboard) {
+                    leaderboardElement.style.display = 'none';
+                    console.log('🏆 Leaderboard masqué (show_leaderboard=false)');
+                    return;
+                }
+
+                if (!this.currentLeaderboardData) {
+                    // Hide the leaderboard position if no data
+                    leaderboardElement.style.display = 'none';
+                    return;
+                }
+
+                // Show the leaderboard position if we have data
+                leaderboardElement.style.display = 'block';
+
+                // Update position display without animation if not animating
+                if (!this.isPositionAnimating) {
+                    // Add ~ prefix if it's an estimated position
+                    const prefix = this.currentLeaderboardData.estimated ? '~#' : '#';
+                    leaderboardElement.textContent = `${prefix}${this.currentLeaderboardData.leaderboard_rank.toLocaleString()}`;
+                }
+
+                const estimatedText = this.currentLeaderboardData.estimated ? ' (estimé)' : '';
+                console.log(`✅ Position leaderboard affichée: ~#${this.currentLeaderboardData.leaderboard_rank}${estimatedText}`);
+            }
+
+            async animatePositionChange(oldPosition, newPosition) {
+                if (this.isPositionAnimating) return;
+                this.isPositionAnimating = true;
+
+                const leaderboardElement = document.getElementById('leaderboardPosition');
+                if (!leaderboardElement) {
+                    this.isPositionAnimating = false;
+                    return;
+                }
+
+                // Remove any existing change indicator
+                const existingIndicator = leaderboardElement.querySelector('.position-change');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+
+                const change = oldPosition - newPosition; // Positive = moved up, negative = moved down
+                const changeElement = document.createElement('div');
+
+                if (change > 0) {
+                    changeElement.className = 'position-change up';
+                    changeElement.textContent = `↑${change}`;
+                } else {
+                    changeElement.className = 'position-change down';
+                    changeElement.textContent = `↓${Math.abs(change)}`;
+                }
+
+                leaderboardElement.appendChild(changeElement);
+
+                // Animate the position number counting
+                const difference = newPosition - oldPosition;
+                const steps = Math.min(Math.abs(difference), 100); // Limit steps
+                const stepSize = difference / steps;
+                const stepDelay = 20; // ms between each step
+
+                // Store original text content structure
+                const originalText = leaderboardElement.textContent;
+
+                for (let i = 0; i <= steps; i++) {
+                    const currentPosition = Math.round(oldPosition + (stepSize * i));
+                    // Update text content and add change indicator
+                    leaderboardElement.innerHTML = `#${currentPosition}`;
+                    leaderboardElement.appendChild(changeElement);
+
+                    if (i < steps) {
+                        await new Promise(resolve => setTimeout(resolve, stepDelay));
+                    }
+                }
+
+                // Remove the indicator after animation completes
+                setTimeout(() => {
+                    if (changeElement.parentNode) {
+                        changeElement.remove();
+                    }
+                }, 3000);
+
+                this.isPositionAnimating = false;
+                console.log(`📈 Changement de position: #${oldPosition} → #${newPosition} (${change > 0 ? '+' : ''}${change})`);
+            }
+
+            async animatePositionChange_OLD(oldPosition, newPosition) {
+                if (this.isPositionAnimating) return;
+                this.isPositionAnimating = true;
+
+                const leaderboardElement = document.getElementById('leaderboardPosition');
+
+                // Calculate animation parameters
+                const difference = newPosition - oldPosition;
+                const steps = Math.min(Math.abs(difference), 100); // Limit steps for very large changes
+                const stepSize = difference / steps;
+                const stepDelay = 20; // ms between each step
+
+                console.log(`🎬 Animating position from ${oldPosition} to ${newPosition} in ${steps} steps`);
+
+                // Animate position counting
+                for (let i = 0; i <= steps; i++) {
+                    const currentPosition = Math.round(oldPosition + (stepSize * i));
+                    // Add ~ prefix if it's an estimated position
+                    const prefix = this.currentLeaderboardData && this.currentLeaderboardData.estimated ? '~#' : '#';
+                    leaderboardElement.textContent = `${prefix}${currentPosition.toLocaleString()}`;
+
+                    if (i < steps) {
+                        await new Promise(resolve => setTimeout(resolve, stepDelay));
+                    }
+                }
+
+                // Show change indicator after animation completes
+                this.showPositionChangeIndicator(oldPosition, newPosition);
+
+                this.isPositionAnimating = false;
+            }
+
+            showPositionChangeIndicator(oldPosition, newPosition) {
+                const leaderboardElement = document.getElementById('leaderboardPosition');
+
+                // Remove any existing change indicator
+                const existingIndicator = leaderboardElement.querySelector('.position-change');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+
+                const change = oldPosition - newPosition; // Positive = moved up, negative = moved down
+                const changeElement = document.createElement('div');
+
+                if (change > 0) {
+                    changeElement.className = 'position-change up';
+                    changeElement.textContent = `↑${change}`;
+                } else {
+                    changeElement.className = 'position-change down';
+                    changeElement.textContent = `↓${Math.abs(change)}`;
+                }
+
+                leaderboardElement.appendChild(changeElement);
+
+                // Remove the indicator after animation completes
+                setTimeout(() => {
+                    if (changeElement.parentNode) {
+                        changeElement.remove();
+                    }
+                }, 3000);
+
+                console.log(`📈 Changement de position: #${oldPosition} → #${newPosition} (${change > 0 ? '+' : ''}${change})`);
+            }
+
+            async fetchBothAPIs() {
+                console.log('🔄 Début de la mise à jour des deux APIs...');
+
+                // Fetch rank data first
+                await this.fetchRealRankData();
+
+                // Skip leaderboard fetching if disabled via URL parameter
+                if (!this.showLeaderboard) {
+                    console.log('🏆 Récupération du leaderboard désactivée (show_leaderboard=false)');
+                    this.currentLeaderboardData = null;
+                    this.displayLeaderboardPosition();
+                    return;
+                }
+
+                // Vérifier immédiatement si le joueur est dans le leaderboard
+                if (this.currentRankData && this.currentRankData.tier < 24) {
+                    console.log(`❌ Rang trop bas pour le leaderboard (tier ${this.currentRankData.tier}), pas besoin de chercher dans le leaderboard`);
+                    this.currentLeaderboardData = null;
+                    this.displayLeaderboardPosition(); // Cache immédiatement
+                    return;
+                }
+
+                // Wait a bit, then fetch leaderboard data only if needed
+                setTimeout(async () => {
+                    await this.fetchLeaderboardData();
+                }, 2000); // 2 second delay between API calls
+            }
+
+            async fetchLeaderboardData() {
+                try {
+                    console.log('🏆 Début de la recherche dans le leaderboard...');
+
+                    // Check if player is high enough rank to be on leaderboard (Immortal 1+ = tier 24+)
+                    const currentTier = this.currentRankData.tier;
+                    if (currentTier < 24) {
+                        console.log(`❌ Rang trop bas pour le leaderboard (tier ${currentTier}), minimum Immortal 1 (tier 24)`);
+                        this.currentLeaderboardData = null;
+                        this.displayLeaderboardPosition();
+                        return;
+                    }
+
+                    const apiUrl = `https://api.henrikdev.xyz/valorant/v3/leaderboard/${this.apiRegion}/${this.apiPlatform}?size=15000&api_key=${this.apiKey}`;
+                    console.log('🌐 URL API Leaderboard:', apiUrl);
+
+                    console.log('📡 Envoi de la requête vers l\'API Leaderboard...');
+                    const response = await fetch(apiUrl);
+
+                    console.log('📋 Statut de la réponse Leaderboard:', response.status, response.statusText);
+
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+                    }
+
+                    console.log('📦 Parsing du JSON Leaderboard...');
+                    const json = await response.json();
+                    console.log('📄 Réponse de l\'API Leaderboard reçue, calcul de la position approximative...');
+
+                    if (!json.data || !json.data.players || !Array.isArray(json.data.players)) {
+                        throw new Error('Format de données invalide reçu de l\'API Leaderboard');
+                    }
+
+                    // Use RR to estimate position instead of searching by name
+                    const currentRR = this.currentRankData.rr;
+
+                    console.log(`🔍 Estimation de la position pour ${currentRR} RR (tier ${currentTier})...`);
+
+                    // Find approximate position based on RR
+                    let estimatedPosition = this.estimatePositionFromRR(json.data.players, currentRR, currentTier);
+
+                    if (!estimatedPosition) {
+                        console.log(`❌ Impossible d'estimer la position pour ${currentRR} RR`);
+                        this.currentLeaderboardData = null;
+                        this.displayLeaderboardPosition();
+                        return;
+                    }
+
+                    console.log(`🎯 Position estimée: ~#${estimatedPosition} pour ${currentRR} RR`);
+
+                    // Create fake leaderboard data with estimated position
+                    const estimatedLeaderboardData = {
+                        leaderboard_rank: estimatedPosition,
+                        rr: currentRR,
+                        tier: currentTier,
+                        name: this.playerName,
+                        tag: this.playerTag,
+                        estimated: true // Flag to show it's estimated
+                    };
+
+                    // Check for position change
+                    const oldPosition = this.currentLeaderboardData ? this.currentLeaderboardData.leaderboard_rank : null;
+                    const newPosition = estimatedPosition;
+
+                    this.currentLeaderboardData = estimatedLeaderboardData;
+
+                    // If position changed, animate the change
+                    if (oldPosition !== null && oldPosition !== newPosition) {
+                        console.log(`🎬 Animation position leaderboard: ${oldPosition} → ~${newPosition}`);
+                        await this.animatePositionChange(oldPosition, newPosition);
+                    } else {
+                        // Just update the display without animation
+                        this.displayLeaderboardPosition();
+                    }
+
+                    this.previousPosition = newPosition;
+                    await this.saveLeaderboardData();
+
+                    console.log('🎉 Mise à jour du leaderboard (estimé) terminée avec succès!');
+
+                } catch (error) {
+                    console.error('❌ Erreur dans fetchLeaderboardData:', error);
+                    // Clear leaderboard data and hide position on error
+                    this.currentLeaderboardData = null;
+                    this.displayLeaderboardPosition();
+                }
+            }            estimatePositionFromRR(players, targetRR, targetTier) {
+                console.log(`🔍 Debug: Recherche pour ${targetRR} RR exact (tier ${targetTier})`);
+
+                // Filter players with the same tier or higher
+                const relevantPlayers = players.filter(player => {
+                    // For same tier, use EXACT RR comparison
+                    if (player.tier === targetTier) {
+                        return player.rr >= targetRR;
+                    }
+                    // For higher tiers, include all
+                    return player.tier > targetTier;
+                });
+
+                console.log(`🔍 Debug: ${relevantPlayers.length} joueurs trouvés avec RR >= ${targetRR} ou tier supérieur`);
+
+                // If ALL players have higher RR (but we need to check for equal RR too)
+                const playersWithHigherRR = players.filter(player => {
+                    if (player.tier === targetTier) {
+                        return player.rr > targetRR;
+                    }
+                    return player.tier > targetTier;
+                });
+
+                // If ALL 15,000 players have STRICTLY higher RR, the player is not in leaderboard
+                if (playersWithHigherRR.length >= players.length) {
+                    console.log(`❌ Debug: Tous les ${players.length} joueurs du leaderboard ont un RR strictement supérieur`);
+                    console.log(`❌ Debug: Le joueur avec ${targetRR} RR n'est pas dans le top ${players.length}`);
+                    return null; // Player not in leaderboard
+                }
+
+                // If we have players with higher or equal RR in same tier, or higher tiers
+                if (relevantPlayers.length > 0) {
+                    // Find the BEST position (lowest rank number) among players with same/higher RR
+                    const bestPosition = Math.min(...relevantPlayers.map(player => player.leaderboard_rank));
+
+                    // For same RR, take the best position; for higher RR, estimate one position after
+                    const playersWithExactSameRR = relevantPlayers.filter(player =>
+                        player.tier === targetTier && player.rr === targetRR
+                    );
+
+                    console.log(`🔍 Debug: ${playersWithExactSameRR.length} joueurs avec exactement ${targetRR} RR`);
+
+                    if (playersWithExactSameRR.length > 0) {
+                        // Take the MIDDLE position among players with exact same RR
+                        const positions = playersWithExactSameRR.map(player => player.leaderboard_rank).sort((a, b) => a - b);
+                        const highestRank = positions[0]; // Best position (lowest number)
+                        const lowestRank = positions[positions.length - 1]; // Worst position (highest number)
+                        const middlePosition = Math.round((highestRank + lowestRank) / 2);
+
+                        console.log(`🎯 Debug: ${playersWithExactSameRR.length} joueurs avec ${targetRR} RR - Positions: #${highestRank} à #${lowestRank}`);
+                        console.log(`🎯 Debug: Position du milieu calculée: #${middlePosition}`);
+                        return middlePosition;
+                    } else {
+                        // Calculate how many players would be ahead of us
+                        const playersAhead = relevantPlayers.length;
+                        const estimatedPosition = playersAhead + 1;
+
+                        // Check if this position would be outside the leaderboard
+                        if (estimatedPosition > players.length) {
+                            console.log(`❌ Debug: Position estimée ${estimatedPosition} > taille leaderboard ${players.length}`);
+                            return null; // Player not in leaderboard
+                        }
+
+                        console.log(`🎯 Debug: Position estimée basée sur ${playersAhead} joueurs devant: #${estimatedPosition}`);
+                        return estimatedPosition;
+                    }
+                }
+
+                // If no players found with higher RR/tier, estimate based on pattern
+                // Find players in the same tier
+                const sameTierPlayers = players.filter(player => player.tier === targetTier);
+                console.log(`🔍 Debug: ${sameTierPlayers.length} joueurs dans le même tier ${targetTier}`);
+
+                if (sameTierPlayers.length > 0) {
+                    // Sort by RR descending, then by rank ascending (best rank first)
+                    sameTierPlayers.sort((a, b) => {
+                        if (b.rr !== a.rr) return b.rr - a.rr; // Higher RR first
+                        return a.leaderboard_rank - b.leaderboard_rank; // Better rank first for same RR
+                    });
+
+                    // Log some sample players for debugging
+                    console.log(`🔍 Debug: Premiers joueurs du tier:`, sameTierPlayers.slice(0, 5).map(p => `${p.rr}RR #${p.leaderboard_rank}`));
+                    console.log(`🔍 Debug: Derniers joueurs du tier:`, sameTierPlayers.slice(-5).map(p => `${p.rr}RR #${p.leaderboard_rank}`));
+
+                    // Find where our RR would fit
+                    for (let i = 0; i < sameTierPlayers.length; i++) {
+                        if (targetRR >= sameTierPlayers[i].rr) {
+                            if (targetRR === sameTierPlayers[i].rr) {
+                                // Same RR - take the MIDDLE position among players with this RR
+                                const sameRRPlayers = sameTierPlayers.filter(p => p.rr === targetRR);
+                                const positions = sameRRPlayers.map(p => p.leaderboard_rank).sort((a, b) => a - b);
+                                const highestRank = positions[0]; // Best position (lowest number)
+                                const lowestRank = positions[positions.length - 1]; // Worst position (highest number)
+                                const middlePosition = Math.round((highestRank + lowestRank) / 2);
+
+                                console.log(`🎯 Debug: ${sameRRPlayers.length} joueurs avec ${targetRR} RR - Positions: #${highestRank} à #${lowestRank}`);
+                                console.log(`🎯 Debug: Position du milieu pour RR identique: #${middlePosition}`);
+                                return middlePosition;
+                            } else {
+                                // Higher RR - estimate position just before this player
+                                const position = Math.max(1, sameTierPlayers[i].leaderboard_rank - 1);
+                                console.log(`🎯 Debug: Position estimée avant joueur avec ${sameTierPlayers[i].rr}RR: #${position}`);
+                                return position;
+                            }
+                        }
+                    }
+
+                    // If RR is lower than all in tier, check if we'd still be in leaderboard
+                    const lastPlayer = sameTierPlayers[sameTierPlayers.length - 1];
+                    const worstPosition = lastPlayer.leaderboard_rank;
+
+                    // If the worst player in our tier is already at the edge of leaderboard
+                    if (worstPosition >= players.length - 100) { // Give some buffer
+                        console.log(`❌ Debug: RR ${targetRR} trop bas, dernier joueur tier ${targetTier} déjà en position ${worstPosition}/${players.length}`);
+                        return null; // Player not in leaderboard
+                    }
+
+                    const position = worstPosition + Math.max(10, (lastPlayer.rr - targetRR) * 10);
+                    if (position > players.length) {
+                        console.log(`❌ Debug: Position estimée ${position} > taille leaderboard ${players.length}`);
+                        return null; // Player not in leaderboard
+                    }
+
+                    console.log(`🎯 Debug: Position estimée après dernier joueur (${lastPlayer.rr}RR): #${position}`);
+                    return position;
+                }
+
+                // Fallback estimation if no same tier players found
+                console.log(`❌ Debug: Aucun joueur trouvé dans le tier ${targetTier}, joueur probablement hors leaderboard`);
+                return null; // Player not in leaderboard
+            }
+
+            showChangeIndicator(changeValue) {
+                const rrDisplay = document.getElementById('rrDisplay');
+
+                // Remove any existing change indicator
+                const existingIndicator = rrDisplay.querySelector('.rr-change');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+
+                // Create new change indicator
+                const changeElement = document.createElement('div');
+                changeElement.className = `rr-change ${changeValue > 0 ? 'positive' : 'negative'}`;
+                changeElement.textContent = changeValue > 0 ? `+${changeValue}` : `${changeValue}`;
+
+                rrDisplay.appendChild(changeElement);
+
+                // Remove the indicator after animation completes
+                setTimeout(() => {
+                    if (changeElement.parentNode) {
+                        changeElement.remove();
+                    }
+                }, 2000);
+            }
+
+            displayError(message) {
+                const rankIcon = document.getElementById('rankIcon');
+                const rrDisplay = document.getElementById('rrDisplay');
+
+                // Don't show loading state, keep current data
+                console.error('❌ Erreur:', message);
+            }
+
+            // Méthode pour intégrer l'API Riot Games
+            async fetchRealRankData() {
+                try {
+                    console.log('🚀 Début de fetchRealRankData...');
+                    console.log('👤 Joueur:', this.playerName, '/', this.playerTag);
+
+                    // Validate configuration before making API call
+                    if (!this.validateConfiguration()) {
+                        throw new Error('Configuration invalide');
+                    }
+
+                    const apiUrl = `https://api.henrikdev.xyz/valorant/v3/mmr/${this.apiRegion}/${this.apiPlatform}/${this.playerName}/${this.playerTag}?api_key=${this.apiKey}`;
+                    console.log('🌐 URL API:', apiUrl);
+
+                    console.log('📡 Envoi de la requête vers l\'API...');
+                    const response = await fetch(apiUrl);
+
+                    console.log('📋 Statut de la réponse:', response.status, response.statusText);
+                    console.log('📋 Headers de la réponse:', Object.fromEntries(response.headers.entries()));
+
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+                    }
+
+                    console.log('📦 Parsing du JSON...');
+                    const json = await response.json();
+                    console.log('📄 Réponse complète de l\'API:', json);
+
+                    if (!json.data) {
+                        console.error('❌ Pas de données dans la réponse:', json);
+                        throw new Error('Aucune donnée reçue de l\'API');
+                    }
+
+                    const data = json.data;
+                    console.log('🎯 Données du joueur:', data);
+
+                    // Store old values for animation and comparison
+                    const oldRR = this.currentRankData.rr;
+                    const oldTier = this.currentRankData.tier;
+                    const newRR = data.current.rr;
+                    const newTier = data.current.tier.id;
+                    const changeValue = data.current.last_change;
+
+                    // Mettre à jour les données internes (API v3 structure)
+                    this.currentRankData = {
+                        rank: data.current.tier.name,
+                        rr: newRR,
+                        tier: newTier
+                    };
+
+                    console.log('✅ Données de rang mises à jour:', this.currentRankData);
+
+                    // Update rank image immediately if tier changed
+                    if (oldTier !== newTier) {
+                        console.log(`🏆 Changement de rang détecté: ${oldTier} → ${newTier}`);
+                        this.updateRankImage();
+                    }
+
+                    // Update display with animation if RR changed
+                    if (oldRR !== newRR) {
+                        console.log(`🎬 Animation RR: ${oldRR} → ${newRR} (change: ${changeValue})`);
+                        await this.animateRRChange(oldRR, newRR, changeValue);
+                    } else {
+                        // Just update the display without animation
+                        this.displayCurrentRank();
+                    }
+
+                    // Sauvegarder les nouvelles données
+                    await this.saveRankData();
+
+                    console.log('🎉 fetchRealRankData terminé avec succès!');
+                    return true;
+
+                } catch (error) {
+                    console.error('❌ Erreur dans fetchRealRankData:', error);
+                    console.error('📊 Stack trace:', error.stack);
+                    this.displayError('Erreur API');
+                    return false;
+                }
+            }
+}
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🚀 Démarrage du widget Valorant Rank avec système de commandes...');
+        const widget = new ValorantRankWidget();
+
+        // Make widget globally accessible for testing
+        window.valorantWidget = widget;
+        console.log('🔧 Widget accessible via window.valorantWidget pour les tests');
+
+        // Le widget gérera automatiquement l'affichage des données dans son init()
+    });
+    </script>
+</body>
+</html>

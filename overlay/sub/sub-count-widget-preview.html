@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sub Count Widget Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(145,70,255,.15), transparent 40%),
+                        radial-gradient(1200px 600px at 110% 10%, rgba(54,209,220,.12), transparent 40%),
+                        #0e0f14;
+        }
+
+        body {
+            font-family: var(--custom-font, Arial, sans-serif);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #sub-count-container {
+            text-align: center;
+            width: 100%;
+        }
+
+        .sub-count-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+        }
+
+        .sub-count-display .goal-number {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .sub-count-display .goal-number.achieved {
+            animation: goalAchieved 0.6s ease;
+        }
+
+        @keyframes goalAchieved {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); color: #00ff88; }
+        }
+
+        .sub-count-display .goal-text {
+            display: inline-block;
+            transition: opacity 0.5s ease;
+        }
+
+        .sub-count-display .goal-text.changing {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="sub-count-container">
+        <div id="sub-count-display" class="sub-count-display">0</div>
+    </div>
+
+    <script>
+        class SubCountPreviewWidget {
+            constructor() {
+                // Parse URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                this.font = urlParams.get('font') || 'Arial';
+                const goalsParam = urlParams.get('goals') || '25:24h stream,50:something else';
+
+                // Apply font
+                this.applyFont(this.font);
+
+                // Parse goals
+                this.goals = this.parseGoals(goalsParam);
+                this.currentGoalIndex = 0;
+                this.achievedGoals = new Set(); // Track achieved goals
+
+                // State
+                this.currentCount = 10; // Start at 10
+                this.countDisplay = document.getElementById('sub-count-display');
+
+                // Initial display
+                this.updateDisplayText(this.currentCount, false);
+
+                // Start preview cycle
+                this.startPreviewCycle();
+            }
+
+            parseGoals(goalsParam) {
+                if (!goalsParam) return [{ number: 25, text: '24h stream' }];
+
+                // Support old format: single number
+                if (/^\d+$/.test(goalsParam.trim())) {
+                    return [{ number: parseInt(goalsParam), text: 'subgoal' }];
+                }
+
+                // New format: "3:24 h stream,10:something else"
+                const goals = [];
+                const parts = goalsParam.split(',');
+
+                for (const part of parts) {
+                    const [numberStr, ...textParts] = part.split(':');
+                    const number = parseInt(numberStr.trim());
+                    const text = textParts.join(':').trim() || 'subgoal';
+
+                    if (!isNaN(number) && number > 0) {
+                        goals.push({ number, text });
+                    }
+                }
+
+                // Sort by number (ascending)
+                return goals.sort((a, b) => a.number - b.number);
+            }
+
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    fontFamily = fontName;
+                } else {
+                    fontFamily = `'${fontName}'`;
+                }
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            }
+
+            getCurrentGoal(count = null) {
+                if (this.goals.length === 0) return null;
+
+                const checkCount = count !== null ? count : this.currentCount;
+
+                // Find the first goal that hasn't been achieved yet
+                // Once a goal is achieved, we never go back to it
+                for (let i = 0; i < this.goals.length; i++) {
+                    if (!this.achievedGoals.has(this.goals[i].number)) {
+                        this.currentGoalIndex = i;
+                        return this.goals[i];
+                    }
+                }
+
+                // All goals achieved, show the last one
+                this.currentGoalIndex = this.goals.length - 1;
+                return this.goals[this.currentGoalIndex];
+            }
+
+            async animateCount(from, to, duration = 800) {
+                return new Promise((resolve) => {
+                    const steps = Math.abs(to - from);
+                    if (steps === 0) {
+                        resolve();
+                        return;
+                    }
+
+                    const minStepDuration = 50;
+                    const maxStepDuration = 200;
+                    const totalDuration = Math.min(duration, steps * maxStepDuration);
+                    const stepDuration = Math.max(minStepDuration, totalDuration / steps);
+
+                    let current = from;
+                    const increment = to > from ? 1 : -1;
+
+                    const interval = setInterval(() => {
+                        current += increment;
+                        this.updateDisplayText(current, false);
+
+                        if ((increment > 0 && current >= to) || (increment < 0 && current <= to)) {
+                            clearInterval(interval);
+                            this.currentCount = to;
+                            this.updateDisplayText(to, false);
+                            resolve();
+                        }
+                    }, stepDuration);
+                });
+            }
+
+            checkGoalAchievement(oldCount, newCount) {
+                if (this.goals.length === 0) return;
+
+                // Check all goals to see if any were just achieved
+                for (const goal of this.goals) {
+                    // If goal was just achieved (crossed the threshold)
+                    if (oldCount < goal.number && newCount >= goal.number && !this.achievedGoals.has(goal.number)) {
+                        console.log(`🎉 Objectif atteint: ${goal.number} - ${goal.text}`);
+                        this.achievedGoals.add(goal.number); // Mark as achieved permanently
+                        this.animateGoalAchievement();
+                        break; // Only animate once per achievement
+                    }
+                }
+            }
+
+            async animateGoalAchievement() {
+                const goalNumberEl = this.countDisplay.querySelector('.goal-number');
+                const goalTextEl = this.countDisplay.querySelector('.goal-text');
+
+                if (goalNumberEl) {
+                    goalNumberEl.classList.add('achieved');
+                    setTimeout(() => {
+                        goalNumberEl.classList.remove('achieved');
+                    }, 600);
+                }
+
+                if (goalTextEl) {
+                    goalTextEl.classList.add('changing');
+                    setTimeout(() => {
+                        this.updateDisplayText(this.currentCount, false);
+                        goalTextEl.classList.remove('changing');
+                    }, 500);
+                } else {
+                    this.updateDisplayText(this.currentCount, false);
+                }
+            }
+
+            updateDisplayText(count, checkAchievement = true) {
+                const oldCount = this.currentCount;
+
+                if (checkAchievement) {
+                    this.currentCount = count;
+                }
+
+                if (checkAchievement && oldCount !== count) {
+                    this.checkGoalAchievement(oldCount, count);
+                }
+
+                const displayCount = checkAchievement ? this.currentCount : count;
+                const currentGoal = this.getCurrentGoal(displayCount);
+
+                if (currentGoal) {
+                    const formattedCount = displayCount.toLocaleString('fr-FR');
+                    const formattedGoal = currentGoal.number.toLocaleString('fr-FR');
+                    this.countDisplay.innerHTML = `${formattedCount}/<span class="goal-number">${formattedGoal}</span> <span class="goal-text">${currentGoal.text}</span>`;
+                } else {
+                    const formattedCount = displayCount.toLocaleString('fr-FR');
+                    this.countDisplay.textContent = formattedCount;
+                }
+            }
+
+            async startPreviewCycle() {
+                // Wait a bit before starting
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Cycle 1: 10 -> 25 (reach first goal)
+                console.log('📈 Cycle 1: 10 -> 25');
+                await this.animateCount(10, 25);
+                this.checkGoalAchievement(24, 25);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Cycle 2: 25 -> 24 (go back, but keep goal after 25)
+                console.log('📉 Cycle 2: 25 -> 24');
+                await this.animateCount(25, 24);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Cycle 3: 24 -> 40 (go to next goal)
+                console.log('📈 Cycle 3: 24 -> 40');
+                await this.animateCount(24, 40);
+                this.checkGoalAchievement(39, 40);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Cycle 4: 40 -> 50 (reach second goal)
+                console.log('📈 Cycle 4: 40 -> 50');
+                await this.animateCount(40, 50);
+                this.checkGoalAchievement(49, 50);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Reset and loop (but keep achieved goals)
+                console.log('🔄 Reset: 50 -> 10');
+                this.currentCount = 10;
+                // Don't reset currentGoalIndex or achievedGoals - keep progress
+                this.updateDisplayText(10, false);
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Loop
+                this.startPreviewCycle();
+            }
+        }
+
+        // Initialize widget when page loads
+        let subCountPreviewWidget;
+        window.addEventListener('DOMContentLoaded', () => {
+            subCountPreviewWidget = new SubCountPreviewWidget();
+            window.subCountPreviewWidget = subCountPreviewWidget;
+        });
+    </script>
+</body>
+</html>
