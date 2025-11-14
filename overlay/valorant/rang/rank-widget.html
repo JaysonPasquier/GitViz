@@ -451,8 +451,8 @@
                     return false;
                 }
 
-                // Check if API key is provided
-                if (!this.apiKey || this.apiKey === 'HDEV-6e8ce2b6-0be9-4653-81f6-ee2f4faf32a4') {
+                // Check if API key is provided and not the default value
+                if (!this.apiKey || this.apiKey === 'api_key' || this.apiKey.trim() === '') {
                     console.error('❌ Clé API manquante ou clé par défaut utilisée');
                     this.showConfigurationError('Clé API manquante ou clé par défaut utilisée');
                     return false;
