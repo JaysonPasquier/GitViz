@@ -345,14 +345,15 @@
             previewParams.set('channel', vals.channel || 'streamer_channel');
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
-            if (vals.moderators) previewParams.set('moderators', vals.moderators);
-            if (vals.vips) previewParams.set('vips', vals.vips);
-            if (vals.twitch_client_id) previewParams.set('twitch_client_id', vals.twitch_client_id);
-            if (vals.twitch_auth_token) previewParams.set('twitch_auth_token', vals.twitch_auth_token);
-            if (vals.broadcaster_id) previewParams.set('broadcaster_id', vals.broadcaster_id);
+            if (vals.moderators && String(vals.moderators).trim()) previewParams.set('moderators', vals.moderators);
+            if (vals.vips && String(vals.vips).trim()) previewParams.set('vips', vals.vips);
+            if (vals.twitch_client_id && String(vals.twitch_client_id).trim()) previewParams.set('twitch_client_id', vals.twitch_client_id);
+            if (vals.twitch_auth_token && String(vals.twitch_auth_token).trim()) previewParams.set('twitch_auth_token', vals.twitch_auth_token);
+            if (vals.broadcaster_id && String(vals.broadcaster_id).trim()) previewParams.set('broadcaster_id', vals.broadcaster_id);
 
             const previewUrl = `overlay/chat/chat-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Chat preview URL:', previewUrl);
+            console.log('💬 Chat preview vals:', vals);
 
             const timestamp = Date.now();
             const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
