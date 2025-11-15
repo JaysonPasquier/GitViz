@@ -298,6 +298,7 @@
                 this.lastChange = null;
                 this.isAnimating = false;
                 this.isPositionAnimating = false;
+                this.needsRating = false;
 
                 // Mapping des rangs avec les images locales
                 this.rankImages = {
@@ -895,15 +896,17 @@
                     const savedData = localStorage.getItem(`valorant-rank-data-${this.playerName}-${this.playerTag}`);
                     if (savedData) {
                         const loadedData = JSON.parse(savedData);
+                        this.needsRating = loadedData.needsRating || false;
                         this.currentRankData = {
                             rank: loadedData.rank,
                             rr: loadedData.rr,
-                            tier: loadedData.tier
+                            tier: loadedData.tier,
+                            needsRating: this.needsRating
                         };
                         this.previousRR = loadedData.rr;
                         this.lastChange = loadedData.lastChange || null;
                         console.log('✅ Données de rang chargées depuis localStorage pour', this.playerName, this.playerTag, ':', this.currentRankData);
-                        return true; // Indicate we have saved data
+                        return true;
                     } else {
                         console.log('📄 Aucune donnée sauvegardée trouvée pour', this.playerName, this.playerTag, ', utilisation des données par défaut temporaires');
                         this.previousRR = this.currentRankData.rr;
@@ -923,6 +926,7 @@
                         rr: this.currentRankData.rr,
                         tier: this.currentRankData.tier,
                         lastChange: this.lastChange,
+                        needsRating: this.needsRating || this.currentRankData.needsRating || false,
                         lastUpdated: new Date().toISOString()
                     };
 
@@ -1059,7 +1063,12 @@
                 const rankIcon = document.getElementById('rankIcon');
                 const data = this.currentRankData;
 
-                // Mettre à jour l'icône de rang avec l'image correspondante
+                if (this.needsRating || (data.needsRating === true)) {
+                    rankIcon.innerHTML = `<img src="images/no-rank.png" alt="No Rank">`;
+                    console.log(`🖼️ Image no-rank affichée (rang non mis à jour)`);
+                    return;
+                }
+
                 const rankImagePath = this.rankImages[data.tier];
                 if (rankImagePath) {
                     rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
@@ -1074,10 +1083,18 @@
                 const rrDisplay = document.getElementById('rrDisplay');
                 const rankIcon = document.getElementById('rankIcon');
 
-                // Utiliser les données actuelles
                 const data = this.currentRankData;
 
-                // Mettre à jour l'icône de rang avec l'image correspondante
+                if (this.needsRating || (data.needsRating === true)) {
+                    rankIcon.innerHTML = `<img src="images/no-rank.png" alt="No Rank">`;
+                    rrDisplay.textContent = '';
+                    rrDisplay.style.display = 'none';
+                    console.log(`✅ Affichage mis à jour: No Rank (rang non mis à jour)`);
+                    return;
+                }
+
+                rrDisplay.style.display = 'block';
+
                 const rankImagePath = this.rankImages[data.tier];
                 if (rankImagePath) {
                     rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
@@ -1087,7 +1104,6 @@
                     console.log(`⚠️ Pas d'image trouvée pour le rang ${data.tier}`);
                 }
 
-                // Update RR display without animation if not changing
                 if (!this.isAnimating) {
                     rrDisplay.textContent = `${data.rr} RR`;
                 }
@@ -1533,6 +1549,22 @@
                     const data = json.data;
                     console.log('🎯 Données du joueur:', data);
 
+                    // Check if games_needed_for_rating exists and is > 0
+                    this.needsRating = data.games_needed_for_rating && data.games_needed_for_rating > 0;
+
+                    if (this.needsRating) {
+                        console.log(`⚠️ Rang non mis à jour - ${data.games_needed_for_rating} jeu(x) nécessaire(s) pour obtenir un nouveau rang`);
+                        this.currentRankData = {
+                            rank: 'No Rank',
+                            rr: 0,
+                            tier: 0,
+                            needsRating: true
+                        };
+                        this.displayCurrentRank();
+                        await this.saveRankData();
+                        return true;
+                    }
+
                     // Store old values for animation and comparison
                     const oldRR = this.currentRankData.rr;
                     const oldTier = this.currentRankData.tier;
@@ -1544,7 +1576,8 @@
                     this.currentRankData = {
                         rank: data.current.tier.name,
                         rr: newRR,
-                        tier: newTier
+                        tier: newTier,
+                        needsRating: false
                     };
 
                     console.log('✅ Données de rang mises à jour:', this.currentRankData);
