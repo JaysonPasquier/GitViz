@@ -289,13 +289,25 @@
                     'banned_user2'
                 ];
 
-                this.loadTwitchBadges();
+                const hasAllCredentials = this.channel &&
+                                         this.broadcasterId &&
+                                         this.twitchClientId &&
+                                         this.twitchAuthToken;
+
+                if (hasAllCredentials) {
+                    console.log('✅ Toutes les credentials sont présentes - utilisation des données réelles');
+                    this.loadTwitchBadges();
+                    this.startSharedChatCheck();
+                    this.startModerationCheck();
+                } else {
+                    console.log('⚠️ Credentials manquantes - certaines fonctionnalités seront désactivées');
+                    console.log(`   Channel: ${this.channel ? '✅' : '❌'}`);
+                    console.log(`   Broadcaster ID: ${this.broadcasterId ? '✅' : '❌'}`);
+                    console.log(`   Client ID: ${this.twitchClientId ? '✅' : '❌'}`);
+                    console.log(`   Auth Token: ${this.twitchAuthToken ? '✅' : '❌'}`);
+                }
 
                 this.loadSevenTVEmotes();
-
-                this.startSharedChatCheck();
-
-                this.startModerationCheck();
 
                 this.connectToTwitchChat();
 
@@ -395,11 +407,16 @@
             }
 
             async checkRecentModerations() {
+                if (!this.broadcasterId || !this.twitchClientId || !this.twitchAuthToken) {
+                    console.log('⚠️ Credentials manquants pour la vérification des modérations');
+                    return;
+                }
+
                 try {
-                    const response = await fetch(`https://api.twitch.tv/helix/moderation/banned?broadcaster_id=670947482&first=100`, {
+                    const response = await fetch(`https://api.twitch.tv/helix/moderation/banned?broadcaster_id=${this.broadcasterId}&first=100`, {
                         headers: {
-                            'Client-ID': 'gp762nuuoqcoxypju8c569th9wz7q5',
-                            'Authorization': 'Bearer xrugdtwxy33q6p1dw0tg3nlkehj422'
+                            'Client-ID': this.twitchClientId,
+                            'Authorization': `Bearer ${this.twitchAuthToken}`
                         }
                     });
 
@@ -482,6 +499,11 @@
             }
 
             async loadTwitchBadges() {
+                if (!this.broadcasterId || !this.twitchClientId || !this.twitchAuthToken) {
+                    console.log('⚠️ Credentials manquants pour le chargement des badges Twitch');
+                    return;
+                }
+
                 try {
                     console.log('🏷️ Chargement des badges Twitch...');
 
@@ -621,13 +643,20 @@
             }
 
             async checkSharedChat() {
+                if (!this.broadcasterId || !this.twitchClientId || !this.twitchAuthToken) {
+                    console.log('⚠️ Credentials manquants pour la vérification du chat partagé');
+                    this.isSharedChatActive = false;
+                    this.sharedChatParticipants.clear();
+                    return;
+                }
+
                 try {
                     console.log('🔍 Vérification du chat partagé...');
 
-                    const response = await fetch('https://api.twitch.tv/helix/shared_chat/session?broadcaster_id=140846786', {
+                    const response = await fetch(`https://api.twitch.tv/helix/shared_chat/session?broadcaster_id=${this.broadcasterId}`, {
                         headers: {
-                            'Authorization': 'Bearer xrugdtwxy33q6p1dw0tg3nlkehj422',
-                            'Client-Id': 'gp762nuuoqcoxypju8c569th9wz7q5'
+                            'Authorization': `Bearer ${this.twitchAuthToken}`,
+                            'Client-Id': this.twitchClientId
                         }
                     });
 

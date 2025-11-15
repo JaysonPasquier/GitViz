@@ -189,25 +189,50 @@
                 this.moderators = modsParam ? modsParam.split(',').map(m => m.trim().toLowerCase()) : [];
                 this.vips = vipsParam ? vipsParam.split(',').map(v => v.trim().toLowerCase()) : [];
 
+                const twitchClientIdParam = urlParams.get('twitch_client_id');
+                const twitchAuthTokenParam = urlParams.get('twitch_auth_token');
+                const broadcasterIdParam = urlParams.get('broadcaster_id');
+
+                this.twitchClientId = twitchClientIdParam || '';
+                this.twitchAuthToken = twitchAuthTokenParam || '';
+                this.broadcasterId = broadcasterIdParam || '';
+
                 // Apply font
                 this.applyFont(this.font);
 
-                // Mock messages data
-                this.mockMessages = [
-                    { nick: 'StreamerPro', text: 'Bienvenue dans le stream ! 🎮', badges: { broadcaster: true }, userColor: '#9146ff' },
-                    { nick: 'ViewerFan', text: 'Salut tout le monde !', badges: { subscriber: true, subscriberVersion: '12' } },
-                    { nick: 'GameMaster', text: 'Ce jeu a l\'air vraiment cool !', badges: { vip: true } },
-                    { nick: 'ChatUser', text: 'GG pour ce kill !', badges: {} },
-                    { nick: 'ModHelper', text: 'Rappelez-vous de suivre la chaîne !', badges: { moderator: true } },
-                    { nick: 'Subscriber1', text: 'Premier stream que je regarde et c\'est déjà incroyable !', badges: { subscriber: true, subscriberVersion: '3' } },
-                    { nick: 'Viewer2', text: 'Quel build tu utilises ?', badges: {} },
-                    { nick: 'VIPUser', text: 'Merci pour le stream !', badges: { vip: true } },
-                    { nick: 'FollowerOne', text: 'Je viens de follow, continue comme ça !', badges: {} },
-                    { nick: 'Subscriber2', text: 'Sub 6 mois aujourd\'hui !', badges: { subscriber: true, subscriberVersion: '6' } },
-                ];
+                // Check if all credentials are present
+                const hasAllCredentials = this.channel &&
+                                         this.broadcasterId &&
+                                         this.twitchClientId &&
+                                         this.twitchAuthToken;
 
-                // Start showing mock messages
-                this.startMockMessages();
+                if (hasAllCredentials) {
+                    console.log('✅ Toutes les credentials sont présentes - utilisation des données réelles du chat Twitch');
+                this.connectToTwitchChat();
+                    } else {
+                    console.log('⚠️ Credentials manquantes - utilisation des messages mockés');
+                    console.log(`   Channel: ${this.channel ? '✅' : '❌'}`);
+                    console.log(`   Broadcaster ID: ${this.broadcasterId ? '✅' : '❌'}`);
+                    console.log(`   Client ID: ${this.twitchClientId ? '✅' : '❌'}`);
+                    console.log(`   Auth Token: ${this.twitchAuthToken ? '✅' : '❌'}`);
+
+                    // Mock messages data
+                    this.mockMessages = [
+                        { nick: 'StreamerPro', text: 'Bienvenue dans le stream ! 🎮', badges: { broadcaster: true }, userColor: '#9146ff' },
+                        { nick: 'ViewerFan', text: 'Salut tout le monde !', badges: { subscriber: true, subscriberVersion: '12' } },
+                        { nick: 'GameMaster', text: 'Ce jeu a l\'air vraiment cool !', badges: { vip: true } },
+                        { nick: 'ChatUser', text: 'GG pour ce kill !', badges: {} },
+                        { nick: 'ModHelper', text: 'Rappelez-vous de suivre la chaîne !', badges: { moderator: true } },
+                        { nick: 'Subscriber1', text: 'Premier stream que je regarde et c\'est déjà incroyable !', badges: { subscriber: true, subscriberVersion: '3' } },
+                        { nick: 'Viewer2', text: 'Quel build tu utilises ?', badges: {} },
+                        { nick: 'VIPUser', text: 'Merci pour le stream !', badges: { vip: true } },
+                        { nick: 'FollowerOne', text: 'Je viens de follow, continue comme ça !', badges: {} },
+                        { nick: 'Subscriber2', text: 'Sub 6 mois aujourd\'hui !', badges: { subscriber: true, subscriberVersion: '6' } },
+                    ];
+
+                    // Start showing mock messages
+                    this.startMockMessages();
+                }
             }
 
             applyFont(fontName) {
@@ -345,6 +370,115 @@
                         messageIndex++;
                     }
                 }, 3000);
+            }
+
+            connectToTwitchChat() {
+                const socket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+
+                socket.onopen = () => {
+                    console.log(`✅ Connecté au chat Twitch de ${this.channel}`);
+                    socket.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+                    socket.send('PASS SCHMOOPIIE');
+                    socket.send('NICK justinfan12345');
+                    socket.send(`JOIN #${this.channel}`);
+                };
+
+                socket.onmessage = (event) => {
+                    const message = event.data;
+
+                    if (message.startsWith('PING')) {
+                        socket.send('PONG :tmi.twitch.tv');
+                        return;
+                    }
+
+                    this.parseIRCMessage(message);
+                };
+
+                socket.onerror = (error) => {
+                    console.error('❌ Erreur de connexion au chat Twitch:', error);
+                };
+
+                socket.onclose = () => {
+                    console.log('🔌 Connexion au chat Twitch fermée');
+            setTimeout(() => {
+                        console.log('🔄 Tentative de reconnexion...');
+                        this.connectToTwitchChat();
+            }, 5000);
+                };
+            }
+
+            parseIRCMessage(rawMessage) {
+                if (!rawMessage.includes('PRIVMSG')) return;
+
+                try {
+                    let username = 'Anonyme';
+                    const displayNameMatch = rawMessage.match(/display-name=([^;]*)/);
+                    if (displayNameMatch && displayNameMatch[1]) {
+                        username = displayNameMatch[1];
+                    } else {
+                        const fallbackMatch = rawMessage.match(/:([^!]+)!/);
+                        if (fallbackMatch) {
+                            username = fallbackMatch[1];
+                        }
+                    }
+
+                    const privmsgPattern = `PRIVMSG #${this.channel} :`;
+                    const privmsgIndex = rawMessage.indexOf(privmsgPattern);
+                    let messageText = '';
+
+                    if (privmsgIndex !== -1) {
+                        messageText = rawMessage.substring(privmsgIndex + privmsgPattern.length);
+                        messageText = messageText.replace(/\r\n?|\n/g, '');
+                    }
+
+                    const badges = this.extractBadges(rawMessage);
+                    let userColor = null;
+                    try {
+                        userColor = this.extractUserColor(rawMessage);
+            } catch (error) {
+                        userColor = null;
+                    }
+
+                    if (messageText.trim()) {
+                        this.addMessage({
+                        nick: username,
+                            text: messageText,
+                            badges: badges,
+                            userColor: userColor
+                        });
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors du parsing du message IRC:', error);
+                }
+            }
+
+            extractBadges(rawMessage) {
+                const badges = {};
+                const badgeMatch = rawMessage.match(/badges=([^;]*)/);
+                if (badgeMatch && badgeMatch[1]) {
+                    const badgeString = badgeMatch[1];
+                    if (badgeString.includes('broadcaster')) badges.broadcaster = true;
+                    if (badgeString.includes('moderator')) badges.moderator = true;
+                    if (badgeString.includes('vip')) badges.vip = true;
+                    if (badgeString.includes('subscriber')) {
+                        badges.subscriber = true;
+                        const subMatch = badgeString.match(/subscriber\/(\d+)/);
+                        if (subMatch) {
+                            badges.subscriberVersion = subMatch[1];
+                        }
+                    }
+                    if (badgeString.includes('premium')) badges.premium = true;
+                    if (badgeString.includes('partner')) badges.partner = true;
+                }
+                return badges;
+            }
+
+            extractUserColor(rawMessage) {
+                const colorMatch = rawMessage.match(/color=([^;]*)/);
+                if (colorMatch && colorMatch[1] && colorMatch[1] !== '') {
+                    return colorMatch[1];
+                }
+                return null;
             }
         }
 
