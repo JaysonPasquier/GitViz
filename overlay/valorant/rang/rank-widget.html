@@ -1550,10 +1550,10 @@
                     console.log('🎯 Données du joueur:', data);
 
                     // Check if games_needed_for_rating exists and is > 0
-                    this.needsRating = data.games_needed_for_rating && data.games_needed_for_rating > 0;
+                    this.needsRating = data.current.games_needed_for_rating && data.current.games_needed_for_rating > 0;
 
                     if (this.needsRating) {
-                        console.log(`⚠️ Rang non mis à jour - ${data.games_needed_for_rating} jeu(x) nécessaire(s) pour obtenir un nouveau rang`);
+                        console.log(`⚠️ Rang non mis à jour - ${data.current.games_needed_for_rating} jeu(x) nécessaire(s) pour obtenir un nouveau rang`);
                         this.currentRankData = {
                             rank: 'No Rank',
                             rr: 0,
