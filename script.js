@@ -347,6 +347,9 @@
             previewParams.set('font', fontValue);
             if (vals.moderators) previewParams.set('moderators', vals.moderators);
             if (vals.vips) previewParams.set('vips', vals.vips);
+            if (vals.twitch_client_id) previewParams.set('twitch_client_id', vals.twitch_client_id);
+            if (vals.twitch_auth_token) previewParams.set('twitch_auth_token', vals.twitch_auth_token);
+            if (vals.broadcaster_id) previewParams.set('broadcaster_id', vals.broadcaster_id);
 
             const previewUrl = `overlay/chat/chat-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Chat preview URL:', previewUrl);
