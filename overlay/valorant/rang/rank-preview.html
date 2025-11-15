@@ -475,15 +475,6 @@
                 console.log('🔄 Forçage de la mise à jour des données pour', this.playerName, this.playerTag);
 
                 try {
-                    this.currentRankData = {
-                        rank: 'Loading...',
-                        rr: 0,
-                        tier: 0
-                    };
-                    this.currentLeaderboardData = null;
-
-                    this.clearDisplay();
-
                     await this.fetchRealRankData();
 
                     setTimeout(async () => {
@@ -494,24 +485,6 @@
                 } catch (error) {
                     console.error('❌ Erreur lors du forçage de la mise à jour:', error);
                 }
-            }
-
-            clearDisplay() {
-                console.log('🧹 Nettoyage de l\'affichage...');
-
-                const rankIcon = document.getElementById('rankIcon');
-                const rrDisplay = document.getElementById('rrDisplay');
-                const leaderboardPosition = document.getElementById('leaderboardPosition');
-
-                rankIcon.innerHTML = '<div style="color: #888;">Loading...</div>';
-
-                rrDisplay.textContent = 'Loading...';
-
-                if (leaderboardPosition) {
-                    leaderboardPosition.style.display = 'none';
-                }
-
-                console.log('✅ Affichage nettoyé');
             }
 
             validateConfiguration() {
@@ -627,15 +600,6 @@
                 console.log('📡 Chargement des vraies données depuis l\'API...');
 
                 this.clearOldCachedData();
-
-                this.currentRankData = {
-                    rank: 'Loading...',
-                    rr: 0,
-                    tier: 0
-                };
-                this.currentLeaderboardData = null;
-
-                this.clearDisplay();
 
                 await this.loadRankData();
                 await this.loadLeaderboardData();
@@ -1283,15 +1247,24 @@
 
                 const rankImagePath = this.rankImages[data.tier];
                 if (rankImagePath) {
-                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
-                    console.log(`🖼️ Image de rang chargée: ${rankImagePath}`);
+                    const currentImage = rankIcon.querySelector('img');
+                    const currentImageSrc = currentImage ? currentImage.src : '';
+                    const newImageName = rankImagePath.split('/').pop();
+                    if (!currentImage || !currentImageSrc.includes(newImageName)) {
+                        rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
+                        console.log(`🖼️ Image de rang chargée: ${rankImagePath}`);
+                    }
                 } else {
                     rankIcon.innerHTML = `<div>${data.rank}</div>`;
                     console.log(`⚠️ Pas d'image trouvée pour le rang ${data.tier}`);
                 }
 
                 if (!this.isAnimating) {
-                    rrDisplay.textContent = `${data.rr} RR`;
+                    const currentRRText = rrDisplay.textContent.trim();
+                    const newRRText = `${data.rr} RR`;
+                    if (currentRRText !== newRRText) {
+                        rrDisplay.textContent = newRRText;
+                    }
                 }
 
                 console.log(`✅ Affichage mis à jour: ${data.rank} - ${data.rr} RR`);
