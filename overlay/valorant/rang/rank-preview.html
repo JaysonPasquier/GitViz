@@ -358,20 +358,29 @@
 
                 this.isOverlayVisible = true;
 
-                const initialState = this.previewStates[0];
-                this.currentRankData = {
-                    rank: initialState.rank,
-                    rr: initialState.rr,
-                    tier: initialState.tier
-                };
-                this.currentLeaderboardData = initialState.leaderboard ? {
-                    leaderboard_rank: initialState.leaderboard,
-                    estimated: false
-                } : null;
+                if (this.isPreviewMode) {
+                    const initialState = this.previewStates[0];
+                    this.currentRankData = {
+                        rank: initialState.rank,
+                        rr: initialState.rr,
+                        tier: initialState.tier
+                    };
+                    this.currentLeaderboardData = initialState.leaderboard ? {
+                        leaderboard_rank: initialState.leaderboard,
+                        estimated: false
+                    } : null;
+                } else {
+                    this.currentRankData = {
+                        rank: 'Ascendant 2',
+                        rr: 44,
+                        tier: 22
+                    };
+                    this.currentLeaderboardData = null;
+                }
 
                 this.previousPosition = null;
 
-                this.previousRR = initialState.rr;
+                this.previousRR = this.currentRankData.rr;
                 this.lastChange = null;
                 this.isAnimating = false;
                 this.isPositionAnimating = false;
