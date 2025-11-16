@@ -57,27 +57,28 @@ body {
 
 /* Hero */
 .hero { position: relative; padding: 96px 0 64px; overflow: hidden; }
-.h1 { font-size: clamp(28px, 6vw, 44px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.h1 { font-size: clamp(36px, 8vw, 56px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .github-stars {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.6em;
+    font-size: 16px;
     font-weight: 500;
     color: var(--muted);
-    margin-left: 8px;
+    margin-left: 12px;
 }
 .star-icon {
-    width: 1em;
-    height: 1em;
+    width: 18px;
+    height: 18px;
     stroke: currentColor;
     fill: none;
     stroke-width: 1.5;
     stroke-linejoin: round;
     stroke-linecap: round;
+    flex-shrink: 0;
 }
 .star-count {
-    font-size: 0.9em;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text);
 }
