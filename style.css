@@ -57,7 +57,30 @@ body {
 
 /* Hero */
 .hero { position: relative; padding: 96px 0 64px; overflow: hidden; }
-.h1 { font-size: clamp(28px, 6vw, 44px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.5px; }
+.h1 { font-size: clamp(28px, 6vw, 44px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.github-stars {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6em;
+    font-weight: 500;
+    color: var(--muted);
+    margin-left: 8px;
+}
+.star-icon {
+    width: 1em;
+    height: 1em;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+.star-count {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--text);
+}
 .lead { color: var(--muted); max-width: 760px; margin: 0 0 24px; }
 .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .hero-glow { position: absolute; inset: -20% -10% auto; height: 60%; pointer-events: none; background:

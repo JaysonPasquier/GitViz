@@ -424,6 +424,32 @@
         showTemplateSelection();
     }
 
+    const GITHUB_REPO = 'JaysonPasquier/GitViz';
+
+    async function fetchGitHubStars() {
+        try {
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch GitHub stats');
+            const data = await response.json();
+
+            const starsEl = document.querySelector('.star-count');
+            if (starsEl) {
+                starsEl.textContent = data.stargazers_count?.toLocaleString() || '0';
+            }
+        } catch (error) {
+            console.error('Error fetching GitHub stars:', error);
+            const starsEl = document.querySelector('.star-count');
+            if (starsEl) {
+                starsEl.textContent = '0';
+            }
+        }
+    }
+
+    fetchGitHubStars();
 })();
 
 
