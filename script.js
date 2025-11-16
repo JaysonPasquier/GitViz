@@ -424,37 +424,6 @@
         showTemplateSelection();
     }
 
-    const GITHUB_REPO = 'JaysonPasquier/GitViz';
-
-    async function fetchGitHubStats() {
-        try {
-            const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            });
-            if (!response.ok) throw new Error('Failed to fetch GitHub stats');
-            const data = await response.json();
-
-            const starsEl = document.getElementById('githubStars');
-            const forksEl = document.getElementById('githubForks');
-            const watchersEl = document.getElementById('githubWatchers');
-
-            if (starsEl) starsEl.textContent = data.stargazers_count?.toLocaleString() || '0';
-            if (forksEl) forksEl.textContent = data.forks_count?.toLocaleString() || '0';
-            if (watchersEl) watchersEl.textContent = data.watchers_count?.toLocaleString() || '0';
-        } catch (error) {
-            console.error('Error fetching GitHub stats:', error);
-            const starsEl = document.getElementById('githubStars');
-            const forksEl = document.getElementById('githubForks');
-            const watchersEl = document.getElementById('githubWatchers');
-            if (starsEl) starsEl.textContent = '0';
-            if (forksEl) forksEl.textContent = '0';
-            if (watchersEl) watchersEl.textContent = '0';
-        }
-    }
-
-    fetchGitHubStats();
 })();
 
 
