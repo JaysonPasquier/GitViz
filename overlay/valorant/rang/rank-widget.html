@@ -86,16 +86,16 @@
         }
 
         .rank-icon {
-            width: 60px;
-            height: 60px;
+            width: var(--rank-image-size, 60px);
+            height: var(--rank-image-size, 60px);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .rank-icon img {
-            width: 60px;
-            height: 60px;
+            width: var(--rank-image-size, 60px);
+            height: var(--rank-image-size, 60px);
             object-fit: contain;
         }
 
@@ -106,14 +106,14 @@
         }
 
         .leaderboard-position {
-            font-size: 24px;
+            font-size: var(--font-size-main, 24px);
             font-weight: bold;
             color: #ff6b6b;
             position: relative;
         }
 
         .rr-display {
-            font-size: 24px;
+            font-size: var(--font-size-main, 24px);
             font-weight: bold;
             color: #ffffff;
             position: relative;
@@ -123,7 +123,7 @@
             position: absolute;
             left: -80px;
             top: 0;
-            font-size: 20px;
+            font-size: var(--font-size-change, 20px);
             font-weight: bold;
             opacity: 0;
             transform: translateY(0);
@@ -143,7 +143,7 @@
             position: absolute;
             top: -30px;
             right: 0;
-            font-size: 16px;
+            font-size: var(--font-size-position, 16px);
             font-weight: bold;
             opacity: 0;
             transform: translateY(0);
@@ -175,7 +175,27 @@
         }
 
         .loading {
-            font-size: 16px;
+            font-size: var(--font-size-position, 16px);
+        }
+
+        /* Font effects */
+        .font-hollow {
+            -webkit-text-stroke: 2px;
+            -webkit-text-stroke-color: currentColor;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .font-border {
+            text-shadow:
+                -2px -2px 0 currentColor,
+                2px -2px 0 currentColor,
+                -2px 2px 0 currentColor,
+                2px 2px 0 currentColor,
+                0 -2px 0 currentColor,
+                0 2px 0 currentColor,
+                -2px 0 0 currentColor,
+                2px 0 0 currentColor;
         }
 
         .error {
@@ -250,6 +270,14 @@
                 const fontParam = urlParams.get('font') || 'Arial';
                 // Apply font immediately
                 this.applyFont(fontParam);
+
+                // Style configuration
+                this.fontSize = parseInt(urlParams.get('font_size')) || 24;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
+
+                // Apply styles immediately
+                this.applyStyles();
 
                 // Update interval (in milliseconds)
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 60000; // 1 minute default
@@ -477,6 +505,43 @@
                 }
             }
 
+            // Apply styles (font size, font effect, rank image size)
+            applyStyles() {
+                const root = document.documentElement;
+
+                // Apply font size
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+                root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
+                root.style.setProperty('--font-size-position', `${Math.max(8, this.fontSize - 8)}px`);
+
+                // Apply font effect
+                const rrDisplay = document.getElementById('rrDisplay');
+                const leaderboardPosition = document.getElementById('leaderboardPosition');
+
+                if (rrDisplay) {
+                    rrDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    rrDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+
+                if (leaderboardPosition) {
+                    leaderboardPosition.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    leaderboardPosition.classList.add(`font-${this.fontEffect}`);
+                }
+
+                // Apply rank image size
+                root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
+                const rankIcon = document.getElementById('rankIcon');
+                if (rankIcon) {
+                    rankIcon.style.width = `${this.rankImageSize}px`;
+                    rankIcon.style.height = `${this.rankImageSize}px`;
+                    const rankImage = rankIcon.querySelector('img');
+                    if (rankImage) {
+                        rankImage.style.width = `${this.rankImageSize}px`;
+                        rankImage.style.height = `${this.rankImageSize}px`;
+                    }
+                }
+            }
+
             // Apply font from parameter
             applyFont(fontName) {
                 if (!fontName) fontName = 'Arial';
@@ -521,7 +586,7 @@
                 console.log('✅ Détection des changements d\'URL configurée');
             }
 
-                        // Method to reload configuration from URL parameters (useful for testing)
+            // Method to reload configuration from URL parameters (useful for testing)
             reloadConfiguration() {
                 console.log('🔄 Rechargement de la configuration depuis les paramètres URL...');
 
@@ -549,6 +614,23 @@
                 // Update font if changed
                 const newFont = urlParams.get('font') || 'Arial';
                 this.applyFont(newFont);
+
+                // Update style configuration
+                const newFontSize = urlParams.get('font_size');
+                if (newFontSize) {
+                    this.fontSize = parseInt(newFontSize) || this.fontSize;
+                }
+                const newFontEffect = urlParams.get('font_effect');
+                if (newFontEffect) {
+                    this.fontEffect = newFontEffect;
+                }
+                const newRankImageSize = urlParams.get('rank_image_size');
+                if (newRankImageSize) {
+                    this.rankImageSize = parseInt(newRankImageSize) || this.rankImageSize;
+                }
+
+                // Reapply styles
+                this.applyStyles();
 
                 // Update Twitch configuration
                 this.twitchChannel = urlParams.get('channel') || this.twitchChannel;
@@ -1029,14 +1111,14 @@
                 const data = this.currentRankData;
 
                 if (this.needsRating || (data.needsRating === true)) {
-                    rankIcon.innerHTML = `<img src="images/no-rank.png" alt="No Rank">`;
+                    rankIcon.innerHTML = `<img src="images/no-rank.png" alt="No Rank" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
                     console.log(`🖼️ Image no-rank affichée (rang non mis à jour)`);
                     return;
                 }
 
                 const rankImagePath = this.rankImages[data.tier];
                 if (rankImagePath) {
-                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
                     console.log(`🖼️ Image de rang mise à jour instantanément: ${rankImagePath} (${data.rank})`);
                 } else {
                     rankIcon.innerHTML = `<div>${data.rank}</div>`;
@@ -1051,7 +1133,7 @@
                 const data = this.currentRankData;
 
                 if (this.needsRating || (data.needsRating === true)) {
-                    rankIcon.innerHTML = `<img src="images/no-rank.png" alt="No Rank">`;
+                    rankIcon.innerHTML = `<img src="images/no-rank.png" alt="No Rank" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
                     rrDisplay.textContent = '';
                     rrDisplay.style.display = 'none';
                     console.log(`✅ Affichage mis à jour: No Rank (rang non mis à jour)`);
@@ -1066,8 +1148,12 @@
                     const currentImageSrc = currentImage ? currentImage.src : '';
                     const newImageName = rankImagePath.split('/').pop();
                     if (!currentImage || !currentImageSrc.includes(newImageName)) {
-                        rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}">`;
+                        rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.rank}" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
                         console.log(`🖼️ Image de rang chargée: ${rankImagePath}`);
+                    } else {
+                        // Update size if image already exists
+                        currentImage.style.width = `${this.rankImageSize}px`;
+                        currentImage.style.height = `${this.rankImageSize}px`;
                     }
                 } else {
                     rankIcon.innerHTML = `<div>${data.rank}</div>`;

@@ -13,6 +13,52 @@
 */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+html {
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+}
+html::-webkit-scrollbar {
+    width: 12px;
+}
+html::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 12px 8px;
+    border-radius: 10px;
+}
+html::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--primary-600));
+    border-radius: 10px;
+    border: 2px solid var(--bg);
+    min-height: 40px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+html::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--primary-600), var(--primary));
+    border-color: color-mix(in srgb, var(--primary), transparent 50%);
+}
+body {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+body::-webkit-scrollbar {
+    width: 12px;
+}
+body::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 12px 8px;
+    border-radius: 10px;
+}
+body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), var(--primary-600));
+    border-radius: 10px;
+    border: 2px solid var(--bg);
+    min-height: 40px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--primary-600), var(--primary));
+    border-color: color-mix(in srgb, var(--primary), transparent 50%);
+}
 
 :root {
   --bg: #0e0f14;
@@ -66,19 +112,33 @@ body {
     font-weight: 500;
     color: var(--muted);
     margin-left: 12px;
+    margin-top: 1.5%;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.github-stars:hover {
+    color: var(--text);
+    transform: scale(1.05);
+}
+.github-stars:hover .star-icon {
+    fill: #fbbf24;
+    stroke: #fbbf24;
+}
+.github-stars:active {
+    transform: scale(0.98);
 }
 .star-icon {
-    width: 18px;
-    height: 18px;
+    width: 35px;
+    height: 35px;
+    flex: 0 0 auto;
     stroke: currentColor;
     fill: none;
     stroke-width: 1.5;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-    flex-shrink: 0;
+    transition: fill 0.2s ease, stroke 0.2s ease;
 }
 .star-count {
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--text);
 }
@@ -271,6 +331,25 @@ body {
 
 /* Form */
 .form-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+}
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+    display: inline-block;
+}
 .form-row { display: grid; gap: 8px; }
 .form-row.actions { justify-content: start; }
 label { font-size: 14px; color: var(--muted); }

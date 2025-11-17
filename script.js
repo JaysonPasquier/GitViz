@@ -13,75 +13,72 @@
     const $ = (sel, ctx=document) => ctx.querySelector(sel);
     const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
 
+    const FONT_OPTIONS = [
+        'Arial', 'Roboto', 'Montserrat', 'Open Sans', 'Poppins', 'Inter', 'Lato', 'Raleway',
+        'Oswald', 'Playfair Display', 'Merriweather', 'Ubuntu', 'Nunito', 'Source Sans Pro',
+        'Crimson Text', 'Libre Baskerville', 'PT Sans', 'PT Serif', 'Dancing Script', 'Pacifico',
+        'Bebas Neue', 'Anton', 'Fjalla One', 'Righteous', 'Bangers', 'Fredoka One',
+        'Comfortaa', 'Quicksand', 'Rubik', 'Work Sans', 'Space Grotesk', 'DM Sans',
+        'Manrope', 'Sora', 'Outfit', 'Plus Jakarta Sans', 'Figtree', 'Geist',
+        'JetBrains Mono', 'Fira Code', 'Courier New', 'Georgia', 'Times New Roman',
+        'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'
+    ];
+
     const TEMPLATES = {
         chat: {
             label: 'Chat',
             path: 'overlay/chat/chat-widget.html',
-            params: [
+            configParams: [
                 { key: 'channel', label: 'Canal Twitch', type: 'text', placeholder: 'ex: streamer_channel', required: true },
                 { key: 'twitch_client_id', label: 'Twitch Client ID', type: 'text', placeholder: 'Votre Client ID Twitch', required: true },
                 { key: 'twitch_auth_token', label: 'Twitch Auth Token', type: 'text', placeholder: 'Votre Token d\'authentification', required: true },
                 { key: 'broadcaster_id', label: 'Broadcaster ID', type: 'text', placeholder: 'Votre ID de diffuseur', required: true },
-                { key: 'font', label: 'Police', type: 'select', options: [
-                    'Arial', 'Roboto', 'Montserrat', 'Open Sans', 'Poppins', 'Inter', 'Lato', 'Raleway',
-                    'Oswald', 'Playfair Display', 'Merriweather', 'Ubuntu', 'Nunito', 'Source Sans Pro',
-                    'Crimson Text', 'Libre Baskerville', 'PT Sans', 'PT Serif', 'Dancing Script', 'Pacifico',
-                    'Bebas Neue', 'Anton', 'Fjalla One', 'Righteous', 'Bangers', 'Fredoka One',
-                    'Comfortaa', 'Quicksand', 'Rubik', 'Work Sans', 'Space Grotesk', 'DM Sans',
-                    'Manrope', 'Sora', 'Outfit', 'Plus Jakarta Sans', 'Figtree', 'Geist',
-                    'JetBrains Mono', 'Fira Code', 'Courier New', 'Georgia', 'Times New Roman',
-                    'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'
-                ], default: 'Arial' },
                 { key: 'moderators', label: 'Modérateurs (optionnel)', type: 'text', placeholder: 'user1,user2,user3' },
                 { key: 'vips', label: 'VIPs (optionnel)', type: 'text', placeholder: 'user1,user2' },
+            ],
+            styleParams: [
+                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
+                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 28 },
+                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
             ]
         },
         valorant: {
             label: 'Valorant',
             path: 'overlay/valorant/rang/rank-widget.html',
-            params: [
+            configParams: [
                 { key: 'name', label: 'Nom du joueur', type: 'text', placeholder: 'ex: ANAKINSKYWALKER', required: true },
                 { key: 'tag', label: 'Tag du joueur', type: 'text', placeholder: 'ex: HARR', required: true },
                 { key: 'api_key', label: 'Clé API', type: 'text', placeholder: 'Obtenez-la sur Discord', required: true },
                 { key: 'region', label: 'Région', type: 'select', options: ['eu', 'na', 'ap', 'kr', 'latam', 'br'], default: 'eu', required: true },
                 { key: 'platform', label: 'Plateforme', type: 'select', options: ['pc'], default: 'pc', required: true },
-                { key: 'font', label: 'Police', type: 'select', options: [
-                    'Arial', 'Roboto', 'Montserrat', 'Open Sans', 'Poppins', 'Inter', 'Lato', 'Raleway',
-                    'Oswald', 'Playfair Display', 'Merriweather', 'Ubuntu', 'Nunito', 'Source Sans Pro',
-                    'Crimson Text', 'Libre Baskerville', 'PT Sans', 'PT Serif', 'Dancing Script', 'Pacifico',
-                    'Bebas Neue', 'Anton', 'Fjalla One', 'Righteous', 'Bangers', 'Fredoka One',
-                    'Comfortaa', 'Quicksand', 'Rubik', 'Work Sans', 'Space Grotesk', 'DM Sans',
-                    'Manrope', 'Sora', 'Outfit', 'Plus Jakarta Sans', 'Figtree', 'Geist',
-                    'JetBrains Mono', 'Fira Code', 'Courier New', 'Georgia', 'Times New Roman',
-                    'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'
-                ], default: 'Arial' },
                 { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 2000, max: 300000, step: 1000, default: 3000 },
                 { key: 'show_leaderboard', label: 'Afficher leaderboard', type: 'select', options: ['true', 'false'], default: 'true' },
                 { key: 'channel', label: 'Canal Twitch (optionnel)', type: 'text', placeholder: 'ex: twitch_channel' },
                 { key: 'moderators', label: 'Modérateurs (optionnel)', type: 'text', placeholder: 'user1,user2,user3' },
                 { key: 'vips', label: 'VIPs (optionnel)', type: 'text', placeholder: 'user1,user2' },
+            ],
+            styleParams: [
+                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
+                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
+                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'rank_image_size', label: 'Taille de l\'image du rang (px)', type: 'number', min: 20, max: 200, step: 5, default: 60 },
             ]
         },
         sub: {
             label: 'Sub Goal',
             path: 'overlay/sub/sub-count-widget.html',
-            params: [
+            configParams: [
                 { key: 'broadcaster_id', label: 'Broadcaster ID', type: 'text', placeholder: 'Votre ID de diffuseur', required: true },
                 { key: 'access_token', label: 'Access Token', type: 'text', placeholder: 'Votre Token OAuth Twitch', required: true },
                 { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Twitch', required: true },
                 { key: 'channel', label: 'Canal Twitch', type: 'text', placeholder: 'ex: streamer_channel', required: true },
-                { key: 'font', label: 'Police', type: 'select', options: [
-                    'Arial', 'Roboto', 'Montserrat', 'Open Sans', 'Poppins', 'Inter', 'Lato', 'Raleway',
-                    'Oswald', 'Playfair Display', 'Merriweather', 'Ubuntu', 'Nunito', 'Source Sans Pro',
-                    'Crimson Text', 'Libre Baskerville', 'PT Sans', 'PT Serif', 'Dancing Script', 'Pacifico',
-                    'Bebas Neue', 'Anton', 'Fjalla One', 'Righteous', 'Bangers', 'Fredoka One',
-                    'Comfortaa', 'Quicksand', 'Rubik', 'Work Sans', 'Space Grotesk', 'DM Sans',
-                    'Manrope', 'Sora', 'Outfit', 'Plus Jakarta Sans', 'Figtree', 'Geist',
-                    'JetBrains Mono', 'Fira Code', 'Courier New', 'Georgia', 'Times New Roman',
-                    'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'
-                ], default: 'Arial' },
                 { key: 'goals', label: 'Objectifs (format: 3:24h stream,10:something else)', type: 'text', placeholder: '3:24h stream,10:something else' },
                 { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 10000, max: 300000, step: 1000, default: 30000 },
+            ],
+            styleParams: [
+                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
+                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 48 },
+                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
             ]
         }
     };
@@ -251,12 +248,42 @@
         return vals;
     };
 
+    const getAllParams = (template) => {
+        return [...(template.configParams || []), ...(template.styleParams || [])];
+    };
+
     const renderBuilder = () => {
         const tKey = currentTemplateKey || Object.keys(TEMPLATES)[0];
         const t = TEMPLATES[tKey];
         if (!t || !dynamicFields) return;
         dynamicFields.innerHTML = '';
-        t.params.forEach(def => dynamicFields.appendChild(createField(def, 'builder')));
+
+        // Section Configuration
+        const configSection = document.createElement('div');
+        configSection.className = 'form-section';
+        const configTitle = document.createElement('h3');
+        configTitle.className = 'section-title';
+        configTitle.textContent = 'Configuration';
+        configSection.appendChild(configTitle);
+        const configFields = document.createElement('div');
+        configFields.className = 'fields';
+        (t.configParams || []).forEach(def => configFields.appendChild(createField(def, 'builder')));
+        configSection.appendChild(configFields);
+        dynamicFields.appendChild(configSection);
+
+        // Section Style
+        const styleSection = document.createElement('div');
+        styleSection.className = 'form-section';
+        const styleTitle = document.createElement('h3');
+        styleTitle.className = 'section-title';
+        styleTitle.textContent = 'Style';
+        styleSection.appendChild(styleTitle);
+        const styleFields = document.createElement('div');
+        styleFields.className = 'fields';
+        (t.styleParams || []).forEach(def => styleFields.appendChild(createField(def, 'builder')));
+        styleSection.appendChild(styleFields);
+        dynamicFields.appendChild(styleSection);
+
         updateBuilderUrl();
         $$('input, select', dynamicFields).forEach(el => {
             el.addEventListener('input', updateBuilderUrl);
@@ -285,6 +312,9 @@
             if (vals.platform) previewParams.set('platform', vals.platform);
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
             previewParams.set('update_interval', vals.update_interval || '3000');
             previewParams.set('show_leaderboard', vals.show_leaderboard || 'true');
 
@@ -315,6 +345,8 @@
             const previewParams = new URLSearchParams();
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
             if (vals.goals) previewParams.set('goals', vals.goals);
 
             const previewUrl = `overlay/sub/sub-count-widget-preview.html?${previewParams.toString()}`;
@@ -345,6 +377,8 @@
             previewParams.set('channel', vals.channel || 'streamer_channel');
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
             if (vals.moderators && String(vals.moderators).trim()) previewParams.set('moderators', vals.moderators);
             if (vals.vips && String(vals.vips).trim()) previewParams.set('vips', vals.vips);
             if (vals.twitch_client_id && String(vals.twitch_client_id).trim()) previewParams.set('twitch_client_id', vals.twitch_client_id);
@@ -388,19 +422,50 @@
 
         const tKey = guessTemplateFromUrl(urlObj);
         if (!tKey || !TEMPLATES[tKey]) {
-            existingUrl.setCustomValidity('Template introuvable dans l’URL.');
+            existingUrl.setCustomValidity('Template introuvable dans l\'URL.');
             existingUrl.reportValidity();
             setTimeout(() => existingUrl.setCustomValidity(''), 1500);
             return;
         }
         const t = TEMPLATES[tKey];
-        t.params.forEach(def => {
+
+        // Section Configuration
+        const configSection = document.createElement('div');
+        configSection.className = 'form-section';
+        const configTitle = document.createElement('h3');
+        configTitle.className = 'section-title';
+        configTitle.textContent = 'Configuration';
+        configSection.appendChild(configTitle);
+        const configFields = document.createElement('div');
+        configFields.className = 'fields';
+        (t.configParams || []).forEach(def => {
             const el = createField(def, 'editor');
             const input = $('input, select', el);
             const v = urlObj.searchParams.get(def.key);
             if (v != null) input.value = v;
-            editorFields.appendChild(el);
+            configFields.appendChild(el);
         });
+        configSection.appendChild(configFields);
+        editorFields.appendChild(configSection);
+
+        // Section Style
+        const styleSection = document.createElement('div');
+        styleSection.className = 'form-section';
+        const styleTitle = document.createElement('h3');
+        styleTitle.className = 'section-title';
+        styleTitle.textContent = 'Style';
+        styleSection.appendChild(styleTitle);
+        const styleFields = document.createElement('div');
+        styleFields.className = 'fields';
+        (t.styleParams || []).forEach(def => {
+            const el = createField(def, 'editor');
+            const input = $('input, select', el);
+            const v = urlObj.searchParams.get(def.key);
+            if (v != null) input.value = v;
+            styleFields.appendChild(el);
+        });
+        styleSection.appendChild(styleFields);
+        editorFields.appendChild(styleSection);
 
         const updateEdited = () => {
             const vals = readValues(editorFields);
