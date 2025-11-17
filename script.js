@@ -1,4 +1,4 @@
-// GitVize – URL Builder & Editor
+// GitViz – URL Builder & Editor
 // what are you doing here ?
 // are you trying to copy my code ? or looking if its ai generated ?
 // if you are, you are not gonna find anything here.
@@ -33,6 +33,7 @@
                 { key: 'twitch_client_id', label: 'Twitch Client ID', type: 'text', placeholder: 'Votre Client ID Twitch', required: true },
                 { key: 'twitch_auth_token', label: 'Twitch Auth Token', type: 'text', placeholder: 'Votre Token d\'authentification', required: true },
                 { key: 'broadcaster_id', label: 'Broadcaster ID', type: 'text', placeholder: 'Votre ID de diffuseur', required: true },
+                { key: 'seventv_emote_set', label: '7TV Emote Set ID (optionnel)', type: 'text', placeholder: 'ex: 01GEG2EPE80006SAE3KT92JGK5' },
                 { key: 'moderators', label: 'Modérateurs (optionnel)', type: 'text', placeholder: 'user1,user2,user3' },
                 { key: 'vips', label: 'VIPs (optionnel)', type: 'text', placeholder: 'user1,user2' },
             ],
@@ -384,6 +385,7 @@
             if (vals.twitch_client_id && String(vals.twitch_client_id).trim()) previewParams.set('twitch_client_id', vals.twitch_client_id);
             if (vals.twitch_auth_token && String(vals.twitch_auth_token).trim()) previewParams.set('twitch_auth_token', vals.twitch_auth_token);
             if (vals.broadcaster_id && String(vals.broadcaster_id).trim()) previewParams.set('broadcaster_id', vals.broadcaster_id);
+            if (vals.seventv_emote_set && String(vals.seventv_emote_set).trim()) previewParams.set('seventv_emote_set', vals.seventv_emote_set);
 
             const previewUrl = `overlay/chat/chat-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Chat preview URL:', previewUrl);

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- GitVize – URL Builder & Editor
+<!-- GitViz – URL Builder & Editor
 * what are you doing here ?
 * are you trying to copy my code ? or looking if its ai generated ?
 * if you are, you are not gonna find anything here.
@@ -93,7 +93,7 @@
             color: #00ff88;
             display: inline;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            font-size: 28px;
+            font-size: var(--font-size-main, 28px);
             line-height: 32px; /* Alignement avec la hauteur des badges */
         }
 
@@ -102,7 +102,7 @@
             word-wrap: break-word;
             word-break: break-word;
             line-height: 1.5;
-            font-size: 28px;
+            font-size: var(--font-size-main, 28px);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
@@ -110,7 +110,7 @@
             margin-right: 5px;
             font-weight: bold;
             color: #ffffff;
-            font-size: 28px;
+            font-size: var(--font-size-main, 28px);
         }
 
         .badge-display {
@@ -245,8 +245,14 @@
                 const twitchClientIdParam = urlParams.get('twitch_client_id');
                 const twitchAuthTokenParam = urlParams.get('twitch_auth_token');
                 const broadcasterIdParam = urlParams.get('broadcaster_id');
+                this.seventvEmoteSetId = urlParams.get('seventv_emote_set') || '';
+
+                // Style configuration
+                this.fontSize = parseInt(urlParams.get('font_size')) || 28;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
 
                 this.applyFont(fontParam);
+                this.applyStyles();
 
                 this.sevenTVEmotes = new Map();
                 this.globalSevenTVEmotes = new Map();
@@ -706,6 +712,78 @@
                 document.body.style.fontFamily = `${fontFamily}, sans-serif`;
             }
 
+            applyStyles() {
+                const root = document.documentElement;
+
+                // Apply font size
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+
+                // Apply font effect to all message elements
+                const style = document.createElement('style');
+                style.id = 'dynamic-chat-styles';
+                const existingStyle = document.getElementById('dynamic-chat-styles');
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+
+                style.textContent = `
+                    .username, .separator, .message-content {
+                        font-size: var(--font-size-main, 28px) !important;
+                    }
+                    .username.font-${this.fontEffect},
+                    .message-content.font-${this.fontEffect} {
+                        ${this.getFontEffectCSS(this.fontEffect)}
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // Apply font effect classes to existing messages
+                this.applyFontEffectToMessages();
+            }
+
+            getFontEffectCSS(effect) {
+                switch(effect) {
+                    case 'hollow':
+                        return `
+                            -webkit-text-stroke: 2px;
+                            -webkit-text-stroke-color: currentColor;
+                            -webkit-text-fill-color: transparent;
+                            color: transparent;
+                        `;
+                    case 'border':
+                        return `
+                            text-shadow:
+                                -2px -2px 0 currentColor,
+                                2px -2px 0 currentColor,
+                                -2px 2px 0 currentColor,
+                                2px 2px 0 currentColor,
+                                0 -2px 0 currentColor,
+                                0 2px 0 currentColor,
+                                -2px 0 0 currentColor,
+                                2px 0 0 currentColor;
+                        `;
+                    default:
+                        return '';
+                }
+            }
+
+            applyFontEffectToMessages() {
+                if (this.fontEffect === 'normal') return;
+
+                const usernames = document.querySelectorAll('.username');
+                const messageContents = document.querySelectorAll('.message-content');
+
+                usernames.forEach(el => {
+                    el.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    el.classList.add(`font-${this.fontEffect}`);
+                });
+
+                messageContents.forEach(el => {
+                    el.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    el.classList.add(`font-${this.fontEffect}`);
+                });
+            }
+
             connectToTwitchChat() {
                 const socket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
 
@@ -1068,9 +1146,10 @@
                         console.error('❌ Échec de récupération des emotes globales:', globalResponse.status);
                     }
 
-                console.log('📡 Récupération des emotes du canal fugu_fps via le set ID...');
+                if (this.seventvEmoteSetId) {
+                    console.log(`📡 Récupération des emotes du canal via le set ID: ${this.seventvEmoteSetId}...`);
 
-                    const setResponse = await fetch('https://7tv.io/v3/emote-sets/01GEG2EPE80006SAE3KT92JGK5');
+                    const setResponse = await fetch(`https://7tv.io/v3/emote-sets/${this.seventvEmoteSetId}`);
                     console.log('� Réponse set d\'emotes:', setResponse.status, setResponse.statusText);
 
                     if (setResponse.ok) {
@@ -1109,6 +1188,9 @@
                     } else {
                         console.error('❌ Échec de récupération des emotes du set:', setResponse.status);
                     }
+                } else {
+                    console.log('⚠️ Aucun 7TV Emote Set ID fourni, seules les emotes globales seront chargées');
+                }
 
                     console.log(`✅ 7TV emotes chargées: ${this.sevenTVEmotes.size} emotes du canal + ${this.globalSevenTVEmotes.size} emotes globales`);
 
@@ -1827,14 +1909,15 @@
                     console.log(`🚫 Icône de chaîne d'origine masquée (chat partagé inactif): ${data.originChannel.displayName}`);
                 }
 
+                const fontEffectClass = this.fontEffect !== 'normal' ? `font-${this.fontEffect}` : '';
                 messageElement.innerHTML = `
                     <span class="badge-display">
                         ${originImageHTML}
                         ${badgeDisplay}
                     </span>
-                    <span class="username ${badgeClass}" ${userColor}>${username}</span>
+                    <span class="username ${badgeClass} ${fontEffectClass}" ${userColor}>${username}</span>
                     <span class="separator">:</span>
-                    <span class="message-content">${message}</span>
+                    <span class="message-content ${fontEffectClass}">${message}</span>
                 `;
 
                 // Ajouter le message au container
