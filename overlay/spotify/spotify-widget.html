@@ -386,6 +386,9 @@
     <script>
         class SpotifyWidget {
             constructor() {
+                console.log('🚀 Initialisation du Spotify Widget');
+                console.log('📍 URL actuelle:', window.location.href);
+
                 // Spotify OAuth Configuration
                 this.clientId = 'd9df321ebcca4be390ca52843d96430d';
 
@@ -394,6 +397,8 @@
                 const customRedirectUri = urlParams.get('redirect_uri');
                 this.redirectUri = customRedirectUri || (window.location.origin + window.location.pathname);
                 this.scope = 'user-read-currently-playing';
+
+                console.log('🔗 Redirect URI:', this.redirectUri);
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 2000;
                 this.font = urlParams.get('font') || 'Arial';
                 this.fontSize = parseInt(urlParams.get('font_size')) || 24;
@@ -488,12 +493,38 @@
                     localStorage.setItem('spotify_access_token', JSON.stringify(tokenData));
                     console.log('💾 Token sauvegardé dans localStorage');
 
-                    // Clean URL (remove hash)
-                    const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
-                    window.history.replaceState({}, document.title, cleanUrl);
-                    console.log('🧹 URL nettoyée');
+                    // Restore saved parameters
+                    const savedParams = sessionStorage.getItem('spotify_widget_params');
+                    let cleanUrl = window.location.origin + window.location.pathname;
 
-                    // Reload to use the new token
+                    if (savedParams) {
+                        try {
+                            const params = JSON.parse(savedParams);
+                            const urlParams = new URLSearchParams();
+                            Object.keys(params).forEach(key => {
+                                urlParams.set(key, params[key]);
+                            });
+                            const queryString = urlParams.toString();
+                            if (queryString) {
+                                cleanUrl += '?' + queryString;
+                            }
+                            sessionStorage.removeItem('spotify_widget_params');
+                            console.log('🔄 Paramètres restaurés:', params);
+                        } catch (e) {
+                            console.error('Erreur lors de la restauration des paramètres:', e);
+                        }
+                    } else {
+                        // Keep current search params if no saved ones
+                        if (window.location.search) {
+                            cleanUrl += window.location.search;
+                        }
+                    }
+
+                    // Clean URL (remove hash, restore params)
+                    window.history.replaceState({}, document.title, cleanUrl);
+                    console.log('🧹 URL nettoyée et paramètres restaurés:', cleanUrl);
+
+                    // Reload to use the new token with restored parameters
                     console.log('🔄 Rechargement de la page...');
                     window.location.reload();
                 } else {
@@ -654,12 +685,36 @@
 
             initiateImplicitGrantFlow() {
                 console.log('🔄 Utilisation du flux Implicit Grant (response_type=token)...');
-                console.log('🔗 Redirect URI:', this.redirectUri);
+
+                // Save current URL parameters to restore them after OAuth
+                const currentParams = new URLSearchParams(window.location.search);
+                const paramsToSave = {};
+                currentParams.forEach((value, key) => {
+                    if (key !== 'code' && key !== 'state' && key !== 'error') {
+                        paramsToSave[key] = value;
+                    }
+                });
+
+                // Store parameters in sessionStorage
+                if (Object.keys(paramsToSave).length > 0) {
+                    sessionStorage.setItem('spotify_widget_params', JSON.stringify(paramsToSave));
+                    console.log('💾 Paramètres sauvegardés:', paramsToSave);
+                }
+
+                // Build redirect URI with current parameters
+                const redirectUriWithParams = new URL(this.redirectUri);
+                Object.keys(paramsToSave).forEach(key => {
+                    redirectUriWithParams.searchParams.set(key, paramsToSave[key]);
+                });
+                const finalRedirectUri = redirectUriWithParams.toString();
+
+                console.log('🔗 Redirect URI original:', this.redirectUri);
+                console.log('🔗 Redirect URI avec paramètres:', finalRedirectUri);
 
                 const authUrl = `https://accounts.spotify.com/authorize?` +
                     `client_id=${this.clientId}&` +
                     `response_type=token&` +
-                    `redirect_uri=${encodeURIComponent(this.redirectUri)}&` +
+                    `redirect_uri=${encodeURIComponent(finalRedirectUri)}&` +
                     `scope=${encodeURIComponent(this.scope)}&` +
                     `show_dialog=false`;
 
