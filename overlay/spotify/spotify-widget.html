@@ -65,23 +65,47 @@
 
         body.overlay-style-default .vinyl-container {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             flex-shrink: 0;
             z-index: 2;
+            margin-left: 25px;
+            filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
         }
 
         body.overlay-style-default .vinyl {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #1a1a1a 30%, #2a2a2a 30%, #2a2a2a 35%, #1a1a1a 35%, #1a1a1a 100%);
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at center, #0a0a0a 0%, #0a0a0a 25%, #1a1a1a 25%, #1a1a1a 28%, #0a0a0a 28%, #0a0a0a 32%, #1a1a1a 32%, #1a1a1a 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            animation: rotate 10s linear infinite;
+            box-shadow:
+                0 0 0 2px rgba(0, 0, 0, 0.3),
+                0 0 0 4px rgba(255, 255, 255, 0.05),
+                inset 0 0 20px rgba(0, 0, 0, 0.8),
+                0 8px 32px rgba(0, 0, 0, 0.6);
+            animation: rotate 8s linear infinite;
             position: relative;
+        }
+
+        body.overlay-style-default .vinyl::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background:
+                repeating-conic-gradient(
+                    from 0deg,
+                    transparent 0deg 2deg,
+                    rgba(255, 255, 255, 0.02) 2deg 4deg
+                );
+            pointer-events: none;
+            z-index: 1;
         }
 
         body.overlay-style-default .vinyl.playing {
@@ -102,36 +126,65 @@
         }
 
         body.overlay-style-default .vinyl-image {
-            width: 60%;
-            height: 60%;
+            width: 65%;
+            height: 65%;
             border-radius: 50%;
             object-fit: cover;
             background: #1a1a1a;
+            box-shadow:
+                inset 0 0 10px rgba(0, 0, 0, 0.5),
+                0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         body.overlay-style-default .vinyl-center {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: #000;
+            background:
+                radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+                #000;
+            border: 2px solid #1a1a1a;
+            box-shadow:
+                inset 0 0 8px rgba(0, 0, 0, 0.8),
+                0 2px 4px rgba(0, 0, 0, 0.5);
             z-index: 3;
-            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
         }
 
         body.overlay-style-default .track-background {
             position: absolute;
-            left: 60px;
-            top: 0;
-            right: 0;
-            bottom: 0;
+            left: 70px;
+            top: -10px;
+            right: -10px;
+            bottom: -10px;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            filter: blur(15px);
-            transform: scale(1.2);
+            filter: blur(25px) brightness(0.4) saturate(1.2);
+            transform: scale(1.05);
             z-index: 0;
-            opacity: 0.7;
+        }
+
+        body.overlay-style-default .track-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at left center, rgba(0, 0, 0, 0.6) 0%, transparent 50%),
+                linear-gradient(
+                    to right,
+                    rgba(0, 0, 0, 0.4) 0%,
+                    rgba(0, 0, 0, 0.15) 25%,
+                    rgba(0, 0, 0, 0.08) 50%,
+                    rgba(0, 0, 0, 0.2) 75%,
+                    rgba(0, 0, 0, 0.4) 100%
+                );
         }
 
         body.overlay-style-default .track-background::after {
@@ -141,7 +194,13 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+            background: linear-gradient(
+                to right,
+                rgba(0, 0, 0, 0.5) 0%,
+                transparent 30%,
+                transparent 70%,
+                rgba(0, 0, 0, 0.3) 100%
+            );
         }
 
         body.overlay-style-default .spotify-track {
@@ -158,36 +217,43 @@
         body.overlay-style-default .track-info {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             flex: 1;
             min-width: 0;
+            padding-left: 10px;
         }
 
         body.overlay-style-default .track-name {
-            font-weight: bold;
+            font-weight: 700;
             font-size: var(--font-size-main, 24px);
             color: #ffffff;
             text-shadow:
-                0 0 10px rgba(0, 0, 0, 0.8),
-                0 0 20px rgba(0, 0, 0, 0.6),
-                2px 2px 4px rgba(0, 0, 0, 0.9),
-                -1px -1px 2px rgba(255, 255, 255, 0.1);
+                0 0 12px rgba(0, 0, 0, 0.9),
+                0 0 24px rgba(0, 0, 0, 0.7),
+                0 2px 8px rgba(0, 0, 0, 0.8),
+                0 4px 12px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.95);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
         }
 
         body.overlay-style-default .track-artist {
-            font-size: calc(var(--font-size-main, 24px) * 0.85);
-            color: rgba(255, 255, 255, 0.9);
+            font-size: calc(var(--font-size-main, 24px) * 0.8);
+            color: rgba(255, 255, 255, 0.95);
             text-shadow:
-                0 0 10px rgba(0, 0, 0, 0.8),
-                0 0 20px rgba(0, 0, 0, 0.6),
-                2px 2px 4px rgba(0, 0, 0, 0.9),
-                -1px -1px 2px rgba(255, 255, 255, 0.1);
+                0 0 10px rgba(0, 0, 0, 0.85),
+                0 0 20px rgba(0, 0, 0, 0.65),
+                0 2px 6px rgba(0, 0, 0, 0.75),
+                2px 2px 4px rgba(0, 0, 0, 0.9);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: 0.2px;
+            line-height: 1.3;
+            font-weight: 500;
         }
 
         body.overlay-style-default .spotify-icon {
