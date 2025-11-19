@@ -466,8 +466,16 @@
                     let errorMessage = 'Erreur de connexion Spotify. ';
 
                     if (error === 'unsupported_response_type') {
-                        errorMessage += 'Le flux Implicit Grant n\'est pas supporté. Veuillez activer "Implicit Grant" dans les paramètres de votre application Spotify.';
-                        this.showError(errorMessage);
+                        errorMessage = 'Le flux Implicit Grant n\'est pas activé dans votre application Spotify.';
+                        console.error('❌ Implicit Grant non activé. Instructions:');
+                        console.log('1. Allez sur https://developer.spotify.com/dashboard');
+                        console.log('2. Ouvrez votre application');
+                        console.log('3. Cliquez sur "Edit Settings"');
+                        console.log('4. Dans "Redirect URIs", assurez-vous que votre URL est ajoutée');
+                        console.log('5. Cochez la case "Implicit Grant"');
+                        console.log('6. Cliquez sur "Save"');
+                        console.log('7. Réessayez la connexion');
+                        this.showErrorWithInstructions(errorMessage);
                     } else if (error === 'access_denied') {
                         errorMessage = 'Connexion annulée par l\'utilisateur.';
                         this.showError(errorMessage);
@@ -937,6 +945,45 @@
             showError(message) {
                 if (this.display) {
                     this.display.innerHTML = `<span class="error-message">${this.escapeHtml(message)}</span>`;
+                }
+            }
+
+            showErrorWithInstructions(message) {
+                if (this.connectScreen) {
+                    this.connectScreen.innerHTML = `
+                        <p class="connect-message" style="color: #ff6b6b; margin-bottom: 16px;">${this.escapeHtml(message)}</p>
+                        <div style="text-align: left; max-width: 600px; margin: 0 auto 20px; padding: 16px; background: rgba(255, 107, 107, 0.1); border-radius: 8px; border-left: 3px solid #ff6b6b;">
+                            <h4 style="margin: 0 0 12px 0; font-size: 16px; color: #fff;">Comment activer Implicit Grant :</h4>
+                            <ol style="margin: 0; padding-left: 20px; color: rgba(255, 255, 255, 0.9); line-height: 1.8; font-size: 14px;">
+                                <li>Allez sur <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener" style="color: #1DB954; text-decoration: underline;">Spotify Developer Dashboard</a></li>
+                                <li>Ouvrez votre application</li>
+                                <li>Cliquez sur <strong>"Edit Settings"</strong></li>
+                                <li>Dans la section <strong>"Redirect URIs"</strong>, assurez-vous que cette URL est ajoutée :<br>
+                                    <code style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px; font-size: 12px; display: block; margin: 4px 0; word-break: break-all;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code>
+                                </li>
+                                <li>Cochez la case <strong>"Implicit Grant"</strong> (dans les options avancées ou en bas de la page)</li>
+                                <li>Cliquez sur <strong>"Save"</strong></li>
+                                <li>Revenez ici et cliquez sur "Réessayer"</li>
+                            </ol>
+                        </div>
+                        <button id="retryConnectButton" class="spotify-connect-button">
+                            Réessayer la connexion
+                        </button>
+                    `;
+
+                    this.connectScreen.style.display = 'flex';
+                    const retryButton = document.getElementById('retryConnectButton');
+                    if (retryButton) {
+                        retryButton.addEventListener('click', () => {
+                            // Clean URL first
+                            const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
+                            window.history.replaceState({}, document.title, cleanUrl);
+                            this.showConnectScreen();
+                        });
+                    }
+                }
+                if (this.display) {
+                    this.display.style.display = 'none';
                 }
             }
 
