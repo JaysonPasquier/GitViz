@@ -39,14 +39,6 @@
     ========================================
     -->
     <style>
-        @font-face {
-            font-family: 'Sea Regular Fugu';
-            src: url('https://raw.githubusercontent.com/scorpio74890-alt/test-twitch/main/police/sea-regular-fugu.otf') format('opentype'),
-                 url('police/sea-regular-fugu.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-            font-display: swap;
-        }
 
         /* Test de chargement de police */
         .font-test {
@@ -86,6 +78,58 @@
             opacity: 0;
             transform: translateX(-20px);
             animation-fill-mode: forwards;
+        }
+
+        /* Chat Style: Default (current style) */
+        .chat-style-default .chat-message {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        /* Chat Style: Card */
+        .chat-style-card .chat-message {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Chat Style: Bubble */
+        .chat-style-bubble .chat-message {
+            background: linear-gradient(135deg, rgba(145, 70, 255, 0.2), rgba(54, 209, 220, 0.2));
+            border: 2px solid rgba(145, 70, 255, 0.3);
+            border-radius: 20px;
+            padding: 10px 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Chat Style: Minimal */
+        .chat-style-minimal .chat-message {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid rgba(0, 255, 136, 0.5);
+            border-radius: 0;
+            padding: 6px 12px;
+        }
+
+        /* Chat Style: Gradient */
+        .chat-style-gradient .chat-message {
+            background: linear-gradient(90deg, rgba(145, 70, 255, 0.15), rgba(54, 209, 220, 0.15));
+            border: 1px solid rgba(145, 70, 255, 0.3);
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 2px 8px rgba(145, 70, 255, 0.1);
+        }
+
+        /* Chat Style: Glass */
+        .chat-style-glass .chat-message {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 10px 16px;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .username {
@@ -250,9 +294,11 @@
                 // Style configuration
                 this.fontSize = parseInt(urlParams.get('font_size')) || 28;
                 this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.chatStyle = urlParams.get('chat_style') || 'default';
 
                 this.applyFont(fontParam);
                 this.applyStyles();
+                this.applyChatStyle();
 
                 this.sevenTVEmotes = new Map();
                 this.globalSevenTVEmotes = new Map();
@@ -782,6 +828,24 @@
                     el.classList.remove('font-normal', 'font-hollow', 'font-border');
                     el.classList.add(`font-${this.fontEffect}`);
                 });
+            }
+
+            applyChatStyle() {
+                const container = document.getElementById('chat-container');
+                if (!container) return;
+
+                // Remove all chat style classes
+                container.classList.remove(
+                    'chat-style-default',
+                    'chat-style-card',
+                    'chat-style-bubble',
+                    'chat-style-minimal',
+                    'chat-style-gradient',
+                    'chat-style-glass'
+                );
+
+                // Add the selected style
+                container.classList.add(`chat-style-${this.chatStyle}`);
             }
 
             connectToTwitchChat() {
