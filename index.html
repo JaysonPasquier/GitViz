@@ -186,24 +186,27 @@
                                 </div>
 
                                 <div id="spotifyHelpSection" style="display: none; margin-bottom: 16px; padding: 16px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border);">
-                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 12px; color: var(--text);">🔑 Connexion à Spotify</h4>
-                                    <p class="muted" style="margin-bottom: 12px;">L'overlay utilise déjà une application Spotify configurée. Vous n'avez qu'à vous connecter :</p>
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 12px; color: var(--text);">🔑 Configuration Spotify</h4>
+                                    <p class="muted" style="margin-bottom: 12px;">Pour faire votre overlay, vous allez devoir créer une app Spotify :</p>
 
                                     <div style="margin-bottom: 16px;">
-                                        <h5 style="font-size: 14px; margin-bottom: 8px; color: var(--text); font-weight: bold;">Comment ça fonctionne :</h5>
+                                        <h5 style="font-size: 14px; margin-bottom: 8px; color: var(--text); font-weight: bold;">1. Créer une application Spotify</h5>
                                         <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
-                                            <li>Générez votre URL d'overlay avec les options de style souhaitées</li>
-                                            <li>Ajoutez l'URL dans OBS comme source navigateur</li>
-                                            <li>Dans OBS, cliquez sur le bouton <strong>"Connecter Spotify"</strong> qui apparaîtra</li>
-                                            <li>Vous serez redirigé vers Spotify pour autoriser l'application</li>
-                                            <li>Après autorisation, vous serez automatiquement redirigé et connecté</li>
-                                            <li>Le token sera sauvegardé localement pour éviter de se reconnecter à chaque fois</li>
+                                            <li>Allez sur <a href="https://developer.spotify.com/dashboard/create" target="_blank" rel="noopener" style="color: var(--primary);">https://developer.spotify.com/dashboard/create</a></li>
+                                            <li>Créez une nouvelle application</li>
+                                            <li>Dans les paramètres, ajoutez comme <strong>Redirect URI</strong> : <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">http://localhost:3000</code></li>
+                                            <li>Copiez votre <strong>Client ID</strong> et <strong>Client Secret</strong></li>
                                         </ol>
                                     </div>
 
-                                    <div style="padding: 12px; background: rgba(29, 185, 84, 0.1); border-left: 3px solid #1DB954; border-radius: 4px; margin-top: 12px;">
-                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>✅ Avantage :</strong> Pas besoin de gérer les tokens manuellement ! L'authentification se fait directement depuis l'overlay dans OBS.</p>
+                                    <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-bottom: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>💡 Comment ça fonctionne :</strong> Entrez votre Client ID et Client Secret dans les paramètres de l'URL. L'overlay récupérera automatiquement un token d'authentification et le rafraîchira toutes les heures.</p>
                                     </div>
+
+                                    <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Le token expire après 1 heure et sera automatiquement rafraîchi par l'overlay.</p>
+                                    </div>
+                                </div>
 
                                     <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-top: 12px;">
                                         <p class="muted" style="margin: 0; font-size: 13px; margin-bottom: 8px;"><strong>ℹ️ Configuration requise :</strong> Vous devez ajouter l'URL exacte de votre overlay comme Redirect URI dans votre application Spotify.</p>

@@ -89,7 +89,8 @@
             label: 'Spotify',
             path: 'overlay/spotify/spotify-widget.html',
             configParams: [
-                { key: 'redirect_uri', label: 'Redirect URI (optionnel)', type: 'text', placeholder: 'ex: https://votre-domaine.com/overlay/spotify/spotify-widget.html', required: false, help: 'Laissez vide pour utiliser l\'URL actuelle. Doit correspondre exactement à celui configuré dans Spotify.' },
+                { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
+                { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'http://localhost:3000', default: 'http://localhost:3000', required: true },
                 { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 1000, max: 30000, step: 1000, default: 2000 },
             ],
             styleParams: [
