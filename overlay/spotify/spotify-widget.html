@@ -393,12 +393,14 @@
                 const searchParams = new URLSearchParams(window.location.search);
                 const code = searchParams.get('code');
 
-                // If we're in the OAuth callback, check and clean invalid code_verifier first
+                // If we're in the OAuth callback, restore saved parameters first
                 if (code) {
+                    // Don't clean code_verifier here - let exchangeCodeForToken handle validation
+                    // If it's invalid, exchangeCodeForToken will clean it and show proper error
                     const oldCodeVerifier = sessionStorage.getItem('spotify_code_verifier');
                     if (oldCodeVerifier && oldCodeVerifier.length > 128) {
-                        console.warn('🧹 Nettoyage d\'un ancien code_verifier invalide (encodé en Base64, longueur:', oldCodeVerifier.length, ')');
-                        sessionStorage.removeItem('spotify_code_verifier');
+                        console.warn('⚠️ Ancien code_verifier invalide détecté (encodé en Base64, longueur:', oldCodeVerifier.length, ')');
+                        console.warn('⚠️ Il sera nettoyé lors de l\'échange du code si nécessaire');
                     }
 
                     const savedParams = sessionStorage.getItem('spotify_widget_params');
@@ -787,8 +789,33 @@
                     console.error('🧹 Nettoyage de l\'ancien code_verifier invalide...');
                     sessionStorage.removeItem('spotify_code_verifier');
 
+                    // Clean URL to remove code and state
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    const savedParams = sessionStorage.getItem('spotify_widget_params');
+                    if (savedParams) {
+                        try {
+                            const params = JSON.parse(savedParams);
+                            const urlParams = new URLSearchParams();
+                            Object.keys(params).forEach(key => {
+                                if (key !== 'client_id' && key !== 'redirect_uri') {
+                                    urlParams.set(key, params[key]);
+                                }
+                            });
+                            const queryString = urlParams.toString();
+                            if (queryString) {
+                                window.history.replaceState({}, document.title, cleanUrl + '?' + queryString);
+                            } else {
+                                window.history.replaceState({}, document.title, cleanUrl);
+                            }
+                        } catch (e) {
+                            window.history.replaceState({}, document.title, cleanUrl);
+                        }
+                    } else {
+                        window.history.replaceState({}, document.title, cleanUrl);
+                    }
+
                     // Show error to user and ask them to reconnect
-                    this.showError('Code verifier invalide détecté. Veuillez vous reconnecter en cliquant sur "Connecter Spotify".');
+                    this.showError('Code verifier invalide détecté (ancien format). Veuillez vous reconnecter en cliquant sur "Connecter Spotify".');
                     this.showConnectScreen();
                     throw new Error('Code verifier invalide: semble être encodé. Veuillez vous reconnecter.');
                 }
