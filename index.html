@@ -100,6 +100,19 @@
                                 <p class="muted">Compteur d'abonnés avec objectifs. Options: broadcaster_id, access_token, client_id, canal, police, objectifs.</p>
                             </div>
                         </button>
+
+                        <button class="template-card template-choice" data-template="spotify">
+                            <div class="template-image">
+                                <div class="preview-overlay-container">
+                                    <iframe id="spotifyPreviewCard" src="overlay/spotify/spotify-widget-preview.html?font=Arial"></iframe>
+                                </div>
+                            </div>
+                            <div class="template-icon">🎵</div>
+                            <div class="template-body">
+                                <h3 class="h3">Spotify</h3>
+                                <p class="muted">Affiche la chanson actuellement en cours sur Spotify. Options: access_token, police, style, taille de police.</p>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
@@ -171,6 +184,42 @@
                                         Convertir Username → User ID
                                     </a>
                                 </div>
+
+                                <div id="spotifyHelpSection" style="display: none; margin-bottom: 16px; padding: 16px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border);">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 12px; color: var(--text);">🔑 Connexion à Spotify</h4>
+                                    <p class="muted" style="margin-bottom: 12px;">L'overlay utilise déjà une application Spotify configurée. Vous n'avez qu'à vous connecter :</p>
+
+                                    <div style="margin-bottom: 16px;">
+                                        <h5 style="font-size: 14px; margin-bottom: 8px; color: var(--text); font-weight: bold;">Comment ça fonctionne :</h5>
+                                        <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                            <li>Générez votre URL d'overlay avec les options de style souhaitées</li>
+                                            <li>Ajoutez l'URL dans OBS comme source navigateur</li>
+                                            <li>Dans OBS, cliquez sur le bouton <strong>"Connecter Spotify"</strong> qui apparaîtra</li>
+                                            <li>Vous serez redirigé vers Spotify pour autoriser l'application</li>
+                                            <li>Après autorisation, vous serez automatiquement redirigé et connecté</li>
+                                            <li>Le token sera sauvegardé localement pour éviter de se reconnecter à chaque fois</li>
+                                        </ol>
+                                    </div>
+
+                                    <div style="padding: 12px; background: rgba(29, 185, 84, 0.1); border-left: 3px solid #1DB954; border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>✅ Avantage :</strong> Pas besoin de gérer les tokens manuellement ! L'authentification se fait directement depuis l'overlay dans OBS.</p>
+                                    </div>
+
+                                    <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 13px; margin-bottom: 8px;"><strong>ℹ️ Configuration requise :</strong> Vous devez ajouter l'URL exacte de votre overlay comme Redirect URI dans votre application Spotify.</p>
+                                        <ol style="margin-left: 20px; margin-top: 8px; margin-bottom: 0; color: var(--muted); line-height: 1.8; font-size: 12px;">
+                                            <li>Allez sur <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener" style="color: var(--primary);">Spotify Developer Dashboard</a></li>
+                                            <li>Ouvrez votre application</li>
+                                            <li>Dans "Redirect URIs", ajoutez l'URL complète de votre overlay (ex: <code style="background: var(--bg); padding: 2px 4px; border-radius: 3px; font-size: 11px;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code>)</li>
+                                            <li>Cliquez sur "Add" puis "Save"</li>
+                                            <li>L'URL doit correspondre <strong>exactement</strong> (avec ou sans slash final, http/https, etc.)</li>
+                                        </ol>
+                                    </div>
+
+                                    <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Les tokens expirent après <strong>1 heure</strong>. Si le token expire, vous devrez simplement cliquer à nouveau sur "Connecter Spotify" dans l'overlay.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="previewSection" class="preview-section" style="display: none; margin-bottom: 20px;">
@@ -183,6 +232,9 @@
                             </div>
                             <div id="subPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
                                 <iframe id="subPreview" src="overlay/sub/sub-count-widget-preview.html?goals=25:24h stream,50:something else&font=Arial"></iframe>
+                            </div>
+                            <div id="spotifyPreviewContainer" class="preview-container" style="width: 100%; height: 150px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                                <iframe id="spotifyPreview" src="overlay/spotify/spotify-widget-preview.html?font=Arial"></iframe>
                             </div>
                         </div>
                         <div class="form-grid">

@@ -84,6 +84,20 @@
                 { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
+        },
+        spotify: {
+            label: 'Spotify',
+            path: 'overlay/spotify/spotify-widget.html',
+            configParams: [
+                { key: 'redirect_uri', label: 'Redirect URI (optionnel)', type: 'text', placeholder: 'ex: https://votre-domaine.com/overlay/spotify/spotify-widget.html', required: false, help: 'Laissez vide pour utiliser l\'URL actuelle. Doit correspondre exactement à celui configuré dans Spotify.' },
+                { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 1000, max: 30000, step: 1000, default: 2000 },
+            ],
+            styleParams: [
+                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
+                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
+                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
+            ]
         }
     };
 
@@ -103,9 +117,11 @@
         if (p.includes('/overlay/chat')) return 'chat';
         if (p.includes('/overlay/valorant')) return 'valorant';
         if (p.includes('/overlay/sub')) return 'sub';
+        if (p.includes('/overlay/spotify')) return 'spotify';
         if (p.endsWith('overlay/chat/') || p.endsWith('overlay/chat')) return 'chat';
         if (p.endsWith('overlay/valorant/') || p.endsWith('overlay/valorant')) return 'valorant';
         if (p.endsWith('overlay/sub/') || p.endsWith('overlay/sub')) return 'sub';
+        if (p.endsWith('overlay/spotify/') || p.endsWith('overlay/spotify')) return 'spotify';
         return null;
     };
 
@@ -154,7 +170,19 @@
             twitchCredentialsHelp.style.display = (templateKey === 'chat' || templateKey === 'sub') ? 'block' : 'none';
         }
 
+        const spotifyHelpSection = document.getElementById('spotifyHelpSection');
+        if (spotifyHelpSection) {
+            spotifyHelpSection.style.display = templateKey === 'spotify' ? 'block' : 'none';
+        }
+
         if (twitchTokenLink) {
+            if (templateKey === 'spotify') {
+                const spotifyPreviewContainer = document.getElementById('spotifyPreviewContainer');
+                if (spotifyPreviewContainer) {
+                    spotifyPreviewContainer.style.display = 'block';
+                }
+            }
+
             if (templateKey === 'sub') {
                 twitchTokenLink.href = 'https://twitchtokengenerator.com/quick/YBwXGzxVmZ';
             } else if (templateKey === 'chat') {
@@ -175,7 +203,7 @@
         const subPreviewContainer = document.getElementById('subPreviewContainer');
 
         if (previewSection) {
-            if (templateKey === 'valorant' || templateKey === 'chat' || templateKey === 'sub') {
+            if (templateKey === 'valorant' || templateKey === 'chat' || templateKey === 'sub' || templateKey === 'spotify') {
                 previewSection.style.display = 'block';
                 if (valorantPreviewContainer) {
                     valorantPreviewContainer.style.display = templateKey === 'valorant' ? 'block' : 'none';
@@ -185,6 +213,10 @@
                 }
                 if (subPreviewContainer) {
                     subPreviewContainer.style.display = templateKey === 'sub' ? 'block' : 'none';
+                }
+                const spotifyPreviewContainer = document.getElementById('spotifyPreviewContainer');
+                if (spotifyPreviewContainer) {
+                    spotifyPreviewContainer.style.display = templateKey === 'spotify' ? 'block' : 'none';
                 }
             } else {
                 previewSection.style.display = 'none';
@@ -357,6 +389,37 @@
 
             const previewUrl = `overlay/sub/sub-count-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Sub preview URL:', previewUrl);
+
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe) {
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+            if (previewCardIframe) {
+                previewCardIframe.src = '';
+                setTimeout(() => {
+                    previewCardIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
+        if (tKey === 'spotify') {
+            const previewIframe = document.getElementById('spotifyPreview');
+            const previewCardIframe = document.getElementById('spotifyPreviewCard');
+
+            const previewParams = new URLSearchParams();
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+
+            const previewUrl = `overlay/spotify/spotify-widget-preview.html?${previewParams.toString()}`;
+            console.log('🎵 Spotify preview URL:', previewUrl);
 
             const timestamp = Date.now();
             const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;

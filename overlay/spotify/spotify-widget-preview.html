@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<!-- GitViz – URL Builder & Editor
+* what are you doing here ?
+* are you trying to copy my code ? or looking if its ai generated ?
+* if you are, you are not gonna find anything here.
+* this is a custom code that i wrote for my own use.
+* if you want to use it, you can, but you need to ask me for permission.
+* if you are not trying to copy my code, or looking if its ai generated, then you can continue.
+* i hope you enjoy my code.
+* if you have any questions, feel free to ask me.
+* if you have any suggestions, feel free to suggest them.
+* if you have any bugs, feel free to report them.
+-->
+<html lang="fr" style="background: transparent !important;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Widget Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            background: transparent !important;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: transparent !important;
+            color: #ffffff;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #spotify-container {
+            text-align: center;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* Overlay Style: Default (Vinyl style) */
+        body.overlay-style-default #spotify-container {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            position: relative !important;
+            overflow: hidden !important;
+            min-height: 120px !important;
+        }
+
+        body.overlay-style-default .vinyl-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+
+        body.overlay-style-default .vinyl {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #1a1a1a 30%, #2a2a2a 30%, #2a2a2a 35%, #1a1a1a 35%, #1a1a1a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: rotate 10s linear infinite;
+            position: relative;
+        }
+
+        body.overlay-style-default .vinyl.playing {
+            animation-play-state: running;
+        }
+
+        body.overlay-style-default .vinyl.paused {
+            animation-play-state: paused;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        body.overlay-style-default .vinyl-image {
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #1a1a1a;
+        }
+
+        body.overlay-style-default .vinyl-center {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #000;
+            z-index: 3;
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.1);
+        }
+
+        body.overlay-style-default .track-background {
+            position: absolute;
+            left: 60px;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(15px);
+            transform: scale(1.2);
+            z-index: 0;
+            opacity: 0.7;
+        }
+
+        body.overlay-style-default .track-background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+        }
+
+        body.overlay-style-default .spotify-track {
+            position: relative;
+            z-index: 1;
+            padding: 20px 30px 20px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 300px;
+            text-align: left;
+        }
+
+        body.overlay-style-default .track-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        body.overlay-style-default .track-name {
+            font-weight: bold;
+            font-size: var(--font-size-main, 24px);
+            color: #ffffff;
+            text-shadow:
+                0 0 10px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9),
+                -1px -1px 2px rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.overlay-style-default .track-artist {
+            font-size: calc(var(--font-size-main, 24px) * 0.85);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow:
+                0 0 10px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.6),
+                2px 2px 4px rgba(0, 0, 0, 0.9),
+                -1px -1px 2px rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.overlay-style-default .spotify-icon {
+            display: none;
+        }
+
+        body.overlay-style-default .track-separator {
+            display: none;
+        }
+
+        /* Overlay Style: Card */
+        body.overlay-style-card #spotify-container {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 16px 20px !important;
+            backdrop-filter: blur(10px) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Bubble */
+        body.overlay-style-bubble #spotify-container {
+            background: linear-gradient(135deg, rgba(29, 185, 84, 0.2), rgba(30, 215, 96, 0.2)) !important;
+            border: 2px solid rgba(29, 185, 84, 0.3) !important;
+            border-radius: 24px !important;
+            padding: 18px 24px !important;
+            backdrop-filter: blur(10px) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Minimal */
+        body.overlay-style-minimal #spotify-container {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-left: 3px solid rgba(29, 185, 84, 0.5) !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            border-radius: 0 !important;
+            padding: 14px 20px !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Gradient */
+        body.overlay-style-gradient #spotify-container {
+            background: linear-gradient(90deg, rgba(29, 185, 84, 0.15), rgba(30, 215, 96, 0.15)) !important;
+            border: 1px solid rgba(29, 185, 84, 0.3) !important;
+            border-radius: 16px !important;
+            padding: 16px 22px !important;
+            box-shadow: 0 2px 8px rgba(29, 185, 84, 0.1) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Glass */
+        body.overlay-style-glass #spotify-container {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 20px !important;
+            padding: 18px 24px !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        .spotify-track {
+            font-size: var(--font-size-main, 24px);
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .spotify-icon {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .track-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .track-name {
+            font-weight: bold;
+        }
+
+        .track-separator {
+            opacity: 0.7;
+        }
+
+        .track-artist {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="overlay-style-default">
+    <div id="spotify-container">
+        <div id="spotify-display" class="spotify-track">
+            <div class="vinyl-container">
+                <div class="vinyl playing">
+                    <img class="vinyl-image" src="https://via.placeholder.com/300/1DB954/FFFFFF?text=Album" alt="Album">
+                    <div class="vinyl-center"></div>
+                </div>
+            </div>
+            <div class="track-background" style="background-image: url('https://via.placeholder.com/300/1DB954/FFFFFF?text=Album');"></div>
+            <div class="track-info">
+                <span class="track-name">Song Name</span>
+                <span class="track-artist">Artist Name</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SpotifyPreviewWidget {
+            constructor() {
+                const urlParams = new URLSearchParams(window.location.search);
+                this.font = urlParams.get('font') || 'Arial';
+                this.fontSize = parseInt(urlParams.get('font_size')) || 24;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.overlayStyle = urlParams.get('overlay_style') || 'default';
+
+                this.display = document.getElementById('spotify-display');
+
+                this.applyFont(this.font);
+                this.applyStyles();
+                this.applyOverlayStyle();
+
+                // Mock track rotation for preview
+                this.mockTracks = [
+                    { name: 'Blinding Lights', artist: 'The Weeknd', image: 'https://via.placeholder.com/300/FF6B6B/FFFFFF?text=Blinding+Lights' },
+                    { name: 'Watermelon Sugar', artist: 'Harry Styles', image: 'https://via.placeholder.com/300/4ECDC4/FFFFFF?text=Watermelon+Sugar' },
+                    { name: 'Levitating', artist: 'Dua Lipa', image: 'https://via.placeholder.com/300/FFE66D/FFFFFF?text=Levitating' },
+                ];
+                this.currentMockIndex = 0;
+                this.updateMockTrack();
+                setInterval(() => this.updateMockTrack(), 3000);
+            }
+
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    fontFamily = fontName;
+                } else {
+                    fontFamily = `'${fontName}'`;
+                }
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            }
+
+            applyStyles() {
+                const root = document.documentElement;
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+
+                const style = document.createElement('style');
+                style.id = 'dynamic-spotify-styles';
+                const existingStyle = document.getElementById('dynamic-spotify-styles');
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+
+                if (this.fontEffect !== 'normal') {
+                    style.textContent = `
+                        .spotify-track.font-${this.fontEffect} {
+                            ${this.getFontEffectCSS(this.fontEffect)}
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                if (this.display) {
+                    this.display.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    if (this.fontEffect !== 'normal') {
+                        this.display.classList.add(`font-${this.fontEffect}`);
+                    }
+                }
+            }
+
+            getFontEffectCSS(effect) {
+                switch(effect) {
+                    case 'hollow':
+                        return `
+                            -webkit-text-stroke: 2px;
+                            -webkit-text-stroke-color: currentColor;
+                            -webkit-text-fill-color: transparent;
+                            color: transparent;
+                        `;
+                    case 'border':
+                        return `
+                            text-shadow:
+                                -2px -2px 0 currentColor,
+                                2px -2px 0 currentColor,
+                                -2px 2px 0 currentColor,
+                                2px 2px 0 currentColor,
+                                0 -2px 0 currentColor,
+                                0 2px 0 currentColor,
+                                -2px 0 0 currentColor,
+                                2px 0 0 currentColor;
+                        `;
+                    default:
+                        return '';
+                }
+            }
+
+            applyOverlayStyle() {
+                const body = document.body;
+                if (!body) return;
+
+                body.classList.remove(
+                    'overlay-style-default',
+                    'overlay-style-card',
+                    'overlay-style-bubble',
+                    'overlay-style-minimal',
+                    'overlay-style-gradient',
+                    'overlay-style-glass'
+                );
+
+                body.classList.add(`overlay-style-${this.overlayStyle}`);
+            }
+
+            updateMockTrack() {
+                if (!this.display) return;
+                const track = this.mockTracks[this.currentMockIndex];
+
+                if (this.overlayStyle === 'default') {
+                    this.display.innerHTML = `
+                        <div class="vinyl-container">
+                            <div class="vinyl playing">
+                                <img class="vinyl-image" src="${track.image}" alt="Album" onerror="this.style.display='none'; this.parentElement.style.background='radial-gradient(circle at center, #1a1a1a 0%, #1a1a1a 30%, #2a2a2a 30%, #2a2a2a 35%, #1a1a1a 35%, #1a1a1a 100%)';">
+                                <div class="vinyl-center"></div>
+                            </div>
+                        </div>
+                        <div class="track-background" style="background-image: url('${track.image}');"></div>
+                        <div class="track-info">
+                            <span class="track-name">${track.name}</span>
+                            <span class="track-artist">${track.artist}</span>
+                        </div>
+                    `;
+                } else {
+                    this.display.innerHTML = `
+                        <svg class="spotify-icon" viewBox="0 0 24 24" fill="#1DB954">
+                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                        </svg>
+                        <div class="track-info">
+                            <span class="track-name">${track.name}</span>
+                            <span class="track-separator">•</span>
+                            <span class="track-artist">${track.artist}</span>
+                        </div>
+                    `;
+                }
+
+                this.currentMockIndex = (this.currentMockIndex + 1) % this.mockTracks.length;
+
+                if (this.fontEffect !== 'normal') {
+                    this.display.classList.add(`font-${this.fontEffect}`);
+                }
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.spotifyPreviewWidget = new SpotifyPreviewWidget();
+            });
+        } else {
+            window.spotifyPreviewWidget = new SpotifyPreviewWidget();
+        }
+    </script>
+</body>
+</html>
+
