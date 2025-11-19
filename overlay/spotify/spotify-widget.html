@@ -393,8 +393,14 @@
                 const searchParams = new URLSearchParams(window.location.search);
                 const code = searchParams.get('code');
 
-                // If we're in the OAuth callback, restore saved parameters first
+                // If we're in the OAuth callback, check and clean invalid code_verifier first
                 if (code) {
+                    const oldCodeVerifier = sessionStorage.getItem('spotify_code_verifier');
+                    if (oldCodeVerifier && oldCodeVerifier.length > 128) {
+                        console.warn('🧹 Nettoyage d\'un ancien code_verifier invalide (encodé en Base64, longueur:', oldCodeVerifier.length, ')');
+                        sessionStorage.removeItem('spotify_code_verifier');
+                    }
+
                     const savedParams = sessionStorage.getItem('spotify_widget_params');
                     console.log('🔍 Vérification sessionStorage (callback OAuth):', savedParams ? 'présent' : 'absent');
                     if (savedParams) {
@@ -769,7 +775,7 @@
             }
 
             async exchangeCodeForToken(code) {
-                const codeVerifier = sessionStorage.getItem('spotify_code_verifier');
+                let codeVerifier = sessionStorage.getItem('spotify_code_verifier');
                 if (!codeVerifier) {
                     console.error('❌ Code verifier manquant dans sessionStorage');
                     throw new Error('Code verifier manquant');
@@ -778,8 +784,12 @@
                 // Verify code_verifier is not Base64 encoded (should be 43-128 chars)
                 if (codeVerifier.length > 128) {
                     console.error('❌ Code verifier invalide: semble être encodé en Base64 (longueur:', codeVerifier.length, ')');
-                    console.error('💡 Solution: Nettoyez le sessionStorage et reconnectez-vous');
+                    console.error('🧹 Nettoyage de l\'ancien code_verifier invalide...');
                     sessionStorage.removeItem('spotify_code_verifier');
+
+                    // Show error to user and ask them to reconnect
+                    this.showError('Code verifier invalide détecté. Veuillez vous reconnecter en cliquant sur "Connecter Spotify".');
+                    this.showConnectScreen();
                     throw new Error('Code verifier invalide: semble être encodé. Veuillez vous reconnecter.');
                 }
 
