@@ -411,6 +411,13 @@
                 this.applyStyles();
                 this.applyOverlayStyle();
 
+                // Check for Authorization Code callback first
+                const searchParams = new URLSearchParams(window.location.search);
+                if (searchParams.get('code')) {
+                    this.handleAuthorizationCodeCallback();
+                    return;
+                }
+
                 // Check for token in URL (from OAuth redirect)
                 this.handleOAuthCallback();
 
@@ -431,6 +438,32 @@
                 const params = new URLSearchParams(hash);
                 const accessToken = params.get('access_token');
                 const expiresIn = params.get('expires_in');
+                const error = params.get('error');
+                const errorDescription = params.get('error_description');
+
+                // Handle errors
+                if (error) {
+                    console.error('❌ Erreur OAuth Spotify:', error, errorDescription);
+                    let errorMessage = 'Erreur de connexion Spotify. ';
+
+                    if (error === 'unsupported_response_type') {
+                        errorMessage += 'Le flux Implicit Grant n\'est pas supporté. Utilisation du flux Authorization Code...';
+                        // Try Authorization Code flow instead
+                        this.initiateAuthorizationCodeFlow();
+                        return;
+                    } else if (error === 'access_denied') {
+                        errorMessage = 'Connexion annulée par l\'utilisateur.';
+                    } else {
+                        errorMessage += `Erreur: ${errorDescription || error}`;
+                    }
+
+                    this.showError(errorMessage);
+
+                    // Clean URL (remove hash)
+                    const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                    return;
+                }
 
                 if (accessToken) {
                     // Store token in localStorage
@@ -499,9 +532,98 @@
             }
 
             initiateOAuth() {
+                // Try Authorization Code flow first (more reliable)
+                this.initiateAuthorizationCodeFlow();
+            }
+
+            initiateAuthorizationCodeFlow() {
+                // Generate a random state for security
+                const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                sessionStorage.setItem('spotify_oauth_state', state);
+
                 // Log the redirect URI for debugging
                 console.log('🔗 Redirect URI utilisé:', this.redirectUri);
                 console.log('🔗 URL complète actuelle:', window.location.href);
+
+                const authUrl = `https://accounts.spotify.com/authorize?` +
+                    `client_id=${this.clientId}&` +
+                    `response_type=code&` +
+                    `redirect_uri=${encodeURIComponent(this.redirectUri)}&` +
+                    `scope=${encodeURIComponent(this.scope)}&` +
+                    `state=${state}&` +
+                    `show_dialog=false`;
+
+                console.log('🔗 URL d\'autorisation (Authorization Code):', authUrl);
+                window.location.href = authUrl;
+            }
+
+            async handleAuthorizationCodeCallback() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+                const error = urlParams.get('error');
+
+                if (error) {
+                    console.error('❌ Erreur OAuth Spotify:', error);
+                    this.showError(`Erreur de connexion: ${error}`);
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                    return;
+                }
+
+                // Verify state
+                const storedState = sessionStorage.getItem('spotify_oauth_state');
+                if (state !== storedState) {
+                    console.error('❌ État OAuth invalide');
+                    this.showError('Erreur de sécurité lors de la connexion.');
+                    sessionStorage.removeItem('spotify_oauth_state');
+                    return;
+                }
+                sessionStorage.removeItem('spotify_oauth_state');
+
+                if (code) {
+                    // Exchange code for token using a proxy (since we can't use client_secret in browser)
+                    // For now, we'll use a public proxy service or instruct user to use a backend
+                    this.showError('Le flux Authorization Code nécessite un backend pour échanger le code contre un token. Veuillez utiliser la méthode manuelle pour obtenir un token.');
+
+                    // Clean URL
+                    const cleanUrl = window.location.origin + window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanUrl);
+
+                    // Show instructions
+                    this.showTokenInstructions();
+                }
+            }
+
+            showTokenInstructions() {
+                if (this.connectScreen) {
+                    this.connectScreen.innerHTML = `
+                        <p class="connect-message" style="margin-bottom: 16px;">Le flux automatique n'est pas disponible. Veuillez obtenir un token manuellement :</p>
+                        <ol style="text-align: left; max-width: 500px; margin: 0 auto 16px; color: rgba(255, 255, 255, 0.8); line-height: 1.8; font-size: 14px;">
+                            <li>Allez sur <a href="https://developer.spotify.com/console/get-users-currently-playing-track/" target="_blank" rel="noopener" style="color: #1DB954;">Spotify Web Console</a></li>
+                            <li>Cliquez sur "Get Token"</li>
+                            <li>Sélectionnez le scope: <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">user-read-currently-playing</code></li>
+                            <li>Copiez le token obtenu</li>
+                            <li>Ajoutez-le à l'URL de l'overlay : <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;">?access_token=VOTRE_TOKEN</code></li>
+                        </ol>
+                        <button id="retryConnectButton" class="spotify-connect-button" style="margin-top: 8px;">
+                            Réessayer la connexion automatique
+                        </button>
+                    `;
+
+                    const retryButton = document.getElementById('retryConnectButton');
+                    if (retryButton) {
+                        retryButton.addEventListener('click', () => {
+                            // Try Implicit Grant as fallback
+                            this.initiateImplicitGrantFlow();
+                        });
+                    }
+                }
+            }
+
+            initiateImplicitGrantFlow() {
+                // Fallback to Implicit Grant (may not work for all apps)
+                console.log('🔄 Tentative avec Implicit Grant Flow...');
 
                 const authUrl = `https://accounts.spotify.com/authorize?` +
                     `client_id=${this.clientId}&` +
@@ -510,7 +632,7 @@
                     `scope=${encodeURIComponent(this.scope)}&` +
                     `show_dialog=false`;
 
-                console.log('🔗 URL d\'autorisation:', authUrl);
+                console.log('🔗 URL d\'autorisation (Implicit Grant):', authUrl);
                 window.location.href = authUrl;
             }
 
