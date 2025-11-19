@@ -389,11 +389,31 @@
                 console.log('🚀 Initialisation du Spotify Widget');
                 console.log('📍 URL actuelle:', window.location.href);
 
-                // Get credentials from URL parameters
+                // Get credentials from URL parameters or restored parameters
                 const urlParams = new URLSearchParams(window.location.search);
-                this.clientId = urlParams.get('client_id') || '';
+
+                // Try to restore saved parameters first (from OAuth redirect)
+                const savedParams = sessionStorage.getItem('spotify_widget_params');
+                let params = {};
+                if (savedParams) {
+                    try {
+                        params = JSON.parse(savedParams);
+                        console.log('🔄 Paramètres restaurés depuis sessionStorage:', params);
+                    } catch (e) {
+                        console.error('Erreur lors de la restauration des paramètres:', e);
+                    }
+                }
+
+                // Override with URL parameters if present (URL params take priority)
+                urlParams.forEach((value, key) => {
+                    if (key !== 'code' && key !== 'state' && key !== 'error') {
+                        params[key] = value;
+                    }
+                });
+
+                this.clientId = params.client_id || urlParams.get('client_id') || '';
                 // Default to the production URL (HTTPS required by Spotify)
-                let redirectUri = urlParams.get('redirect_uri') || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html';
+                let redirectUri = params.redirect_uri || urlParams.get('redirect_uri') || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html';
                 // Remove trailing slash if present
                 redirectUri = redirectUri.replace(/\/$/, '');
                 this.redirectUri = redirectUri;
@@ -650,6 +670,23 @@
                     return;
                 }
 
+                // Save current parameters to restore after OAuth redirect
+                const currentParams = new URLSearchParams(window.location.search);
+                const paramsToSave = {};
+                currentParams.forEach((value, key) => {
+                    if (key !== 'code' && key !== 'state' && key !== 'error') {
+                        paramsToSave[key] = value;
+                    }
+                });
+
+                // Also save current instance values (important for client_id and redirect_uri)
+                paramsToSave.client_id = this.clientId;
+                paramsToSave.redirect_uri = this.redirectUri;
+
+                // Store parameters in sessionStorage
+                sessionStorage.setItem('spotify_widget_params', JSON.stringify(paramsToSave));
+                console.log('💾 Paramètres sauvegardés:', paramsToSave);
+
                 // Use Authorization Code flow with PKCE (no client_secret needed)
                 const { codeVerifier, codeChallenge } = await this.generatePKCE();
 
@@ -699,8 +736,24 @@
                     });
 
                     if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.error_description || 'Erreur lors de l\'échange du code');
+                        const errorText = await response.text();
+                        let errorData;
+                        try {
+                            errorData = JSON.parse(errorText);
+                        } catch (e) {
+                            errorData = { error: 'Unknown error', error_description: errorText };
+                        }
+                        console.error('❌ Erreur API Spotify:', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            error: errorData,
+                            requestBody: {
+                                client_id: this.clientId ? 'présent (' + this.clientId.substring(0, 10) + '...)' : 'absent',
+                                redirect_uri: this.redirectUri,
+                                has_code_verifier: !!codeVerifier
+                            }
+                        });
+                        throw new Error(errorData.error_description || errorData.error || 'Erreur lors de l\'échange du code');
                     }
 
                     const data = await response.json();
@@ -846,7 +899,32 @@
 
                 if (code) {
                     try {
+                        // Restore client_id and redirect_uri from saved parameters
+                        const savedParams = sessionStorage.getItem('spotify_widget_params');
+                        if (savedParams) {
+                            try {
+                                const params = JSON.parse(savedParams);
+                                if (params.client_id) {
+                                    this.clientId = params.client_id;
+                                    console.log('🔄 Client ID restauré:', this.clientId);
+                                }
+                                if (params.redirect_uri) {
+                                    this.redirectUri = params.redirect_uri.replace(/\/$/, '');
+                                    console.log('🔄 Redirect URI restauré:', this.redirectUri);
+                                }
+                            } catch (e) {
+                                console.error('Erreur lors de la restauration des paramètres:', e);
+                            }
+                        }
+
+                        if (!this.clientId) {
+                            throw new Error('Client ID manquant après la redirection');
+                        }
+
                         console.log('🔄 Échange du code d\'autorisation contre un token...');
+                        console.log('🔑 Client ID utilisé:', this.clientId);
+                        console.log('🔗 Redirect URI utilisé:', this.redirectUri);
+
                         const tokenData = await this.exchangeCodeForToken(code);
 
                         // Save token data
@@ -856,8 +934,30 @@
 
                         console.log('✅ Token obtenu avec succès');
 
-                        // Clean URL
-                        const cleanUrl = window.location.origin + window.location.pathname + window.location.search.replace(/[?&]code=[^&]*/, '').replace(/[?&]state=[^&]*/, '');
+                        // Restore saved parameters in URL
+                        let cleanUrl = window.location.origin + window.location.pathname;
+
+                        if (savedParams) {
+                            try {
+                                const params = JSON.parse(savedParams);
+                                const urlParams = new URLSearchParams();
+                                Object.keys(params).forEach(key => {
+                                    if (key !== 'client_id' && key !== 'redirect_uri') {
+                                        urlParams.set(key, params[key]);
+                                    }
+                                });
+                                const queryString = urlParams.toString();
+                                if (queryString) {
+                                    cleanUrl += '?' + queryString;
+                                }
+                                sessionStorage.removeItem('spotify_widget_params');
+                                console.log('🔄 Paramètres restaurés dans l\'URL');
+                            } catch (e) {
+                                console.error('Erreur lors de la restauration des paramètres:', e);
+                            }
+                        }
+
+                        // Clean URL (remove code and state)
                         window.history.replaceState({}, document.title, cleanUrl);
 
                         // Show widget and start polling
