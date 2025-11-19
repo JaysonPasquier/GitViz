@@ -435,11 +435,25 @@
 
             handleOAuthCallback() {
                 const hash = window.location.hash.substring(1);
+                console.log('🔍 Analyse du hash:', hash || 'vide');
+
+                if (!hash) {
+                    console.log('ℹ️ Pas de hash dans l\'URL');
+                    return;
+                }
+
                 const params = new URLSearchParams(hash);
                 const accessToken = params.get('access_token');
                 const expiresIn = params.get('expires_in');
                 const error = params.get('error');
                 const errorDescription = params.get('error_description');
+
+                console.log('🔍 Paramètres extraits:', {
+                    hasToken: !!accessToken,
+                    expiresIn: expiresIn,
+                    error: error,
+                    errorDescription: errorDescription
+                });
 
                 // Handle errors
                 if (error) {
@@ -447,17 +461,15 @@
                     let errorMessage = 'Erreur de connexion Spotify. ';
 
                     if (error === 'unsupported_response_type') {
-                        errorMessage += 'Le flux Implicit Grant n\'est pas supporté. Utilisation du flux Authorization Code...';
-                        // Try Authorization Code flow instead
-                        this.initiateAuthorizationCodeFlow();
-                        return;
+                        errorMessage += 'Le flux Implicit Grant n\'est pas supporté. Veuillez activer "Implicit Grant" dans les paramètres de votre application Spotify.';
+                        this.showError(errorMessage);
                     } else if (error === 'access_denied') {
                         errorMessage = 'Connexion annulée par l\'utilisateur.';
+                        this.showError(errorMessage);
                     } else {
                         errorMessage += `Erreur: ${errorDescription || error}`;
+                        this.showError(errorMessage);
                     }
-
-                    this.showError(errorMessage);
 
                     // Clean URL (remove hash)
                     const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
@@ -466,16 +478,26 @@
                 }
 
                 if (accessToken) {
+                    console.log('✅ Token reçu! Expires in:', expiresIn, 'seconds');
+
                     // Store token in localStorage
                     const tokenData = {
                         token: accessToken,
                         expiresAt: Date.now() + (parseInt(expiresIn) * 1000)
                     };
                     localStorage.setItem('spotify_access_token', JSON.stringify(tokenData));
+                    console.log('💾 Token sauvegardé dans localStorage');
 
                     // Clean URL (remove hash)
                     const cleanUrl = window.location.origin + window.location.pathname + window.location.search;
                     window.history.replaceState({}, document.title, cleanUrl);
+                    console.log('🧹 URL nettoyée');
+
+                    // Reload to use the new token
+                    console.log('🔄 Rechargement de la page...');
+                    window.location.reload();
+                } else {
+                    console.log('⚠️ Pas de token dans le hash');
                 }
             }
 
@@ -508,6 +530,7 @@
             }
 
             showConnectScreen() {
+                console.log('📺 Affichage de l\'écran de connexion');
                 if (this.connectScreen) {
                     this.connectScreen.style.display = 'flex';
                 }
@@ -516,7 +539,13 @@
                 }
 
                 if (this.connectButton) {
+                    // Remove existing listeners to avoid duplicates
+                    const newButton = this.connectButton.cloneNode(true);
+                    this.connectButton.parentNode.replaceChild(newButton, this.connectButton);
+                    this.connectButton = newButton;
+
                     this.connectButton.addEventListener('click', () => {
+                        console.log('🖱️ Clic sur le bouton de connexion');
                         this.initiateOAuth();
                     });
                 }
@@ -532,8 +561,10 @@
             }
 
             initiateOAuth() {
-                // Try Authorization Code flow first (more reliable)
-                this.initiateAuthorizationCodeFlow();
+                console.log('🚀 Démarrage du flux OAuth');
+                console.log('🔗 Redirect URI:', this.redirectUri);
+                // Try Implicit Grant flow first (works client-side without backend)
+                this.initiateImplicitGrantFlow();
             }
 
             initiateAuthorizationCodeFlow() {
@@ -622,8 +653,8 @@
             }
 
             initiateImplicitGrantFlow() {
-                // Fallback to Implicit Grant (may not work for all apps)
-                console.log('🔄 Tentative avec Implicit Grant Flow...');
+                console.log('🔄 Utilisation du flux Implicit Grant (response_type=token)...');
+                console.log('🔗 Redirect URI:', this.redirectUri);
 
                 const authUrl = `https://accounts.spotify.com/authorize?` +
                     `client_id=${this.clientId}&` +
@@ -632,7 +663,8 @@
                     `scope=${encodeURIComponent(this.scope)}&` +
                     `show_dialog=false`;
 
-                console.log('🔗 URL d\'autorisation (Implicit Grant):', authUrl);
+                console.log('🔗 URL d\'autorisation complète:', authUrl);
+                console.log('⏳ Redirection vers Spotify...');
                 window.location.href = authUrl;
             }
 
