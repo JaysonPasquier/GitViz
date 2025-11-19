@@ -85,6 +85,58 @@
             gap: 15px;
         }
 
+        /* Overlay Style: Default (current style) */
+        .overlay-style-default .rank-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        /* Overlay Style: Card */
+        .overlay-style-card .rank-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Bubble */
+        .overlay-style-bubble .rank-container {
+            background: linear-gradient(135deg, rgba(145, 70, 255, 0.2), rgba(54, 209, 220, 0.2));
+            border: 2px solid rgba(145, 70, 255, 0.3);
+            border-radius: 24px;
+            padding: 14px 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Minimal */
+        .overlay-style-minimal .rank-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid rgba(0, 255, 136, 0.5);
+            border-radius: 0;
+            padding: 10px 16px;
+        }
+
+        /* Overlay Style: Gradient */
+        .overlay-style-gradient .rank-container {
+            background: linear-gradient(90deg, rgba(145, 70, 255, 0.15), rgba(54, 209, 220, 0.15));
+            border: 1px solid rgba(145, 70, 255, 0.3);
+            border-radius: 16px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(145, 70, 255, 0.1);
+        }
+
+        /* Overlay Style: Glass */
+        .overlay-style-glass .rank-container {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 14px 20px;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
         .rank-icon {
             width: var(--rank-image-size, 60px);
             height: var(--rank-image-size, 60px);
@@ -237,7 +289,7 @@
         }
     </style>
 </head>
-<body>
+<body class="overlay-style-default">
     <div class="rank-container" id="rankContainer">
         <div class="rank-icon" id="rankIcon">
             <!-- Will be populated dynamically -->
@@ -275,9 +327,11 @@
                 this.fontSize = parseInt(urlParams.get('font_size')) || 24;
                 this.fontEffect = urlParams.get('font_effect') || 'normal';
                 this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
+                this.overlayStyle = urlParams.get('overlay_style') || 'default';
 
                 // Apply styles immediately
                 this.applyStyles();
+                this.applyOverlayStyle();
 
                 // Update interval (in milliseconds)
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 60000; // 1 minute default
@@ -542,6 +596,27 @@
                 }
             }
 
+            applyOverlayStyle() {
+                const container = document.getElementById('rankContainer');
+                if (!container) return;
+
+                // Get parent element to apply style class
+                const parent = container.parentElement || document.body;
+
+                // Remove all overlay style classes
+                parent.classList.remove(
+                    'overlay-style-default',
+                    'overlay-style-card',
+                    'overlay-style-bubble',
+                    'overlay-style-minimal',
+                    'overlay-style-gradient',
+                    'overlay-style-glass'
+                );
+
+                // Add the selected style
+                parent.classList.add(`overlay-style-${this.overlayStyle}`);
+            }
+
             // Apply font from parameter
             applyFont(fontName) {
                 if (!fontName) fontName = 'Arial';
@@ -628,9 +703,14 @@
                 if (newRankImageSize) {
                     this.rankImageSize = parseInt(newRankImageSize) || this.rankImageSize;
                 }
+                const newOverlayStyle = urlParams.get('overlay_style');
+                if (newOverlayStyle) {
+                    this.overlayStyle = newOverlayStyle;
+                }
 
                 // Reapply styles
                 this.applyStyles();
+                this.applyOverlayStyle();
 
                 // Update Twitch configuration
                 this.twitchChannel = urlParams.get('channel') || this.twitchChannel;

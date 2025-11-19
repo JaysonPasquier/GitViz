@@ -47,6 +47,74 @@
         #sub-count-container {
             text-align: center;
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* Overlay Style: Default (current style) */
+        body.overlay-style-default #sub-count-container {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        /* Overlay Style: Card */
+        body.overlay-style-card #sub-count-container {
+            background: rgba(0, 0, 0, 0.6) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 16px 20px !important;
+            backdrop-filter: blur(10px) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Bubble */
+        body.overlay-style-bubble #sub-count-container {
+            background: linear-gradient(135deg, rgba(145, 70, 255, 0.2), rgba(54, 209, 220, 0.2)) !important;
+            border: 2px solid rgba(145, 70, 255, 0.3) !important;
+            border-radius: 24px !important;
+            padding: 18px 24px !important;
+            backdrop-filter: blur(10px) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Minimal */
+        body.overlay-style-minimal #sub-count-container {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-left: 3px solid rgba(0, 255, 136, 0.5) !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            border-radius: 0 !important;
+            padding: 14px 20px !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Gradient */
+        body.overlay-style-gradient #sub-count-container {
+            background: linear-gradient(90deg, rgba(145, 70, 255, 0.15), rgba(54, 209, 220, 0.15)) !important;
+            border: 1px solid rgba(145, 70, 255, 0.3) !important;
+            border-radius: 16px !important;
+            padding: 16px 22px !important;
+            box-shadow: 0 2px 8px rgba(145, 70, 255, 0.1) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
+        }
+
+        /* Overlay Style: Glass */
+        body.overlay-style-glass #sub-count-container {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 20px !important;
+            padding: 18px 24px !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+            display: inline-block !important;
+            min-width: fit-content !important;
         }
 
         .sub-count-display {
@@ -80,7 +148,7 @@
         }
     </style>
 </head>
-<body>
+<body class="overlay-style-default">
     <div id="sub-count-container">
         <div id="sub-count-display" class="sub-count-display">0</div>
     </div>
@@ -91,10 +159,15 @@
                 // Parse URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 this.font = urlParams.get('font') || 'Arial';
+                this.fontSize = parseInt(urlParams.get('font_size')) || 48;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.overlayStyle = urlParams.get('overlay_style') || 'default';
                 const goalsParam = urlParams.get('goals') || '25:24h stream,50:something else';
 
                 // Apply font
                 this.applyFont(this.font);
+                this.applyStyles();
+                this.applyOverlayStyle();
 
                 // Parse goals
                 this.goals = this.parseGoals(goalsParam);
@@ -149,6 +222,101 @@
                 }
                 document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
                 document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            }
+
+            applyStyles() {
+                const root = document.documentElement;
+                const countDisplay = document.getElementById('sub-count-display');
+
+                // Apply font size
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+                if (countDisplay) {
+                    countDisplay.style.fontSize = `${this.fontSize}px`;
+                }
+
+                // Apply font effect
+                if (countDisplay) {
+                    countDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    if (this.fontEffect !== 'normal') {
+                        countDisplay.classList.add(`font-${this.fontEffect}`);
+                    }
+                }
+
+                // Add font effect CSS if needed
+                const style = document.createElement('style');
+                style.id = 'dynamic-sub-styles';
+                const existingStyle = document.getElementById('dynamic-sub-styles');
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+
+                if (this.fontEffect !== 'normal') {
+                    style.textContent = `
+                        .sub-count-display.font-${this.fontEffect} {
+                            ${this.getFontEffectCSS(this.fontEffect)}
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            getFontEffectCSS(effect) {
+                switch(effect) {
+                    case 'hollow':
+                        return `
+                            -webkit-text-stroke: 2px;
+                            -webkit-text-stroke-color: currentColor;
+                            -webkit-text-fill-color: transparent;
+                            color: transparent;
+                        `;
+                    case 'border':
+                        return `
+                            text-shadow:
+                                -2px -2px 0 currentColor,
+                                2px -2px 0 currentColor,
+                                -2px 2px 0 currentColor,
+                                2px 2px 0 currentColor,
+                                0 -2px 0 currentColor,
+                                0 2px 0 currentColor,
+                                -2px 0 0 currentColor,
+                                2px 0 0 currentColor;
+                        `;
+                    default:
+                        return '';
+                }
+            }
+
+            applyOverlayStyle() {
+                const body = document.body;
+                if (!body) {
+                    console.error('❌ Body element not found');
+                    return;
+                }
+
+                // Remove all overlay style classes
+                body.classList.remove(
+                    'overlay-style-default',
+                    'overlay-style-card',
+                    'overlay-style-bubble',
+                    'overlay-style-minimal',
+                    'overlay-style-gradient',
+                    'overlay-style-glass'
+                );
+
+                // Add the selected style
+                const styleClass = `overlay-style-${this.overlayStyle}`;
+                body.classList.add(styleClass);
+
+                console.log(`✅ Overlay style applied: ${styleClass}`);
+                console.log(`📋 Body classes:`, body.className);
+
+                // Verify the container exists
+                const container = document.getElementById('sub-count-container');
+                if (container) {
+                    console.log(`✅ Container found, computed style:`, window.getComputedStyle(container).background);
+                } else {
+                    console.error('❌ sub-count-container not found');
+                }
             }
 
             getCurrentGoal(count = null) {

@@ -99,6 +99,58 @@
             pointer-events: none;
         }
 
+        /* Overlay Style: Default (current style) */
+        .overlay-style-default .rank-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        /* Overlay Style: Card */
+        .overlay-style-card .rank-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Bubble */
+        .overlay-style-bubble .rank-container {
+            background: linear-gradient(135deg, rgba(145, 70, 255, 0.2), rgba(54, 209, 220, 0.2));
+            border: 2px solid rgba(145, 70, 255, 0.3);
+            border-radius: 20px;
+            padding: 14px 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Minimal */
+        .overlay-style-minimal .rank-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid rgba(0, 255, 136, 0.5);
+            border-radius: 0;
+            padding: 10px 16px;
+        }
+
+        /* Overlay Style: Gradient */
+        .overlay-style-gradient .rank-container {
+            background: linear-gradient(90deg, rgba(145, 70, 255, 0.15), rgba(54, 209, 220, 0.15));
+            border: 1px solid rgba(145, 70, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(145, 70, 255, 0.1);
+        }
+
+        /* Overlay Style: Glass */
+        .overlay-style-glass .rank-container {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 14px 20px;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
         .rank-container {
             display: flex;
             align-items: center;
@@ -208,6 +260,26 @@
             color: #ff0000;
         }
 
+        /* Font effects */
+        .font-hollow {
+            -webkit-text-stroke: 2px;
+            -webkit-text-stroke-color: currentColor;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .font-border {
+            text-shadow:
+                -2px -2px 0 currentColor,
+                2px -2px 0 currentColor,
+                -2px 2px 0 currentColor,
+                2px 2px 0 currentColor,
+                0 -2px 0 currentColor,
+                0 2px 0 currentColor,
+                -2px 0 0 currentColor,
+                2px 0 0 currentColor;
+        }
+
         /* Command feedback styles */
         .command-feedback {
             position: fixed;
@@ -280,6 +352,16 @@
                 const fontParam = urlParams.get('font') || 'Arial';
                 console.log('🔤 Font parameter from URL:', fontParam);
                 this.applyFont(fontParam);
+
+                // Style configuration
+                this.fontSize = parseInt(urlParams.get('font_size')) || 24;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
+                this.overlayStyle = urlParams.get('overlay_style') || 'default';
+
+                // Apply styles
+                this.applyStyles();
+                this.applyOverlayStyle();
 
 
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 3000;
@@ -579,6 +661,57 @@
                 document.body.style.fontFamily = `${fontFamily}, sans-serif`;
 
                 console.log(`🔤 Police appliquée: ${fontName} (${fontFamily})`);
+            }
+
+            applyStyles() {
+                const root = document.documentElement;
+
+                // Apply font size
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+                root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
+                root.style.setProperty('--font-size-position', `${Math.max(8, this.fontSize - 8)}px`);
+
+                // Apply font effect
+                const rrDisplay = document.getElementById('rrDisplay');
+                const leaderboardPosition = document.getElementById('leaderboardPosition');
+
+                if (rrDisplay) {
+                    rrDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    rrDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+
+                if (leaderboardPosition) {
+                    leaderboardPosition.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    leaderboardPosition.classList.add(`font-${this.fontEffect}`);
+                }
+
+                // Apply rank image size
+                root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
+                const rankIcon = document.getElementById('rankIcon');
+                if (rankIcon) {
+                    rankIcon.style.width = `${this.rankImageSize}px`;
+                    rankIcon.style.height = `${this.rankImageSize}px`;
+                    const rankImage = rankIcon.querySelector('img');
+                    if (rankImage) {
+                        rankImage.style.width = `${this.rankImageSize}px`;
+                        rankImage.style.height = `${this.rankImageSize}px`;
+                    }
+                }
+            }
+
+            applyOverlayStyle() {
+                // Remove all overlay style classes from body
+                document.body.classList.remove(
+                    'overlay-style-default',
+                    'overlay-style-card',
+                    'overlay-style-bubble',
+                    'overlay-style-minimal',
+                    'overlay-style-gradient',
+                    'overlay-style-glass'
+                );
+
+                // Add the selected style to body
+                document.body.classList.add(`overlay-style-${this.overlayStyle}`);
             }
 
             startPreviewCycle() {

@@ -41,6 +41,7 @@
                 { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
                 { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 28 },
                 { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'chat_style', label: 'Style de chat', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         },
         valorant: {
@@ -63,6 +64,7 @@
                 { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
                 { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
                 { key: 'rank_image_size', label: 'Taille de l\'image du rang (px)', type: 'number', min: 20, max: 200, step: 5, default: 60 },
+                { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         },
         sub: {
@@ -80,6 +82,7 @@
                 { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
                 { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 48 },
                 { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         }
     };
@@ -316,6 +319,7 @@
             if (vals.font_size) previewParams.set('font_size', vals.font_size);
             if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
             if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
             previewParams.set('update_interval', vals.update_interval || '3000');
             previewParams.set('show_leaderboard', vals.show_leaderboard || 'true');
 
@@ -348,6 +352,7 @@
             previewParams.set('font', fontValue);
             if (vals.font_size) previewParams.set('font_size', vals.font_size);
             if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
             if (vals.goals) previewParams.set('goals', vals.goals);
 
             const previewUrl = `overlay/sub/sub-count-widget-preview.html?${previewParams.toString()}`;
@@ -380,6 +385,7 @@
             previewParams.set('font', fontValue);
             if (vals.font_size) previewParams.set('font_size', vals.font_size);
             if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.chat_style) previewParams.set('chat_style', vals.chat_style);
             if (vals.moderators && String(vals.moderators).trim()) previewParams.set('moderators', vals.moderators);
             if (vals.vips && String(vals.vips).trim()) previewParams.set('vips', vals.vips);
             if (vals.twitch_client_id && String(vals.twitch_client_id).trim()) previewParams.set('twitch_client_id', vals.twitch_client_id);
