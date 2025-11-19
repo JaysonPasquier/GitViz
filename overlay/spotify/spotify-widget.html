@@ -389,34 +389,67 @@
                 console.log('🚀 Initialisation du Spotify Widget');
                 console.log('📍 URL actuelle:', window.location.href);
 
-                // Get credentials from URL parameters or restored parameters
-                const urlParams = new URLSearchParams(window.location.search);
+                // Check for Authorization Code callback FIRST - restore params before initializing
+                const searchParams = new URLSearchParams(window.location.search);
+                const code = searchParams.get('code');
 
-                // Try to restore saved parameters first (from OAuth redirect)
-                const savedParams = sessionStorage.getItem('spotify_widget_params');
-                let params = {};
-                if (savedParams) {
-                    try {
-                        params = JSON.parse(savedParams);
-                        console.log('🔄 Paramètres restaurés depuis sessionStorage:', params);
-                    } catch (e) {
-                        console.error('Erreur lors de la restauration des paramètres:', e);
+                // If we're in the OAuth callback, restore saved parameters first
+                if (code) {
+                    const savedParams = sessionStorage.getItem('spotify_widget_params');
+                    console.log('🔍 Vérification sessionStorage (callback OAuth):', savedParams ? 'présent' : 'absent');
+                    if (savedParams) {
+                        try {
+                            const params = JSON.parse(savedParams);
+                            console.log('🔄 Paramètres restaurés depuis sessionStorage (callback OAuth):', params);
+                            // Temporarily set these for the callback handler
+                            this.clientId = params.client_id || '';
+                            this.redirectUri = (params.redirect_uri || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html').replace(/\/$/, '');
+                            console.log('✅ client_id restauré:', this.clientId ? 'présent (' + this.clientId.substring(0, 10) + '...)' : 'absent');
+                            console.log('✅ redirect_uri restauré:', this.redirectUri);
+                        } catch (e) {
+                            console.error('❌ Erreur lors de la restauration des paramètres:', e);
+                        }
+                    } else {
+                        console.error('❌ Aucun paramètre sauvegardé trouvé dans sessionStorage. Les paramètres doivent être sauvegardés avant la redirection OAuth.');
                     }
                 }
 
-                // Override with URL parameters if present (URL params take priority)
-                urlParams.forEach((value, key) => {
-                    if (key !== 'code' && key !== 'state' && key !== 'error') {
-                        params[key] = value;
-                    }
-                });
+                // Get credentials from URL parameters or restored parameters
+                const urlParams = new URLSearchParams(window.location.search);
 
-                this.clientId = params.client_id || urlParams.get('client_id') || '';
-                // Default to the production URL (HTTPS required by Spotify)
-                let redirectUri = params.redirect_uri || urlParams.get('redirect_uri') || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html';
-                // Remove trailing slash if present
-                redirectUri = redirectUri.replace(/\/$/, '');
-                this.redirectUri = redirectUri;
+                // Try to restore saved parameters (if not already done for callback)
+                if (!code) {
+                    const savedParams = sessionStorage.getItem('spotify_widget_params');
+                    if (savedParams) {
+                        try {
+                            const params = JSON.parse(savedParams);
+                            console.log('🔄 Paramètres restaurés depuis sessionStorage:', params);
+                            // Merge with URL params (URL params take priority)
+                            urlParams.forEach((value, key) => {
+                                if (key !== 'code' && key !== 'state' && key !== 'error') {
+                                    params[key] = value;
+                                }
+                            });
+                            this.clientId = params.client_id || '';
+                            this.redirectUri = (params.redirect_uri || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html').replace(/\/$/, '');
+                        } catch (e) {
+                            console.error('Erreur lors de la restauration des paramètres:', e);
+                        }
+                    }
+                }
+
+                // If not restored from sessionStorage, get from URL
+                if (!this.clientId) {
+                    this.clientId = urlParams.get('client_id') || '';
+                }
+                if (!this.redirectUri) {
+                    // Default to the production URL (HTTPS required by Spotify)
+                    let redirectUri = urlParams.get('redirect_uri') || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html';
+                    // Remove trailing slash if present
+                    redirectUri = redirectUri.replace(/\/$/, '');
+                    this.redirectUri = redirectUri;
+                }
+
                 this.scope = 'user-read-currently-playing';
 
                 console.log('🔑 Client ID:', this.clientId ? 'présent' : 'absent');
@@ -440,9 +473,7 @@
                 this.applyStyles();
                 this.applyOverlayStyle();
 
-                // Check for Authorization Code callback first
-                const searchParams = new URLSearchParams(window.location.search);
-                const code = searchParams.get('code');
+                // Handle OAuth callback if present
                 if (code) {
                     this.handleAuthorizationCodeCallback(code);
                     return;
@@ -899,26 +930,29 @@
 
                 if (code) {
                     try {
-                        // Restore client_id and redirect_uri from saved parameters
-                        const savedParams = sessionStorage.getItem('spotify_widget_params');
-                        if (savedParams) {
-                            try {
-                                const params = JSON.parse(savedParams);
-                                if (params.client_id) {
-                                    this.clientId = params.client_id;
-                                    console.log('🔄 Client ID restauré:', this.clientId);
+                        // client_id and redirect_uri should already be restored in constructor
+                        // But double-check from saved parameters if needed
+                        if (!this.clientId) {
+                            const savedParams = sessionStorage.getItem('spotify_widget_params');
+                            if (savedParams) {
+                                try {
+                                    const params = JSON.parse(savedParams);
+                                    if (params.client_id) {
+                                        this.clientId = params.client_id;
+                                        console.log('🔄 Client ID restauré (fallback):', this.clientId);
+                                    }
+                                    if (params.redirect_uri) {
+                                        this.redirectUri = params.redirect_uri.replace(/\/$/, '');
+                                        console.log('🔄 Redirect URI restauré (fallback):', this.redirectUri);
+                                    }
+                                } catch (e) {
+                                    console.error('Erreur lors de la restauration des paramètres:', e);
                                 }
-                                if (params.redirect_uri) {
-                                    this.redirectUri = params.redirect_uri.replace(/\/$/, '');
-                                    console.log('🔄 Redirect URI restauré:', this.redirectUri);
-                                }
-                            } catch (e) {
-                                console.error('Erreur lors de la restauration des paramètres:', e);
                             }
                         }
 
                         if (!this.clientId) {
-                            throw new Error('Client ID manquant après la redirection');
+                            throw new Error('Client ID manquant après la redirection. Vérifiez que client_id est dans l\'URL initiale.');
                         }
 
                         console.log('🔄 Échange du code d\'autorisation contre un token...');
