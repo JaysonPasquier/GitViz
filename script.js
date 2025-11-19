@@ -90,7 +90,7 @@
             path: 'overlay/spotify/spotify-widget.html',
             configParams: [
                 { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
-                { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'http://localhost:3000', default: 'http://localhost:3000', required: true },
+                { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://localhost:3000', default: 'https://localhost:3000', required: true, help: '⚠️ IMPORTANT: Cette URL doit correspondre EXACTEMENT (même protocole, même port) à celle configurée dans Spotify Dashboard' },
                 { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 1000, max: 30000, step: 1000, default: 2000 },
             ],
             styleParams: [

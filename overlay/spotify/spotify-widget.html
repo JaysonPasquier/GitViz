@@ -392,11 +392,16 @@
                 // Get credentials from URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 this.clientId = urlParams.get('client_id') || '';
-                this.redirectUri = urlParams.get('redirect_uri') || 'http://localhost:3000';
+                let redirectUri = urlParams.get('redirect_uri') || 'https://localhost:3000';
+                // Remove trailing slash if present
+                redirectUri = redirectUri.replace(/\/$/, '');
+                this.redirectUri = redirectUri;
                 this.scope = 'user-read-currently-playing';
 
                 console.log('🔑 Client ID:', this.clientId ? 'présent' : 'absent');
-                console.log('🔗 Redirect URI:', this.redirectUri);
+                console.log('🔗 Redirect URI utilisé:', this.redirectUri);
+                console.log('⚠️ IMPORTANT: Cette URL doit correspondre EXACTEMENT à celle dans Spotify Dashboard');
+                console.log('⚠️ Vérifiez: même protocole (http/https), même port, pas de slash final');
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 2000;
                 this.font = urlParams.get('font') || 'Arial';
                 this.fontSize = parseInt(urlParams.get('font_size')) || 24;
@@ -664,7 +669,10 @@
                     `state=${state}&` +
                     `show_dialog=false`;
 
-                console.log('🔗 Redirection vers Spotify pour autorisation...');
+                console.log('🔗 URL d\'autorisation complète:', authUrl);
+                console.log('🔗 Redirect URI encodé:', encodeURIComponent(this.redirectUri));
+                console.log('⚠️ VÉRIFIEZ que ce Redirect URI correspond EXACTEMENT à celui dans Spotify Dashboard');
+                console.log('⚠️ Dans Spotify Dashboard, l\'URL doit être EXACTEMENT:', this.redirectUri);
                 window.location.href = authUrl;
             }
 
