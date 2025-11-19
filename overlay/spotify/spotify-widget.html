@@ -727,14 +727,24 @@
                 sessionStorage.setItem('spotify_widget_params', JSON.stringify(paramsToSave));
                 console.log('💾 Paramètres sauvegardés:', paramsToSave);
 
+                // Clear any old code_verifier first (in case of previous failed attempts)
+                sessionStorage.removeItem('spotify_code_verifier');
+
                 // Use Authorization Code flow with PKCE (no client_secret needed)
                 const { codeVerifier, codeChallenge } = await this.generatePKCE();
+
+                // Verify code_verifier length (should be 43-128 characters, not Base64 encoded)
+                if (codeVerifier.length > 128) {
+                    console.error('❌ Code verifier trop long:', codeVerifier.length);
+                    throw new Error('Code verifier invalide: longueur incorrecte');
+                }
 
                 // Store code verifier for later use
                 sessionStorage.setItem('spotify_code_verifier', codeVerifier);
                 console.log('💾 Code verifier sauvegardé dans sessionStorage:', {
                     length: codeVerifier.length,
-                    preview: codeVerifier.substring(0, 20) + '...'
+                    preview: codeVerifier.substring(0, 20) + '...',
+                    isBase64Encoded: codeVerifier.length > 128 ? 'OUI (ERREUR!)' : 'NON (correct)'
                 });
 
                 // Generate state for security
@@ -765,10 +775,19 @@
                     throw new Error('Code verifier manquant');
                 }
 
+                // Verify code_verifier is not Base64 encoded (should be 43-128 chars)
+                if (codeVerifier.length > 128) {
+                    console.error('❌ Code verifier invalide: semble être encodé en Base64 (longueur:', codeVerifier.length, ')');
+                    console.error('💡 Solution: Nettoyez le sessionStorage et reconnectez-vous');
+                    sessionStorage.removeItem('spotify_code_verifier');
+                    throw new Error('Code verifier invalide: semble être encodé. Veuillez vous reconnecter.');
+                }
+
                 console.log('🔐 Code verifier récupéré:', {
                     length: codeVerifier.length,
                     preview: codeVerifier.substring(0, 20) + '...',
-                    exists: !!codeVerifier
+                    exists: !!codeVerifier,
+                    isValidLength: codeVerifier.length >= 43 && codeVerifier.length <= 128
                 });
 
                 try {
