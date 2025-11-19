@@ -1046,6 +1046,7 @@
 
                         // Restore saved parameters in URL
                         let cleanUrl = window.location.origin + window.location.pathname;
+                        const savedParams = sessionStorage.getItem('spotify_widget_params');
 
                         if (savedParams) {
                             try {
