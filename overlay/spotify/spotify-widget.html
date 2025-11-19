@@ -392,7 +392,8 @@
                 // Get credentials from URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
                 this.clientId = urlParams.get('client_id') || '';
-                let redirectUri = urlParams.get('redirect_uri') || 'https://localhost:3000';
+                // Default to the production URL (HTTPS required by Spotify)
+                let redirectUri = urlParams.get('redirect_uri') || 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html';
                 // Remove trailing slash if present
                 redirectUri = redirectUri.replace(/\/$/, '');
                 this.redirectUri = redirectUri;

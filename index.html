@@ -194,8 +194,9 @@
                                         <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
                                             <li>Allez sur <a href="https://developer.spotify.com/dashboard/create" target="_blank" rel="noopener" style="color: var(--primary);">https://developer.spotify.com/dashboard/create</a></li>
                                             <li>Créez une nouvelle application</li>
-                                            <li>Dans les paramètres, ajoutez comme <strong>Redirect URI</strong> : <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">https://localhost:3000</code> (ou <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">http://localhost:3000</code> selon votre configuration)</li>
-                                            <li><strong>⚠️ IMPORTANT :</strong> L'URL doit correspondre <strong>EXACTEMENT</strong> (même protocole http/https, même port) à celle que vous entrez dans les paramètres de l'overlay</li>
+                                            <li>Dans les paramètres, ajoutez comme <strong>Redirect URI</strong> : <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; word-break: break-all;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code></li>
+                                            <li><strong>⚠️ CRITIQUE :</strong> Spotify n'accepte PAS les URLs <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">http://localhost</code> (insecure). Vous DEVEZ utiliser une URL HTTPS publique comme celle ci-dessus.</li>
+                                            <li><strong>⚠️ IMPORTANT :</strong> L'URL doit correspondre <strong>EXACTEMENT</strong> (même protocole https, même domaine, même chemin) à celle que vous entrez dans les paramètres de l'overlay</li>
                                             <li>Copiez votre <strong>Client ID</strong></li>
                                         </ol>
                                     </div>
