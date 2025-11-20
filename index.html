@@ -184,41 +184,42 @@
                                         Convertir Username → User ID
                                     </a>
                                 </div>
+                            </div>
+                        </div>
+                        <div id="spotifyHelpSection" class="api-key-help" style="display: none;">
+                            <div class="api-key-help-content">
+                                <h3 class="h3">🔑 Configuration Spotify</h3>
+                                <p class="muted" style="margin-bottom: 12px;">Pour faire votre overlay, vous allez devoir créer une app Spotify :</p>
 
-                                <div id="spotifyHelpSection" style="display: none; margin-bottom: 16px; padding: 16px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border);">
-                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 12px; color: var(--text);">🔑 Configuration Spotify</h4>
-                                    <p class="muted" style="margin-bottom: 12px;">Pour faire votre overlay, vous allez devoir créer une app Spotify :</p>
+                                <div style="margin-bottom: 16px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text); font-weight: bold;">1. Créer une application Spotify</h4>
+                                    <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li>Allez sur <a href="https://developer.spotify.com/dashboard/create" target="_blank" rel="noopener" style="color: var(--primary);">https://developer.spotify.com/dashboard/create</a></li>
+                                        <li>Créez une nouvelle application</li>
+                                        <li>Dans les paramètres, ajoutez comme <strong>Redirect URI</strong> : <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; word-break: break-all;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code></li>
+                                        <li><strong>⚠️ CRITIQUE :</strong> Spotify n'accepte PAS les URLs <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">http://localhost</code> (insecure). Vous DEVEZ utiliser une URL HTTPS publique comme celle ci-dessus.</li>
+                                        <li><strong>⚠️ IMPORTANT :</strong> L'URL doit correspondre <strong>EXACTEMENT</strong> (même protocole https, même domaine, même chemin) à celle que vous entrez dans les paramètres de l'overlay</li>
+                                        <li>Copiez votre <strong>Client ID</strong></li>
+                                    </ol>
+                                </div>
 
-                                    <div style="margin-bottom: 16px;">
-                                        <h5 style="font-size: 14px; margin-bottom: 8px; color: var(--text); font-weight: bold;">1. Créer une application Spotify</h5>
-                                        <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
-                                            <li>Allez sur <a href="https://developer.spotify.com/dashboard/create" target="_blank" rel="noopener" style="color: var(--primary);">https://developer.spotify.com/dashboard/create</a></li>
-                                            <li>Créez une nouvelle application</li>
-                                            <li>Dans les paramètres, ajoutez comme <strong>Redirect URI</strong> : <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; word-break: break-all;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code></li>
-                                            <li><strong>⚠️ CRITIQUE :</strong> Spotify n'accepte PAS les URLs <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">http://localhost</code> (insecure). Vous DEVEZ utiliser une URL HTTPS publique comme celle ci-dessus.</li>
-                                            <li><strong>⚠️ IMPORTANT :</strong> L'URL doit correspondre <strong>EXACTEMENT</strong> (même protocole https, même domaine, même chemin) à celle que vous entrez dans les paramètres de l'overlay</li>
-                                            <li>Copiez votre <strong>Client ID</strong></li>
-                                        </ol>
-                                    </div>
+                                <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-bottom: 12px;">
+                                    <p class="muted" style="margin: 0; font-size: 13px;"><strong>💡 Comment ça fonctionne :</strong> Entrez votre Client ID dans les paramètres de l'URL. L'overlay vous permettra de vous connecter à votre compte Spotify et récupérera automatiquement un token d'authentification qui sera rafraîchi automatiquement.</p>
+                                </div>
 
-                                    <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-bottom: 12px;">
-                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>💡 Comment ça fonctionne :</strong> Entrez votre Client ID dans les paramètres de l'URL. L'overlay vous permettra de vous connecter à votre compte Spotify et récupérera automatiquement un token d'authentification qui sera rafraîchi automatiquement.</p>
-                                    </div>
+                                <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-top: 12px; margin-bottom: 12px;">
+                                    <p class="muted" style="margin: 0; font-size: 13px; margin-bottom: 8px;"><strong>ℹ️ Configuration requise :</strong> Vous devez ajouter l'URL exacte de votre overlay comme Redirect URI dans votre application Spotify.</p>
+                                    <ol style="margin-left: 20px; margin-top: 8px; margin-bottom: 0; color: var(--muted); line-height: 1.8; font-size: 12px;">
+                                        <li>Allez sur <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener" style="color: var(--primary);">Spotify Developer Dashboard</a></li>
+                                        <li>Ouvrez votre application</li>
+                                        <li>Dans "Redirect URIs", ajoutez l'URL complète de votre overlay (ex: <code style="background: var(--bg); padding: 2px 4px; border-radius: 3px; font-size: 11px;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code>)</li>
+                                        <li>Cliquez sur "Add" puis "Save"</li>
+                                        <li>L'URL doit correspondre <strong>exactement</strong> (avec ou sans slash final, http/https, etc.)</li>
+                                    </ol>
+                                </div>
 
-                                    <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-top: 12px; margin-bottom: 12px;">
-                                        <p class="muted" style="margin: 0; font-size: 13px; margin-bottom: 8px;"><strong>ℹ️ Configuration requise :</strong> Vous devez ajouter l'URL exacte de votre overlay comme Redirect URI dans votre application Spotify.</p>
-                                        <ol style="margin-left: 20px; margin-top: 8px; margin-bottom: 0; color: var(--muted); line-height: 1.8; font-size: 12px;">
-                                            <li>Allez sur <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener" style="color: var(--primary);">Spotify Developer Dashboard</a></li>
-                                            <li>Ouvrez votre application</li>
-                                            <li>Dans "Redirect URIs", ajoutez l'URL complète de votre overlay (ex: <code style="background: var(--bg); padding: 2px 4px; border-radius: 3px; font-size: 11px;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code>)</li>
-                                            <li>Cliquez sur "Add" puis "Save"</li>
-                                            <li>L'URL doit correspondre <strong>exactement</strong> (avec ou sans slash final, http/https, etc.)</li>
-                                        </ol>
-                                    </div>
-
-                                    <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px;">
-                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Les tokens expirent après <strong>1 heure</strong>. Si le token expire, vous devrez simplement cliquer à nouveau sur "Connecter Spotify" dans l'overlay.</p>
-                                    </div>
+                                <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px;">
+                                    <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Les tokens expirent après <strong>1 heure</strong>. Si le token expire, vous devrez simplement cliquer à nouveau sur "Connecter Spotify" dans l'overlay.</p>
                                 </div>
                             </div>
                         </div>
