@@ -991,8 +991,9 @@
                     const routingRegion = accountRegionMap[this.region] || 'europe';
 
                     // Get PUUID from Riot Account API
+                    // Note: The endpoint should be 'account/v1/...' - the worker will add 'riot/' prefix automatically
                     const accountEndpoint = `account/v1/accounts/by-riot-id/${encodeURIComponent(this.playerName)}/${encodeURIComponent(this.playerTag)}`;
-                    const accountUrl = `${this.proxyUrl}?endpoint=${accountEndpoint}&region=${routingRegion}`;
+                    const accountUrl = `${this.proxyUrl}?endpoint=${accountEndpoint}&region=${this.region}`;
                     console.log('🌐 URL API Account:', accountUrl);
 
                     const accountResponse = await fetch(accountUrl);
