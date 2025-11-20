@@ -26,19 +26,21 @@
             box-sizing: border-box;
         }
 
-        html {
-            background: transparent !important;
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(145,70,255,.15), transparent 40%),
+                        radial-gradient(1200px 600px at 110% 10%, rgba(54,209,220,.12), transparent 40%),
+                        #0e0f14;
         }
 
         body {
             font-family: Arial, sans-serif;
-            background: transparent !important;
             color: #ffffff;
-            overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding: 20px 0px 0px 0px;
         }
 
         #spotify-container {
@@ -328,13 +330,15 @@
 
                 // Mock track rotation for preview
                 this.mockTracks = [
-                    { name: 'Blinding Lights', artist: 'The Weeknd', image: 'https://via.placeholder.com/300/FF6B6B/FFFFFF?text=Blinding+Lights' },
-                    { name: 'Watermelon Sugar', artist: 'Harry Styles', image: 'https://via.placeholder.com/300/4ECDC4/FFFFFF?text=Watermelon+Sugar' },
-                    { name: 'Levitating', artist: 'Dua Lipa', image: 'https://via.placeholder.com/300/FFE66D/FFFFFF?text=Levitating' },
+                    { name: 'Ain\'t Safe (feat. Don Toliver)', artist: 'Trippie Redd, Don Toliver', image: 'https://i.scdn.co/image/ab67616d0000b273413bc75c3539a3f425308af5' },
+                    { name: 'PORT MORESBY', artist: 'Oreall', image: 'https://i.scdn.co/image/ab67616d0000b27363ea6aca628aaf07936c321c' },
+                    { name: 'Don\'t Like.1', artist: 'Kanye West, Chief Keef, Pusha T, Big Sean, Jadakiss', image: 'https://i.scdn.co/image/ab67616d0000b27350ff076934366091764d1a09' },
                 ];
                 this.currentMockIndex = 0;
+                this.rotationInterval = null;
                 this.updateMockTrack();
-                setInterval(() => this.updateMockTrack(), 3000);
+                // Rotate tracks every 4 seconds
+                this.rotationInterval = setInterval(() => this.updateMockTrack(), 4000);
             }
 
             applyFont(fontName) {

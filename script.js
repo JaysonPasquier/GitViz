@@ -85,14 +85,18 @@
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         },
-        spotify: {
-            label: 'Spotify',
-            path: 'overlay/spotify/spotify-widget.html',
-            configParams: [
-                { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
-                { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', default: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', required: true, help: '⚠️ IMPORTANT: Utilisez une URL HTTPS (pas http://localhost). Cette URL doit correspondre EXACTEMENT à celle configurée dans Spotify Dashboard' },
-                { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 1000, max: 30000, step: 1000, default: 2000 },
-            ],
+                spotify: {
+                    label: 'Spotify',
+                    path: 'overlay/spotify/spotify-widget.html',
+                    configParams: [
+                        { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
+                        { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', default: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', required: true, help: '⚠️ IMPORTANT: Utilisez une URL HTTPS (pas http://localhost). Cette URL doit correspondre EXACTEMENT à celle configurée dans Spotify Dashboard' },
+                        { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 1000, max: 30000, step: 1000, default: 2000 },
+                        { key: 'display_mode', label: 'Mode d\'affichage', type: 'select', options: ['always', 'on_change', 'on_command', 'on_change_or_command', 'on_change_and_command'], default: 'always', help: 'always: Toujours affiché | on_change: Apparaît à chaque changement de musique | on_command: Apparaît sur commande Twitch | on_change_or_command: Apparaît sur changement OU commande | on_change_and_command: Apparaît sur changement ET commande' },
+                        { key: 'display_duration', label: 'Durée d\'affichage (ms)', type: 'number', min: 1000, max: 60000, step: 1000, default: 5000, help: 'Durée pendant laquelle l\'overlay reste visible (uniquement pour les modes avec cooldown)' },
+                        { key: 'twitch_channel', label: 'Canal Twitch (pour commandes)', type: 'text', placeholder: 'nom_du_canal', help: 'Optionnel: Nom du canal Twitch pour écouter les commandes (ex: !music)' },
+                        { key: 'twitch_command', label: 'Commande Twitch', type: 'text', placeholder: '!music', default: '!music', help: 'Commande à écouter dans le chat Twitch (ex: !music)' },
+                    ],
             styleParams: [
                 { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
                 { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },

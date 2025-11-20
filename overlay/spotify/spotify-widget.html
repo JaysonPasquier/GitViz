@@ -48,6 +48,10 @@
             transition: all 0.3s ease;
         }
 
+        #spotify-display {
+            transition: opacity 0.3s ease-in-out;
+        }
+
         /* Overlay Style: Default (Vinyl style) */
         body.overlay-style-default #spotify-container {
             background: transparent !important;
@@ -535,8 +539,19 @@
                 this.fontEffect = urlParams.get('font_effect') || 'normal';
                 this.overlayStyle = urlParams.get('overlay_style') || 'default';
 
+                // Display mode configuration
+                this.displayMode = urlParams.get('display_mode') || 'always';
+                this.displayDuration = parseInt(urlParams.get('display_duration')) || 5000;
+                this.twitchChannel = urlParams.get('twitch_channel') || '';
+                this.twitchCommand = urlParams.get('twitch_command') || '!music';
+
                 this.currentTrack = null;
                 this.updateIntervalId = null;
+                this.displayTimeoutId = null;
+                this.isVisible = true;
+                this.lastTrackId = null;
+                this.twitchWS = null;
+                this.commandTriggered = false;
 
                 this.display = document.getElementById('spotify-display');
                 this.connectScreen = document.getElementById('connect-screen');
@@ -1016,6 +1031,127 @@
                 if (this.display) {
                     this.display.style.display = 'flex';
                 }
+
+                // Initialize display mode
+                this.initializeDisplayMode();
+            }
+
+            initializeDisplayMode() {
+                // Connect to Twitch chat if needed
+                if ((this.displayMode === 'on_command' ||
+                     this.displayMode === 'on_change_or_command' ||
+                     this.displayMode === 'on_change_and_command') &&
+                    this.twitchChannel) {
+                    this.connectToTwitchChat();
+                }
+
+                // Set initial visibility based on mode
+                if (this.displayMode === 'always') {
+                    this.setVisibility(true);
+                } else {
+                    this.setVisibility(false);
+                }
+            }
+
+            setVisibility(visible) {
+                if (!this.display) return;
+
+                this.isVisible = visible;
+                if (visible) {
+                    this.display.style.display = 'flex';
+                    this.display.style.opacity = '1';
+                    this.display.style.transition = 'opacity 0.3s ease-in-out';
+                } else {
+                    this.display.style.opacity = '0';
+                    setTimeout(() => {
+                        if (!this.isVisible) {
+                            this.display.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }
+
+            showDisplayTemporarily() {
+                this.setVisibility(true);
+
+                // Clear existing timeout
+                if (this.displayTimeoutId) {
+                    clearTimeout(this.displayTimeoutId);
+                }
+
+                // Hide after duration (if not always mode)
+                if (this.displayMode !== 'always') {
+                    this.displayTimeoutId = setTimeout(() => {
+                        this.setVisibility(false);
+                    }, this.displayDuration);
+                }
+            }
+
+            connectToTwitchChat() {
+                if (!this.twitchChannel) return;
+
+                try {
+                    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+                    this.twitchWS = ws;
+
+                    ws.onopen = () => {
+                        console.log('🔌 Connexion au chat Twitch...');
+                        ws.send('CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands');
+                        ws.send(`PASS oauth:anonymous`);
+                        ws.send(`NICK justinfan${Math.floor(Math.random() * 100000)}`);
+                        ws.send(`JOIN #${this.twitchChannel.toLowerCase()}`);
+                    };
+
+                    ws.onmessage = (event) => {
+                        const message = event.data.trim();
+
+                        // Handle PING
+                        if (message.startsWith('PING')) {
+                            ws.send('PONG :tmi.twitch.tv');
+                            return;
+                        }
+
+                        // Parse chat messages
+                        const parts = message.split(' ');
+                        if (parts[1] === 'PRIVMSG') {
+                            const username = parts[0].split('!')[0].substring(1);
+                            const channel = parts[2].substring(1);
+                            const command = parts.slice(3).join(' ').substring(1).toLowerCase().trim();
+
+                            if (command === this.twitchCommand.toLowerCase()) {
+                                console.log(`📢 Commande détectée: ${this.twitchCommand} par ${username}`);
+                                this.handleCommandTrigger();
+                            }
+                        }
+                    };
+
+                    ws.onerror = (error) => {
+                        console.error('❌ Erreur WebSocket Twitch:', error);
+                    };
+
+                    ws.onclose = () => {
+                        console.log('🔌 Déconnexion du chat Twitch');
+                        // Reconnect after 5 seconds
+                        setTimeout(() => this.connectToTwitchChat(), 5000);
+                    };
+                } catch (error) {
+                    console.error('❌ Erreur lors de la connexion au chat Twitch:', error);
+                }
+            }
+
+            handleCommandTrigger() {
+                this.commandTriggered = true;
+
+                if (this.displayMode === 'on_command') {
+                    this.showDisplayTemporarily();
+                } else if (this.displayMode === 'on_change_or_command') {
+                    this.showDisplayTemporarily();
+                } else if (this.displayMode === 'on_change_and_command') {
+                    // Check if track changed recently
+                    if (this.currentTrack) {
+                        this.showDisplayTemporarily();
+                    }
+                }
             }
 
             initiateOAuth() {
@@ -1139,6 +1275,11 @@
                         // Show widget and start polling
                         this.showWidget();
                         this.startPolling();
+
+                        // Initialize display mode after widget is shown
+                        setTimeout(() => {
+                            this.initializeDisplayMode();
+                        }, 100);
 
                         // Set up token refresh
                         this.tokenRefreshInterval = setInterval(async () => {
@@ -1408,11 +1549,14 @@
                 const albumImage = track.album?.images?.[0]?.url || track.album?.images?.[1]?.url || track.album?.images?.[2]?.url || '';
                 const isPlaying = trackData.is_playing !== false;
 
+                // Check if track changed
+                const trackChanged = !this.currentTrack ||
+                    this.currentTrack.name !== trackName ||
+                    this.currentTrack.artists !== artists ||
+                    this.currentTrack.albumImage !== albumImage;
+
                 // Only update if track changed
-                if (this.currentTrack &&
-                    this.currentTrack.name === trackName &&
-                    this.currentTrack.artists === artists &&
-                    this.currentTrack.albumImage === albumImage) {
+                if (!trackChanged) {
                     // Update playing state
                     if (this.overlayStyle === 'default') {
                         const vinyl = this.display.querySelector('.vinyl');
@@ -1422,6 +1566,20 @@
                         }
                     }
                     return;
+                }
+
+                // Track changed - handle display mode
+                if (trackChanged) {
+                    if (this.displayMode === 'on_change' ||
+                        this.displayMode === 'on_change_or_command') {
+                        this.showDisplayTemporarily();
+                    } else if (this.displayMode === 'on_change_and_command') {
+                        // Only show if command was also triggered
+                        if (this.commandTriggered) {
+                            this.showDisplayTemporarily();
+                            this.commandTriggered = false; // Reset
+                        }
+                    }
                 }
 
                 this.currentTrack = { name: trackName, artists: artists, albumImage: albumImage };
