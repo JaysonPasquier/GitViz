@@ -543,7 +543,10 @@
                 this.displayMode = urlParams.get('display_mode') || 'always';
                 this.displayDuration = parseInt(urlParams.get('display_duration')) || 5000;
                 this.twitchChannel = urlParams.get('twitch_channel') || '';
-                this.twitchCommand = urlParams.get('twitch_command') || '!music';
+                // Decode command (handle %21 for !)
+                let twitchCommand = urlParams.get('twitch_command') || '!music';
+                this.twitchCommand = decodeURIComponent(twitchCommand);
+                console.log('🎮 Commande Twitch configurée:', this.twitchCommand);
 
                 this.currentTrack = null;
                 this.updateIntervalId = null;
@@ -1104,6 +1107,7 @@
 
                     ws.onmessage = (event) => {
                         const message = event.data.trim();
+                        console.log('📨 Message IRC reçu:', message);
 
                         // Handle PING
                         if (message.startsWith('PING')) {
@@ -1111,14 +1115,48 @@
                             return;
                         }
 
-                        // Parse chat messages
-                        const parts = message.split(' ');
-                        if (parts[1] === 'PRIVMSG') {
-                            const username = parts[0].split('!')[0].substring(1);
-                            const channel = parts[2].substring(1);
-                            const command = parts.slice(3).join(' ').substring(1).toLowerCase().trim();
+                        // Handle JOIN confirmation
+                        if (message.includes('JOIN') || message.includes(':tmi.twitch.tv 353')) {
+                            console.log('✅ Rejoint le canal:', this.twitchChannel);
+                            return;
+                        }
 
-                            if (command === this.twitchCommand.toLowerCase()) {
+                        // Parse chat messages (with or without tags)
+                        let messageText = '';
+                        let username = '';
+
+                        // Check if message has tags (starts with @)
+                        if (message.startsWith('@')) {
+                            // Message with tags: @tags :username!user@host PRIVMSG #channel :message
+                            const colonIndex = message.indexOf(' :');
+                            if (colonIndex === -1) return;
+
+                            const afterColon = message.substring(colonIndex + 2);
+                            const parts = afterColon.split(' ');
+
+                            if (parts[1] === 'PRIVMSG' && parts[2]) {
+                                username = parts[0].split('!')[0];
+                                const channel = parts[2].substring(1);
+                                messageText = parts.slice(3).join(' ').substring(1).toLowerCase().trim();
+
+                                console.log('📝 Message parsé:', { username, channel, messageText });
+                            }
+                        } else {
+                            // Message without tags: :username!user@host PRIVMSG #channel :message
+                            const parts = message.split(' ');
+                            if (parts[1] === 'PRIVMSG' && parts[2]) {
+                                username = parts[0].split('!')[0].substring(1);
+                                const channel = parts[2].substring(1);
+                                messageText = parts.slice(3).join(' ').substring(1).toLowerCase().trim();
+
+                                console.log('📝 Message parsé (sans tags):', { username, channel, messageText });
+                            }
+                        }
+
+                        // Check if message matches command
+                        if (messageText) {
+                            const commandLower = this.twitchCommand.toLowerCase().trim();
+                            if (messageText === commandLower || messageText.startsWith(commandLower + ' ')) {
                                 console.log(`📢 Commande détectée: ${this.twitchCommand} par ${username}`);
                                 this.handleCommandTrigger();
                             }
