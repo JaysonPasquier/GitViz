@@ -384,21 +384,45 @@
             async fetchRankData() {
                 try {
                     console.log('🔄 Récupération des données depuis OP.GG...');
+                    console.log('👤 Riot ID:', this.riotId, 'Tagline:', this.tagline, 'Région:', this.region);
 
-                    // OP.GG API URL
-                    const apiUrl = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${this.riotId}-${this.tagline}`;
+                    // OP.GG API URL - Format: name=RIOT_ID-TAGLINE
+                    // Note: OP.GG uses the format RiotID-Tagline (e.g., Faker-KR1)
+                    const playerName = `${this.riotId}-${this.tagline}`;
+
+                    // Build API URL - OP.GG expects the name parameter without encoding the dash
+                    const apiUrl = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${playerName}`;
+
+                    // Encode the full URL for the proxy
                     const proxyUrl = `${this.corsProxy}${encodeURIComponent(apiUrl)}`;
 
-                    console.log('🌐 URL API:', proxyUrl);
+                    console.log('🌐 URL API brute:', apiUrl);
+                    console.log('🌐 URL API avec proxy:', proxyUrl);
 
                     const response = await fetch(proxyUrl);
 
+                    console.log('📋 Statut de la réponse:', response.status, response.statusText);
+
                     if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`);
+                        // Try to get error details
+                        let errorText = '';
+                        try {
+                            const errorData = await response.text();
+                            console.error('❌ Réponse d\'erreur:', errorData);
+                            errorText = errorData.substring(0, 200);
+                        } catch (e) {
+                            console.error('❌ Impossible de lire la réponse d\'erreur');
+                        }
+
+                        if (response.status === 404) {
+                            throw new Error(`Joueur non trouvé (404). Vérifiez que le Riot ID "${this.riotId}" et le Tagline "${this.tagline}" sont corrects pour la région "${this.region}".`);
+                        } else {
+                            throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
+                        }
                     }
 
                     const data = await response.json();
-                    console.log('📄 Données OP.GG:', data);
+                    console.log('📄 Données OP.GG complètes:', data);
 
                     const rankInfo = data?.data?.league_stats;
 
@@ -451,7 +475,13 @@
 
                 } catch (error) {
                     console.error('❌ Erreur lors de la récupération des données:', error);
-                    this.displayError('Erreur API');
+                    const errorMessage = error.message || 'Erreur API';
+                    this.displayError(errorMessage);
+
+                    // Keep cached data if available
+                    if (this.currentRankData && this.currentRankData.tier !== 'Unranked') {
+                        console.log('📦 Conservation des données en cache en cas d\'erreur');
+                    }
                 }
             }
 
@@ -557,15 +587,26 @@
             displayError(message) {
                 const rankTier = document.getElementById('rankTier');
                 const lpDisplay = document.getElementById('lpDisplay');
+                const rankIcon = document.getElementById('rankIcon');
 
                 if (rankTier) {
+                    // Truncate long error messages
+                    const shortMessage = message.length > 30 ? message.substring(0, 27) + '...' : message;
                     rankTier.textContent = 'Erreur';
                     rankTier.style.color = '#ff0000';
+                    rankTier.title = message; // Full message in tooltip
                 }
 
                 if (lpDisplay) {
-                    lpDisplay.textContent = message;
+                    const shortMessage = message.length > 20 ? message.substring(0, 17) + '...' : message;
+                    lpDisplay.textContent = shortMessage;
                     lpDisplay.style.color = '#ff0000';
+                    lpDisplay.style.fontSize = '14px';
+                    lpDisplay.title = message; // Full message in tooltip
+                }
+
+                if (rankIcon) {
+                    rankIcon.innerHTML = '<div style="font-size: 12px; text-align: center; color: #ff0000;">❌</div>';
                 }
 
                 console.error('❌ Erreur:', message);
