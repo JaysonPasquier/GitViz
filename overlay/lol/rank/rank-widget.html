@@ -1014,55 +1014,10 @@
                     }
 
                     const puuid = accountData.puuid;
+                    console.log('✅ PUUID récupéré:', puuid);
 
-                    // Step 2: Get summoner by PUUID
-                    const summonerEndpoint = `summoner/v4/summoners/by-puuid/${puuid}`;
-                    const summonerUrl = `${this.proxyUrl}?endpoint=${summonerEndpoint}&region=${this.region}`;
-                    console.log('🌐 URL API Summoner:', summonerUrl);
-
-                    const summonerResponse = await fetch(summonerUrl);
-                    console.log('📋 Statut de la réponse Summoner:', summonerResponse.status, summonerResponse.statusText);
-
-                    if (!summonerResponse.ok) {
-                        if (summonerResponse.status === 404) {
-                            throw new Error('Summoner introuvable');
-                        }
-                        throw new Error(`Erreur HTTP: ${summonerResponse.status} - ${summonerResponse.statusText}`);
-                    }
-
-                    const summonerData = await summonerResponse.json();
-                    console.log('📄 Données du summoner:', summonerData);
-                    console.log('📄 Toutes les clés du summoner:', Object.keys(summonerData));
-
-                    // Check if we have the summoner ID
-                    let summonerId = summonerData.id;
-
-                    // If ID is missing, get summoner by name (which should have the ID field)
-                    if (!summonerId) {
-                        console.log('⚠️ Pas d\'ID dans la réponse by-puuid, tentative avec by-name...');
-                        const summonerByNameEndpoint = `summoner/v4/summoners/by-name/${encodeURIComponent(this.playerName)}`;
-                        const summonerByNameUrl = `${this.proxyUrl}?endpoint=${summonerByNameEndpoint}&region=${this.region}`;
-                        console.log('🌐 URL API Summoner by Name:', summonerByNameUrl);
-
-                        const summonerByNameResponse = await fetch(summonerByNameUrl);
-                        if (summonerByNameResponse.ok) {
-                            const summonerByNameData = await summonerByNameResponse.json();
-                            console.log('📄 Données du summoner by name:', summonerByNameData);
-                            summonerId = summonerByNameData.id;
-                        } else {
-                            console.error('❌ Erreur lors de la récupération par nom:', summonerByNameResponse.status);
-                        }
-                    }
-
-                    if (!summonerId) {
-                        console.error('❌ Impossible de récupérer l\'ID du summoner');
-                        throw new Error('Données du summoner invalides - ID manquant');
-                    }
-
-                    console.log('✅ ID du summoner trouvé:', summonerId);
-
-                    // Step 2: Get league entries by summoner ID
-                    const leagueEndpoint = `league/v4/entries/by-summoner/${summonerId}`;
+                    // Step 2: Get league entries directly by PUUID (simpler and more efficient)
+                    const leagueEndpoint = `league/v4/entries/by-puuid/${puuid}`;
                     const leagueUrl = `${this.proxyUrl}?endpoint=${leagueEndpoint}&region=${this.region}`;
                     console.log('🌐 URL API League:', leagueUrl);
 
@@ -1076,9 +1031,17 @@
                     const leagueData = await leagueResponse.json();
                     console.log('📄 Données de league:', leagueData);
 
-                    // Find RANKED_SOLO_5x5 queue
+                    // The API returns a Set (array) of LeagueEntryDTO
+                    // Find RANKED_SOLO_5x5 queue (solo/duo ranked)
                     let rankedEntry = null;
-                    if (Array.isArray(leagueData)) {
+                    if (Array.isArray(leagueData) && leagueData.length > 0) {
+                        rankedEntry = leagueData.find(entry => entry.queueType === 'RANKED_SOLO_5x5');
+                        console.log('🔍 Entrées de league trouvées:', leagueData.length);
+                        console.log('🎯 Entrée RANKED_SOLO_5x5:', rankedEntry);
+                    } else if (leagueData && typeof leagueData === 'object' && !Array.isArray(leagueData)) {
+                        // Handle case where API returns a single object instead of array
+                        console.log('⚠️ Réponse non-array, conversion...');
+                        leagueData = [leagueData];
                         rankedEntry = leagueData.find(entry => entry.queueType === 'RANKED_SOLO_5x5');
                     }
 
