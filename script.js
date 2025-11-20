@@ -67,6 +67,25 @@
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         },
+        lol: {
+            label: 'League of Legends',
+            path: 'overlay/lol/rank/rank-widget.html',
+            configParams: [
+                { key: 'riot_id', label: 'Riot ID', type: 'text', placeholder: 'ex: Faker', required: true },
+                { key: 'tagline', label: 'Tagline', type: 'text', placeholder: 'ex: KR1', required: true },
+                { key: 'region', label: 'Région', type: 'select', options: ['kr', 'euw', 'na', 'eune', 'oce', 'br', 'lan', 'las', 'ru', 'tr', 'jp'], default: 'kr', required: true },
+                { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 2000, max: 300000, step: 1000, default: 60000 },
+                { key: 'cors_proxy', label: 'Proxy CORS (optionnel)', type: 'text', placeholder: 'https://corsproxy.io/?', default: 'https://corsproxy.io/?', help: 'Proxy CORS pour contourner les restrictions. Alternatives: https://api.allorigins.win/raw?url= ou https://thingproxy.freeboard.io/fetch/' },
+                { key: 'rank_border', label: 'Version avec bordure', type: 'select', options: ['true', 'false'], default: 'true', help: 'Utiliser la version avec bordure des images de rang (plus visible)' },
+            ],
+            styleParams: [
+                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
+                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
+                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'rank_image_size', label: 'Taille de l\'image du rang (px)', type: 'number', min: 20, max: 200, step: 5, default: 60 },
+                { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
+            ]
+        },
         sub: {
             label: 'Sub Goal',
             path: 'overlay/sub/sub-count-widget.html',

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<!-- GitViz – URL Builder & Editor
+* what are you doing here ?
+* are you trying to copy my code ? or looking if its ai generated ?
+* if you are, you are not gonna find anything here.
+* this is a custom code that i wrote for my own use.
+* if you want to use it, you can, but you need to ask me for permission.
+* if you are not trying to copy my code, or looking if its ai generated, then you can continue.
+* i hope you enjoy my code.
+* if you have any questions, feel free to ask me.
+* if you have any suggestions, feel free to suggest them.
+* if you have any bugs, feel free to report them.
+-->
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoL Rank Widget</title>
+    <!-- Google Fonts for custom font selection -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--custom-font, 'Arial', sans-serif);
+            background: transparent;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .rank-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Overlay Style: Default */
+        .overlay-style-default .rank-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        /* Overlay Style: Card */
+        .overlay-style-card .rank-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Bubble */
+        .overlay-style-bubble .rank-container {
+            background: linear-gradient(135deg, rgba(145, 70, 255, 0.2), rgba(54, 209, 220, 0.2));
+            border: 2px solid rgba(145, 70, 255, 0.3);
+            border-radius: 24px;
+            padding: 14px 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Minimal */
+        .overlay-style-minimal .rank-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid rgba(0, 255, 136, 0.5);
+            border-radius: 0;
+            padding: 10px 16px;
+        }
+
+        /* Overlay Style: Gradient */
+        .overlay-style-gradient .rank-container {
+            background: linear-gradient(90deg, rgba(145, 70, 255, 0.15), rgba(54, 209, 220, 0.15));
+            border: 1px solid rgba(145, 70, 255, 0.3);
+            border-radius: 16px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(145, 70, 255, 0.1);
+        }
+
+        /* Overlay Style: Glass */
+        .overlay-style-glass .rank-container {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 14px 20px;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .rank-icon {
+            width: var(--rank-image-size, 60px);
+            height: var(--rank-image-size, 60px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-icon img {
+            width: var(--rank-image-size, 60px);
+            height: var(--rank-image-size, 60px);
+            object-fit: contain;
+        }
+
+        .rank-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .rank-tier {
+            font-size: var(--font-size-main, 24px);
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .lp-display {
+            font-size: var(--font-size-main, 24px);
+            font-weight: bold;
+            color: #ffffff;
+            position: relative;
+        }
+
+        .lp-change {
+            position: absolute;
+            left: -80px;
+            top: 0;
+            font-size: var(--font-size-change, 20px);
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(0);
+            animation: slideAndFade 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .lp-change.positive {
+            color: #00ff00;
+        }
+
+        .lp-change.negative {
+            color: #ff0000;
+        }
+
+        @keyframes slideAndFade {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        .loading {
+            font-size: var(--font-size-main, 24px);
+        }
+
+        /* Font effects */
+        .font-hollow {
+            -webkit-text-stroke: 2px;
+            -webkit-text-stroke-color: currentColor;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .font-border {
+            text-shadow:
+                -2px -2px 0 currentColor,
+                2px -2px 0 currentColor,
+                -2px 2px 0 currentColor,
+                2px 2px 0 currentColor,
+                0 -2px 0 currentColor,
+                0 2px 0 currentColor,
+                -2px 0 0 currentColor,
+                2px 0 0 currentColor;
+        }
+
+        .error {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body class="overlay-style-default">
+    <div class="rank-container" id="rankContainer">
+        <div class="rank-icon" id="rankIcon">
+            <!-- Will be populated dynamically -->
+        </div>
+        <div class="rank-info">
+            <div class="rank-tier" id="rankTier">--</div>
+            <div class="lp-display" id="lpDisplay">-- LP</div>
+        </div>
+    </div>
+
+    <script>
+        class LoLRankWidget {
+            constructor() {
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // Player info
+                this.riotId = urlParams.get('riot_id') || 'Faker';
+                this.tagline = urlParams.get('tagline') || 'KR1';
+                this.region = urlParams.get('region') || 'kr';
+
+                // Font configuration
+                const fontParam = urlParams.get('font') || 'Arial';
+                this.applyFont(fontParam);
+
+                // Style configuration
+                this.fontSize = parseInt(urlParams.get('font_size')) || 24;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
+                this.overlayStyle = urlParams.get('overlay_style') || 'default';
+
+                // Apply styles
+                this.applyStyles();
+                this.applyOverlayStyle();
+
+                // Update interval
+                this.updateInterval = parseInt(urlParams.get('update_interval')) || 60000;
+
+                // CORS Proxy (can be changed via URL param)
+                this.corsProxy = urlParams.get('cors_proxy') || 'https://corsproxy.io/?';
+
+                // Current rank data
+                this.currentRankData = {
+                    tier: 'Unranked',
+                    division: '',
+                    lp: 0
+                };
+
+                // Previous values for animation
+                this.previousLP = 0;
+                this.isAnimating = false;
+
+                // Rank images mapping
+                // Use border version by default (you can add a parameter to switch)
+                this.useBorderVersion = urlParams.get('rank_border') !== 'false';
+                const borderSuffix = this.useBorderVersion ? '-border' : '';
+
+                this.rankImages = {
+                    'IRON': `images/Iron${borderSuffix}.png`,
+                    'BRONZE': `images/Bronze${borderSuffix}.png`,
+                    'SILVER': `images/Silver${borderSuffix}.png`,
+                    'GOLD': `images/Gold${borderSuffix}.png`,
+                    'PLATINUM': `images/Platinum${borderSuffix}.png`,
+                    'EMERALD': `images/Emerald${borderSuffix}.png`,
+                    'DIAMOND': `images/Diamond${borderSuffix}.png`,
+                    'MASTER': `images/Master${borderSuffix}.png`,
+                    'GRANDMASTER': `images/Grandmaster${borderSuffix}.png`,
+                    'CHALLENGER': `images/Challenger${borderSuffix}.png`,
+                    'UNRANKED': 'images/Unrated.png',
+                    'UNRATED': 'images/Unrated.png'
+                };
+
+                this.init();
+            }
+
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    fontFamily = fontName;
+                } else {
+                    fontFamily = `'${fontName}'`;
+                }
+
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            }
+
+            applyStyles() {
+                const root = document.documentElement;
+
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+                root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
+                root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
+
+                const rankTier = document.getElementById('rankTier');
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                if (rankTier) {
+                    rankTier.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    rankTier.classList.add(`font-${this.fontEffect}`);
+                }
+
+                if (lpDisplay) {
+                    lpDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    lpDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+
+                const rankIcon = document.getElementById('rankIcon');
+                if (rankIcon) {
+                    rankIcon.style.width = `${this.rankImageSize}px`;
+                    rankIcon.style.height = `${this.rankImageSize}px`;
+                    const rankImage = rankIcon.querySelector('img');
+                    if (rankImage) {
+                        rankImage.style.width = `${this.rankImageSize}px`;
+                        rankImage.style.height = `${this.rankImageSize}px`;
+                    }
+                }
+            }
+
+            applyOverlayStyle() {
+                const container = document.getElementById('rankContainer');
+                if (!container) return;
+
+                const parent = container.parentElement || document.body;
+                parent.classList.remove(
+                    'overlay-style-default',
+                    'overlay-style-card',
+                    'overlay-style-bubble',
+                    'overlay-style-minimal',
+                    'overlay-style-gradient',
+                    'overlay-style-glass'
+                );
+                parent.classList.add(`overlay-style-${this.overlayStyle}`);
+            }
+
+            async init() {
+                console.log('🎮 Initialisation du widget LoL Rank...');
+                console.log(`👤 Joueur: ${this.riotId}#${this.tagline}`);
+                console.log(`🌐 Région: ${this.region}`);
+
+                // Load cached data first
+                await this.loadRankData();
+                this.displayCurrentRank();
+
+                // Fetch real data
+                await this.fetchRankData();
+
+                // Set up periodic updates
+                setInterval(async () => {
+                    await this.fetchRankData();
+                }, this.updateInterval);
+            }
+
+            async loadRankData() {
+                try {
+                    const savedData = localStorage.getItem(`lol-rank-data-${this.riotId}-${this.tagline}`);
+                    if (savedData) {
+                        const loadedData = JSON.parse(savedData);
+                        this.currentRankData = {
+                            tier: loadedData.tier,
+                            division: loadedData.division,
+                            lp: loadedData.lp
+                        };
+                        this.previousLP = loadedData.lp;
+                        console.log('✅ Données chargées depuis localStorage:', this.currentRankData);
+                        return true;
+                    }
+                } catch (error) {
+                    console.log('📄 Impossible de charger les données sauvegardées');
+                }
+                return false;
+            }
+
+            async saveRankData() {
+                try {
+                    const dataToSave = {
+                        tier: this.currentRankData.tier,
+                        division: this.currentRankData.division,
+                        lp: this.currentRankData.lp,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    localStorage.setItem(`lol-rank-data-${this.riotId}-${this.tagline}`, JSON.stringify(dataToSave));
+                    console.log('💾 Données sauvegardées dans localStorage');
+                } catch (error) {
+                    console.error('❌ Erreur lors de la sauvegarde:', error);
+                }
+            }
+
+            async fetchRankData() {
+                try {
+                    console.log('🔄 Récupération des données depuis OP.GG...');
+
+                    // OP.GG API URL
+                    const apiUrl = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${this.riotId}-${this.tagline}`;
+                    const proxyUrl = `${this.corsProxy}${encodeURIComponent(apiUrl)}`;
+
+                    console.log('🌐 URL API:', proxyUrl);
+
+                    const response = await fetch(proxyUrl);
+
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('📄 Données OP.GG:', data);
+
+                    const rankInfo = data?.data?.league_stats;
+
+                    if (!rankInfo || rankInfo.length === 0) {
+                        console.log('❌ Aucune donnée de rang trouvée');
+                        this.currentRankData = {
+                            tier: 'Unranked',
+                            division: '',
+                            lp: 0
+                        };
+                        this.displayCurrentRank();
+                        return;
+                    }
+
+                    // Find solo queue rank
+                    const soloRank = rankInfo.find(x => x.queue_info.queue_type === "RANKED_SOLO_5x5");
+
+                    if (!soloRank) {
+                        console.log('❌ Rang solo queue non trouvé');
+                        this.currentRankData = {
+                            tier: 'Unranked',
+                            division: '',
+                            lp: 0
+                        };
+                        this.displayCurrentRank();
+                        return;
+                    }
+
+                    const oldLP = this.currentRankData.lp;
+                    const newTier = soloRank.tier || 'Unranked';
+                    const newDivision = soloRank.division || '';
+                    const newLP = soloRank.lp || 0;
+
+                    this.currentRankData = {
+                        tier: newTier,
+                        division: newDivision,
+                        lp: newLP
+                    };
+
+                    console.log('✅ Données de rang mises à jour:', this.currentRankData);
+
+                    // Animate LP change if different
+                    if (oldLP !== newLP) {
+                        await this.animateLPChange(oldLP, newLP);
+                    } else {
+                        this.displayCurrentRank();
+                    }
+
+                    await this.saveRankData();
+
+                } catch (error) {
+                    console.error('❌ Erreur lors de la récupération des données:', error);
+                    this.displayError('Erreur API');
+                }
+            }
+
+            async animateLPChange(oldLP, newLP) {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+
+                const lpDisplay = document.getElementById('lpDisplay');
+                const changeValue = newLP - oldLP;
+
+                // Show change indicator
+                if (changeValue !== 0) {
+                    this.showChangeIndicator(changeValue);
+                }
+
+                // Animate LP counting
+                const difference = newLP - oldLP;
+                const steps = Math.min(Math.abs(difference), 50);
+                const stepSize = difference / steps;
+                const stepDelay = 30;
+
+                for (let i = 0; i <= steps; i++) {
+                    const currentLP = Math.round(oldLP + (stepSize * i));
+                    this.updateLPDisplay(currentLP);
+
+                    if (i < steps) {
+                        await new Promise(resolve => setTimeout(resolve, stepDelay));
+                    }
+                }
+
+                this.isAnimating = false;
+            }
+
+            showChangeIndicator(changeValue) {
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                const existingIndicator = lpDisplay.querySelector('.lp-change');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+
+                const changeElement = document.createElement('div');
+                changeElement.className = `lp-change ${changeValue > 0 ? 'positive' : 'negative'}`;
+                changeElement.textContent = changeValue > 0 ? `+${changeValue}` : `${changeValue}`;
+
+                lpDisplay.appendChild(changeElement);
+
+                setTimeout(() => {
+                    if (changeElement.parentNode) {
+                        changeElement.remove();
+                    }
+                }, 2000);
+            }
+
+            updateLPDisplay(lp) {
+                const lpDisplay = document.getElementById('lpDisplay');
+                if (lpDisplay) {
+                    lpDisplay.textContent = `${lp} LP`;
+                }
+            }
+
+            displayCurrentRank() {
+                const rankTier = document.getElementById('rankTier');
+                const lpDisplay = document.getElementById('lpDisplay');
+                const rankIcon = document.getElementById('rankIcon');
+
+                const data = this.currentRankData;
+
+                // Update tier display
+                let tierText = data.tier;
+                if (data.division) {
+                    tierText += ` ${data.division}`;
+                }
+                if (rankTier) {
+                    rankTier.textContent = tierText;
+                }
+
+                // Update LP display
+                if (lpDisplay) {
+                    if (!this.isAnimating) {
+                        lpDisplay.textContent = `${data.lp} LP`;
+                    }
+                }
+
+                // Update rank icon
+                const tierUpper = data.tier.toUpperCase();
+                let rankImagePath = this.rankImages[tierUpper];
+
+                // Handle unranked or invalid tier
+                if (!rankImagePath) {
+                    rankImagePath = this.rankImages['UNRANKED'];
+                }
+
+                if (rankImagePath) {
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${tierText}" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px; object-fit: contain;">`;
+                } else {
+                    rankIcon.innerHTML = `<div style="font-size: 12px; text-align: center; color: white;">${tierText}</div>`;
+                }
+
+                console.log(`✅ Affichage mis à jour: ${tierText} - ${data.lp} LP`);
+            }
+
+            displayError(message) {
+                const rankTier = document.getElementById('rankTier');
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                if (rankTier) {
+                    rankTier.textContent = 'Erreur';
+                    rankTier.style.color = '#ff0000';
+                }
+
+                if (lpDisplay) {
+                    lpDisplay.textContent = message;
+                    lpDisplay.style.color = '#ff0000';
+                }
+
+                console.error('❌ Erreur:', message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Démarrage du widget LoL Rank...');
+            const widget = new LoLRankWidget();
+            window.lolWidget = widget;
+        });
+    </script>
+</body>
+</html>
+

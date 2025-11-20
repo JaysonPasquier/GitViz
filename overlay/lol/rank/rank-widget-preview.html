@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!-- GitViz – URL Builder & Editor -->
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoL Rank Widget Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: radial-gradient(1200px 600px at 10% -10%, rgba(145,70,255,.15), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(54,209,220,.12), transparent 40%), #0e0f14;
+        }
+
+        body {
+            font-family: var(--custom-font, 'Arial', sans-serif);
+            color: #ffffff;
+            position: relative;
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Overlay Style: Default */
+        .overlay-style-default .rank-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        /* Overlay Style: Card */
+        .overlay-style-card .rank-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Bubble */
+        .overlay-style-bubble .rank-container {
+            background: linear-gradient(135deg, rgba(145, 70, 255, 0.2), rgba(54, 209, 220, 0.2));
+            border: 2px solid rgba(145, 70, 255, 0.3);
+            border-radius: 20px;
+            padding: 14px 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Overlay Style: Minimal */
+        .overlay-style-minimal .rank-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid rgba(0, 255, 136, 0.5);
+            border-radius: 0;
+            padding: 10px 16px;
+        }
+
+        /* Overlay Style: Gradient */
+        .overlay-style-gradient .rank-container {
+            background: linear-gradient(90deg, rgba(145, 70, 255, 0.15), rgba(54, 209, 220, 0.15));
+            border: 1px solid rgba(145, 70, 255, 0.3);
+            border-radius: 12px;
+            padding: 12px 18px;
+            box-shadow: 0 2px 8px rgba(145, 70, 255, 0.1);
+        }
+
+        /* Overlay Style: Glass */
+        .overlay-style-glass .rank-container {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 14px 20px;
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .rank-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-icon img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .rank-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .rank-tier {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .lp-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* Font effects */
+        .font-hollow {
+            -webkit-text-stroke: 2px;
+            -webkit-text-stroke-color: currentColor;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .font-border {
+            text-shadow:
+                -2px -2px 0 currentColor,
+                2px -2px 0 currentColor,
+                -2px 2px 0 currentColor,
+                2px 2px 0 currentColor,
+                0 -2px 0 currentColor,
+                0 2px 0 currentColor,
+                -2px 0 0 currentColor,
+                2px 0 0 currentColor;
+        }
+    </style>
+</head>
+<body class="overlay-style-default">
+    <div class="rank-container" id="rankContainer">
+        <div class="rank-icon" id="rankIcon">
+            <!-- Will be populated dynamically -->
+        </div>
+        <div class="rank-info">
+            <div class="rank-tier" id="rankTier">DIAMOND I</div>
+            <div class="lp-display" id="lpDisplay">67 LP</div>
+        </div>
+    </div>
+
+    <script>
+        class LoLRankWidget {
+            constructor() {
+                const urlParams = new URLSearchParams(window.location.search);
+
+                this.riotId = urlParams.get('riot_id') || 'Faker';
+                this.tagline = urlParams.get('tagline') || 'KR1';
+                this.region = urlParams.get('region') || 'kr';
+
+                const fontParam = urlParams.get('font') || 'Arial';
+                this.applyFont(fontParam);
+
+                this.fontSize = parseInt(urlParams.get('font_size')) || 24;
+                this.fontEffect = urlParams.get('font_effect') || 'normal';
+                this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
+                this.overlayStyle = urlParams.get('overlay_style') || 'default';
+
+                this.applyStyles();
+                this.applyOverlayStyle();
+
+                this.updateInterval = parseInt(urlParams.get('update_interval')) || 3000;
+
+                // Preview states
+                this.previewStates = [
+                    { tier: 'DIAMOND', division: 'I', lp: 67 },
+                    { tier: 'MASTER', division: '', lp: 234 },
+                    { tier: 'PLATINUM', division: 'II', lp: 45 }
+                ];
+                this.previewStateIndex = 0;
+
+                this.init();
+            }
+
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+                let fontFamily = systemFonts.includes(fontName) ? fontName : `'${fontName}'`;
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            }
+
+            applyStyles() {
+                const rankTier = document.getElementById('rankTier');
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                if (rankTier) {
+                    rankTier.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    rankTier.classList.add(`font-${this.fontEffect}`);
+                }
+
+                if (lpDisplay) {
+                    lpDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    lpDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+            }
+
+            applyOverlayStyle() {
+                document.body.classList.remove(
+                    'overlay-style-default',
+                    'overlay-style-card',
+                    'overlay-style-bubble',
+                    'overlay-style-minimal',
+                    'overlay-style-gradient',
+                    'overlay-style-glass'
+                );
+                document.body.classList.add(`overlay-style-${this.overlayStyle}`);
+            }
+
+            init() {
+                console.log('🎮 Mode preview activé');
+                this.displayCurrentRank();
+                this.startPreviewCycle();
+            }
+
+            startPreviewCycle() {
+                setInterval(() => {
+                    this.previewStateIndex = (this.previewStateIndex + 1) % this.previewStates.length;
+                    this.displayCurrentRank();
+                }, this.updateInterval);
+            }
+
+            displayCurrentRank() {
+                const state = this.previewStates[this.previewStateIndex];
+                const rankTier = document.getElementById('rankTier');
+                const lpDisplay = document.getElementById('lpDisplay');
+                const rankIcon = document.getElementById('rankIcon');
+
+                let tierText = state.tier;
+                if (state.division) {
+                    tierText += ` ${state.division}`;
+                }
+
+                if (rankTier) {
+                    rankTier.textContent = tierText;
+                }
+
+                if (lpDisplay) {
+                    lpDisplay.textContent = `${state.lp} LP`;
+                }
+
+                // Rank images mapping
+                const rankImages = {
+                    'DIAMOND': 'images/Diamond-border.png',
+                    'MASTER': 'images/Master-border.png',
+                    'PLATINUM': 'images/Platinum-border.png',
+                    'EMERALD': 'images/Emerald-border.png',
+                    'GOLD': 'images/Gold-border.png',
+                    'SILVER': 'images/Silver-border.png',
+                    'BRONZE': 'images/Bronze-border.png',
+                    'IRON': 'images/Iron-border.png',
+                    'GRANDMASTER': 'images/Grandmaster-border.png',
+                    'CHALLENGER': 'images/Challenger-border.png',
+                    'UNRANKED': 'images/Unrated.png'
+                };
+
+                const tierUpper = state.tier.toUpperCase();
+                const rankImagePath = rankImages[tierUpper] || rankImages['UNRANKED'];
+
+                if (rankImagePath) {
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${tierText}" style="width: 80px; height: 80px; object-fit: contain;">`;
+                } else {
+                    rankIcon.innerHTML = `<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; text-align: center; color: white; font-weight: bold;">${state.tier}</div>`;
+                }
+
+                console.log(`✅ Preview: ${tierText} - ${state.lp} LP`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const widget = new LoLRankWidget();
+            window.lolWidget = widget;
+        });
+    </script>
+</body>
+</html>
+
