@@ -390,18 +390,49 @@
                     // Note: OP.GG uses the format RiotID-Tagline (e.g., Faker-KR1)
                     const playerName = `${this.riotId}-${this.tagline}`;
 
-                    // Build API URL - OP.GG expects the name parameter without encoding the dash
-                    const apiUrl = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${playerName}`;
+                    // Try different API URL formats
+                    // Format 1: Query string format
+                    let apiUrl = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}?name=${encodeURIComponent(playerName)}`;
 
                     // Encode the full URL for the proxy
-                    const proxyUrl = `${this.corsProxy}${encodeURIComponent(apiUrl)}`;
+                    let proxyUrl = `${this.corsProxy}${encodeURIComponent(apiUrl)}`;
 
-                    console.log('🌐 URL API brute:', apiUrl);
-                    console.log('🌐 URL API avec proxy:', proxyUrl);
+                    console.log('🌐 URL API brute (format 1):', apiUrl);
+                    console.log('🌐 URL API avec proxy (format 1):', proxyUrl);
 
-                    const response = await fetch(proxyUrl);
+                    let response = await fetch(proxyUrl);
 
-                    console.log('📋 Statut de la réponse:', response.status, response.statusText);
+                    console.log('📋 Statut de la réponse (format 1):', response.status, response.statusText);
+
+                    // If 404, try alternative format
+                    if (!response.ok && response.status === 404) {
+                        console.log('🔄 Tentative avec format alternatif (path parameter)...');
+
+                        // Format 2: Path parameter format (original)
+                        const apiUrl2 = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${playerName}`;
+                        const proxyUrl2 = `${this.corsProxy}${encodeURIComponent(apiUrl2)}`;
+
+                        console.log('🌐 URL API brute (format 2):', apiUrl2);
+                        response = await fetch(proxyUrl2);
+                        console.log('📋 Statut de la réponse (format 2):', response.status, response.statusText);
+
+                        if (response.ok) {
+                            proxyUrl = proxyUrl2;
+                        } else if (response.status === 404) {
+                            // Try format 3: URL encoded in path
+                            console.log('🔄 Tentative avec format 3 (encodé dans le path)...');
+                            const apiUrl3 = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${encodeURIComponent(playerName)}`;
+                            const proxyUrl3 = `${this.corsProxy}${encodeURIComponent(apiUrl3)}`;
+
+                            console.log('🌐 URL API brute (format 3):', apiUrl3);
+                            response = await fetch(proxyUrl3);
+                            console.log('📋 Statut de la réponse (format 3):', response.status, response.statusText);
+
+                            if (response.ok) {
+                                proxyUrl = proxyUrl3;
+                            }
+                        }
+                    }
 
                     if (!response.ok) {
                         // Try to get error details
@@ -415,7 +446,7 @@
                         }
 
                         if (response.status === 404) {
-                            throw new Error(`Joueur non trouvé (404). Vérifiez que le Riot ID "${this.riotId}" et le Tagline "${this.tagline}" sont corrects pour la région "${this.region}".`);
+                            throw new Error(`Joueur non trouvé (404). Vérifiez que le Riot ID "${this.riotId}" et le Tagline "${this.tagline}" sont corrects pour la région "${this.region}". L'API OP.GG peut avoir changé ou le joueur n'est pas disponible via l'API.`);
                         } else {
                             throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
                         }
