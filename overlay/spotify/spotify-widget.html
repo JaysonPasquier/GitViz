@@ -1041,9 +1041,9 @@
 
             initializeDisplayMode() {
                 // Connect to Twitch chat if needed
-                if ((this.displayMode === 'on_command' ||
-                     this.displayMode === 'on_change_or_command' ||
-                     this.displayMode === 'on_change_and_command') &&
+                if ((this.displayMode === 'commande' ||
+                     this.displayMode === 'changement_ou_commande' ||
+                     this.displayMode === 'changement_et_commande') &&
                     this.twitchChannel) {
                     this.connectToTwitchChat();
                 }
@@ -1180,11 +1180,11 @@
             handleCommandTrigger() {
                 this.commandTriggered = true;
 
-                if (this.displayMode === 'on_command') {
+                if (this.displayMode === 'commande') {
                     this.showDisplayTemporarily();
-                } else if (this.displayMode === 'on_change_or_command') {
+                } else if (this.displayMode === 'changement_ou_commande') {
                     this.showDisplayTemporarily();
-                } else if (this.displayMode === 'on_change_and_command') {
+                } else if (this.displayMode === 'changement_et_commande') {
                     // Check if track changed recently
                     if (this.currentTrack) {
                         this.showDisplayTemporarily();
@@ -1612,10 +1612,10 @@
 
                 // Track changed - handle display mode
                 if (trackChanged) {
-                    if (this.displayMode === 'on_change' ||
-                        this.displayMode === 'on_change_or_command') {
+                    if (this.displayMode === 'changement' ||
+                        this.displayMode === 'changement_ou_commande') {
                         this.showDisplayTemporarily();
-                    } else if (this.displayMode === 'on_change_and_command') {
+                    } else if (this.displayMode === 'changement_et_commande') {
                         // Show on change OR command (treat as OR, not AND)
                         this.showDisplayTemporarily();
                         // Reset command flag if it was set
