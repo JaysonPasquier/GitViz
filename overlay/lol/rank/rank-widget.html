@@ -1032,12 +1032,34 @@
 
                     const summonerData = await summonerResponse.json();
                     console.log('📄 Données du summoner:', summonerData);
+                    console.log('📄 Toutes les clés du summoner:', Object.keys(summonerData));
 
-                    if (!summonerData || !summonerData.id) {
-                        throw new Error('Données du summoner invalides');
+                    // Check if we have the summoner ID
+                    let summonerId = summonerData.id;
+
+                    // If ID is missing, get summoner by name (which should have the ID field)
+                    if (!summonerId) {
+                        console.log('⚠️ Pas d\'ID dans la réponse by-puuid, tentative avec by-name...');
+                        const summonerByNameEndpoint = `summoner/v4/summoners/by-name/${encodeURIComponent(this.playerName)}`;
+                        const summonerByNameUrl = `${this.proxyUrl}?endpoint=${summonerByNameEndpoint}&region=${this.region}`;
+                        console.log('🌐 URL API Summoner by Name:', summonerByNameUrl);
+
+                        const summonerByNameResponse = await fetch(summonerByNameUrl);
+                        if (summonerByNameResponse.ok) {
+                            const summonerByNameData = await summonerByNameResponse.json();
+                            console.log('📄 Données du summoner by name:', summonerByNameData);
+                            summonerId = summonerByNameData.id;
+                        } else {
+                            console.error('❌ Erreur lors de la récupération par nom:', summonerByNameResponse.status);
+                        }
                     }
 
-                    const summonerId = summonerData.id;
+                    if (!summonerId) {
+                        console.error('❌ Impossible de récupérer l\'ID du summoner');
+                        throw new Error('Données du summoner invalides - ID manquant');
+                    }
+
+                    console.log('✅ ID du summoner trouvé:', summonerId);
 
                     // Step 2: Get league entries by summoner ID
                     const leagueEndpoint = `league/v4/entries/by-summoner/${summonerId}`;
