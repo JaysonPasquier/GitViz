@@ -90,11 +90,10 @@
                     path: 'overlay/spotify/spotify-widget.html',
                     configParams: [
                         { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
-                        { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', default: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', required: true, help: '⚠️ IMPORTANT: Utilisez une URL HTTPS (pas http://localhost). Cette URL doit correspondre EXACTEMENT à celle configurée dans Spotify Dashboard' },
-                        { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 1000, max: 30000, step: 1000, default: 2000 },
-                        { key: 'display_mode', label: 'Mode d\'affichage', type: 'select', options: ['always', 'on_change', 'on_command', 'on_change_or_command', 'on_change_and_command'], default: 'always', help: 'always: Toujours affiché | on_change: Apparaît à chaque changement de musique | on_command: Apparaît sur commande Twitch | on_change_or_command: Apparaît sur changement OU commande | on_change_and_command: Apparaît sur changement ET commande' },
+                        { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', default: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', required: true, readonly: true, help: '⚠️ IMPORTANT: Cette URL est verrouillée et ne peut pas être modifiée. Elle doit correspondre EXACTEMENT à celle configurée dans Spotify Dashboard' },
+                        { key: 'display_mode', label: 'Mode d\'affichage', type: 'select', options: ['always', 'changement', 'commande', 'changement_ou_commande', 'changement_et_commande'], default: 'always', help: 'always: Toujours affiché | changement: Apparaît à chaque changement de musique | commande: Apparaît sur commande Twitch | changement_ou_commande: Apparaît sur changement OU commande | changement_et_commande: Apparaît sur changement ET commande' },
                         { key: 'display_duration', label: 'Durée d\'affichage (ms)', type: 'number', min: 1000, max: 60000, step: 1000, default: 5000, help: 'Durée pendant laquelle l\'overlay reste visible (uniquement pour les modes avec cooldown)' },
-                        { key: 'twitch_channel', label: 'Canal Twitch (pour commandes)', type: 'text', placeholder: 'nom_du_canal', help: 'Optionnel: Nom du canal Twitch pour écouter les commandes (ex: !music)' },
+                        { key: 'twitch_channel', label: 'Chaine Twitch (pour commandes)', type: 'text', placeholder: 'nom de la chaine', help: 'Optionnel: Nom du canal Twitch pour écouter les commandes (ex: !music)' },
                         { key: 'twitch_command', label: 'Commande Twitch', type: 'text', placeholder: '!music', default: '!music', help: 'Commande à écouter dans le chat Twitch (ex: !music)' },
                     ],
             styleParams: [
@@ -272,6 +271,12 @@
             if (def.default != null) input.value = String(def.default);
         }
         if (def.required) input.required = true;
+        if (def.readonly) {
+            input.readOnly = true;
+            input.style.backgroundColor = 'var(--bg-secondary, rgba(255, 255, 255, 0.05))';
+            input.style.cursor = 'not-allowed';
+            input.style.opacity = '0.7';
+        }
         input.dataset.key = def.key;
         wrap.appendChild(input);
         return wrap;

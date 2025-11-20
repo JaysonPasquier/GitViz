@@ -197,8 +197,6 @@
                                         <li>Allez sur <a href="https://developer.spotify.com/dashboard/create" target="_blank" rel="noopener" style="color: var(--primary);">https://developer.spotify.com/dashboard/create</a></li>
                                         <li>Créez une nouvelle application</li>
                                         <li>Dans les paramètres, ajoutez comme <strong>Redirect URI</strong> : <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px; word-break: break-all;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code></li>
-                                        <li><strong>⚠️ CRITIQUE :</strong> Spotify n'accepte PAS les URLs <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 12px;">http://localhost</code> (insecure). Vous DEVEZ utiliser une URL HTTPS publique comme celle ci-dessus.</li>
-                                        <li><strong>⚠️ IMPORTANT :</strong> L'URL doit correspondre <strong>EXACTEMENT</strong> (même protocole https, même domaine, même chemin) à celle que vous entrez dans les paramètres de l'overlay</li>
                                         <li>Copiez votre <strong>Client ID</strong></li>
                                     </ol>
                                 </div>
@@ -214,12 +212,11 @@
                                         <li>Ouvrez votre application</li>
                                         <li>Dans "Redirect URIs", ajoutez l'URL complète de votre overlay (ex: <code style="background: var(--bg); padding: 2px 4px; border-radius: 3px; font-size: 11px;">https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html</code>)</li>
                                         <li>Cliquez sur "Add" puis "Save"</li>
-                                        <li>L'URL doit correspondre <strong>exactement</strong> (avec ou sans slash final, http/https, etc.)</li>
                                     </ol>
                                 </div>
 
                                 <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px;">
-                                    <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Les tokens expirent après <strong>1 heure</strong>. Si le token expire, vous devrez simplement cliquer à nouveau sur "Connecter Spotify" dans l'overlay.</p>
+                                    <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Les tokens expirent après <strong>1 heure</strong>. Normalement il n'y a pas besoin de se reconnecter, mais si vous avez des problèmes, vous pouvez cliquer sur "Connecter Spotify" dans l'overlay.</p>
                                 </div>
                             </div>
                         </div>
