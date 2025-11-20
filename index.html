@@ -218,6 +218,24 @@
                                 <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px;">
                                     <p class="muted" style="margin: 0; font-size: 13px;"><strong>⚠️ Note :</strong> Les tokens expirent après <strong>1 heure</strong>. Normalement il n'y a pas besoin de se reconnecter, mais si vous avez des problèmes, vous pouvez cliquer sur "Connecter Spotify" dans l'overlay.</p>
                                 </div>
+
+                                <div style="margin-top: 20px; padding: 16px; background: rgba(138, 43, 226, 0.1); border-left: 3px solid #8a2be2; border-radius: 4px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 12px; color: var(--text);">📺 Utilisation dans OBS</h4>
+                                    <p class="muted" style="margin-bottom: 12px;">Une fois votre URL générée, suivez ces étapes pour l'utiliser dans OBS :</p>
+                                    <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li>Copiez l'URL générée ci-dessus</li>
+                                        <li>Dans OBS, ajoutez une nouvelle source de type <strong>"Source navigateur"</strong> (Browser Source)</li>
+                                        <li>Collez l'URL dans le champ <strong>"URL"</strong></li>
+                                        <li>Configurez la largeur et la hauteur selon vos besoins (ex: 1920x1080)</li>
+                                        <li><strong>⚠️ IMPORTANT :</strong> Cliquez sur le bouton <strong>"Interagir"</strong> (ou "Interact") dans les propriétés de la source navigateur</li>
+                                        <li>Dans la fenêtre du navigateur qui s'ouvre, cliquez sur <strong>"Connecter Spotify"</strong> pour vous authentifier</li>
+                                        <li>Autorisez l'application Spotify à accéder à votre compte</li>
+                                        <li>Une fois connecté, fermez la fenêtre d'interaction et l'overlay devrait fonctionner dans OBS</li>
+                                    </ol>
+                                    <div style="padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 12px;"><strong>💡 Astuce :</strong> Si l'overlay ne s'affiche pas correctement, vérifiez que la source navigateur est bien activée et que l'URL est correctement collée.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="previewSection" class="preview-section" style="display: none; margin-bottom: 20px;">

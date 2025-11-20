@@ -105,7 +105,7 @@
         }
     };
 
-    const baseUrl = () => new URL('.', window.location.href); // folder of index.html
+    const baseUrl = () => new URL('.', window.location.href);
     const makeUrl = (path, paramsObj) => {
         const url = new URL(path, baseUrl());
         Object.entries(paramsObj).forEach(([k,v]) => {
