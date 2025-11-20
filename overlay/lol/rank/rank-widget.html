@@ -20,7 +20,46 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+        <!--
+        ========================================
+        PARAMÈTRES URL DISPONIBLES
+        ========================================
+
+        🎮 CONFIGURATION DU JOUEUR:
+        ?name=SummonerName
+
+        🌐 CONFIGURATION RÉGION:
+        ?region=euw1 (euw1, eun1, na1, kr, etc.)
+
+        ⏰ INTERVALLE DE MISE À JOUR:
+        ?update_interval=60000 (en millisecondes, défaut: 60000)
+
+        📺 CONFIGURATION TWITCH:
+        ?channel=nom_canal&nick=nom_utilisateur&pass=mot_de_passe
+
+        👮 CONFIGURATION DES PERMISSIONS:
+        ?moderators=user1,user2,user3&vips=user1,user2&blacklist=user1,user2
+
+        🎨 STYLE:
+        ?font=Arial&font_size=24&font_effect=normal&rank_image_size=60&overlay_style=default
+
+        📝 EXEMPLE COMPLET:
+        ?name=SummonerName&region=euw1&update_interval=60000
+
+        ========================================
+        COMMANDES DE CHAT DISPONIBLES
+        ========================================
+
+        🎮 !showrank    - Affiche le widget de rang (Modérateurs + VIPs uniquement)
+        🙈 !hiderank    - Masque le widget de rang (Modérateurs + VIPs uniquement)
+        🔄 !refreshrank - Recharge la page (Modérateurs + VIPs uniquement)
+        🔄 !rankreload  - Recharge la page (Modérateurs + VIPs uniquement)
+
+        ========================================
+        -->
     <style>
+        /* Fonts are loaded via Google Fonts in the head */
+
         * {
             margin: 0;
             padding: 0;
@@ -40,7 +79,7 @@
             gap: 15px;
         }
 
-        /* Overlay Style: Default */
+        /* Overlay Style: Default (current style) */
         .overlay-style-default .rank-container {
             background: transparent;
             border: none;
@@ -108,14 +147,8 @@
 
         .rank-info {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .rank-tier {
-            font-size: var(--font-size-main, 24px);
-            font-weight: bold;
-            color: #ffffff;
+            align-items: center;
+            gap: 10px;
         }
 
         .lp-display {
@@ -161,7 +194,7 @@
         }
 
         .loading {
-            font-size: var(--font-size-main, 24px);
+            font-size: var(--font-size-position, 16px);
         }
 
         /* Font effects */
@@ -187,6 +220,40 @@
         .error {
             color: #ff0000;
         }
+
+        /* Command feedback styles */
+        .command-feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .command-feedback.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .command-feedback.success {
+            background-color: #00ff00;
+            color: #000;
+        }
+
+        .command-feedback.error {
+            background-color: #ff0000;
+        }
+
+        /* Overlay visibility control */
+        body.hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="overlay-style-default">
@@ -195,20 +262,27 @@
             <!-- Will be populated dynamically -->
         </div>
         <div class="rank-info">
-            <div class="rank-tier" id="rankTier">--</div>
             <div class="lp-display" id="lpDisplay">-- LP</div>
         </div>
     </div>
 
+    <!-- Command feedback element -->
+    <div class="command-feedback" id="commandFeedback"></div>
+
     <script>
         class LoLRankWidget {
             constructor() {
+                // Get all customizable values from URL parameters
                 const urlParams = new URLSearchParams(window.location.search);
 
                 // Player info
-                this.riotId = urlParams.get('riot_id') || 'Faker';
-                this.tagline = urlParams.get('tagline') || 'KR1';
-                this.region = urlParams.get('region') || 'kr';
+                this.summonerName = urlParams.get('name') || 'SummonerName';
+
+                // Region configuration
+                this.region = urlParams.get('region') || 'euw1';
+
+                // Cloudflare worker proxy URL
+                this.proxyUrl = 'https://overlay-api-proxy.jaysonpasquier-contact.workers.dev/';
 
                 // Font configuration
                 const fontParam = urlParams.get('font') || 'Arial';
@@ -220,86 +294,195 @@
                 this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
                 this.overlayStyle = urlParams.get('overlay_style') || 'default';
 
-                // Apply styles
+                // Apply styles immediately
                 this.applyStyles();
                 this.applyOverlayStyle();
 
-                // Update interval
-                this.updateInterval = parseInt(urlParams.get('update_interval')) || 60000;
+                // Update interval (in milliseconds)
+                this.updateInterval = parseInt(urlParams.get('update_interval')) || 60000; // 1 minute default
 
-                // CORS Proxy (can be changed via URL param)
-                this.corsProxy = urlParams.get('cors_proxy') || 'https://corsproxy.io/?';
+                // Twitch chat configuration
+                this.twitchChannel = urlParams.get('channel') || 'twitch_channel';
+                this.twitchNick = urlParams.get('nick') || 'justinfan12345';
+                this.twitchPass = urlParams.get('pass') || 'SCHMOOPIIE';
+
+                // Role-based access control system
+                this.moderators = this.parseUserList(urlParams.get('moderators'));
+                this.vips = this.parseUserList(urlParams.get('vips'));
+                this.blacklist = this.parseUserList(urlParams.get('blacklist'));
+
+                // Default user lists if none provided
+                if (this.moderators.length === 0) {
+                    this.moderators = ['sc0rpio74890']; // Default moderator
+                }
+                if (this.vips.length === 0) {
+                    this.vips = ['sc0rpio74890']; // Default VIP
+                }
+                if (this.blacklist.length === 0) {
+                    this.blacklist = ['banned_user1', 'banned_user2']; // Default blacklist
+                }
+
+                // Overlay visibility state
+                this.isOverlayVisible = true;
 
                 // Current rank data
                 this.currentRankData = {
-                    tier: 'Unranked',
-                    division: '',
-                    lp: 0
+                    tier: 'UNRANKED',
+                    rank: '',
+                    lp: 0,
+                    wins: 0,
+                    losses: 0
                 };
 
-                // Previous values for animation
+                // Store previous values for comparison
                 this.previousLP = 0;
+                this.lastChange = null;
                 this.isAnimating = false;
 
-                // Rank images mapping
-                // Use border version by default (you can add a parameter to switch)
-                this.useBorderVersion = urlParams.get('rank_border') !== 'false';
-                const borderSuffix = this.useBorderVersion ? '-border' : '';
-
+                // Mapping des rangs LoL avec les images locales
+                // Format: tier-rank (e.g., "IRON-I", "DIAMOND-II")
                 this.rankImages = {
-                    'IRON': `images/Iron${borderSuffix}.png`,
-                    'BRONZE': `images/Bronze${borderSuffix}.png`,
-                    'SILVER': `images/Silver${borderSuffix}.png`,
-                    'GOLD': `images/Gold${borderSuffix}.png`,
-                    'PLATINUM': `images/Platinum${borderSuffix}.png`,
-                    'EMERALD': `images/Emerald${borderSuffix}.png`,
-                    'DIAMOND': `images/Diamond${borderSuffix}.png`,
-                    'MASTER': `images/Master${borderSuffix}.png`,
-                    'GRANDMASTER': `images/Grandmaster${borderSuffix}.png`,
-                    'CHALLENGER': `images/Challenger${borderSuffix}.png`,
-                    'UNRANKED': 'images/Unrated.png',
-                    'UNRATED': 'images/Unrated.png'
+                    'IRON-I': 'images/Iron.png',
+                    'IRON-II': 'images/Iron.png',
+                    'IRON-III': 'images/Iron.png',
+                    'IRON-IV': 'images/Iron.png',
+                    'BRONZE-I': 'images/Bronze.png',
+                    'BRONZE-II': 'images/Bronze.png',
+                    'BRONZE-III': 'images/Bronze.png',
+                    'BRONZE-IV': 'images/Bronze.png',
+                    'SILVER-I': 'images/Silver.png',
+                    'SILVER-II': 'images/Silver.png',
+                    'SILVER-III': 'images/Silver.png',
+                    'SILVER-IV': 'images/Silver.png',
+                    'GOLD-I': 'images/Gold.png',
+                    'GOLD-II': 'images/Gold.png',
+                    'GOLD-III': 'images/Gold.png',
+                    'GOLD-IV': 'images/Gold.png',
+                    'PLATINUM-I': 'images/Platinum.png',
+                    'PLATINUM-II': 'images/Platinum.png',
+                    'PLATINUM-III': 'images/Platinum.png',
+                    'PLATINUM-IV': 'images/Platinum.png',
+                    'EMERALD-I': 'images/Emerald.png',
+                    'EMERALD-II': 'images/Emerald.png',
+                    'EMERALD-III': 'images/Emerald.png',
+                    'EMERALD-IV': 'images/Emerald.png',
+                    'DIAMOND-I': 'images/Diamond.png',
+                    'DIAMOND-II': 'images/Diamond.png',
+                    'DIAMOND-III': 'images/Diamond.png',
+                    'DIAMOND-IV': 'images/Diamond.png',
+                    'MASTER': 'images/Master.png',
+                    'GRANDMASTER': 'images/Grandmaster.png',
+                    'CHALLENGER': 'images/Challenger.png',
+                    'UNRANKED': 'images/Unrated.png'
                 };
+
+                // Log configuration
+                this.logConfiguration();
+
+                // Set up URL change detection
+                this.setupURLChangeDetection();
 
                 this.init();
             }
 
-            applyFont(fontName) {
-                if (!fontName) fontName = 'Arial';
-
-                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
-
-                let fontFamily;
-                if (systemFonts.includes(fontName)) {
-                    fontFamily = fontName;
-                } else {
-                    fontFamily = `'${fontName}'`;
-                }
-
-                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
-                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+            // Helper method to parse comma-separated user lists from URL parameters
+            parseUserList(paramValue) {
+                if (!paramValue) return [];
+                return paramValue.split(',').map(user => user.trim().toLowerCase()).filter(user => user.length > 0);
             }
 
+            // Log current configuration for debugging
+            logConfiguration() {
+                console.log('🔧 Configuration du widget LoL:');
+                console.log(`   👤 Summoner: ${this.summonerName}`);
+                console.log(`   🌐 Région: ${this.region}`);
+                console.log(`   ⏰ Mise à jour: ${this.updateInterval}ms`);
+                console.log(`   📺 Canal Twitch: #${this.twitchChannel}`);
+                console.log(`   👮 Modérateurs: ${this.moderators.join(', ')}`);
+                console.log(`   👑 VIPs: ${this.vips.join(', ')}`);
+                console.log(`   🚫 Blacklist: ${this.blacklist.join(', ')}`);
+
+                if (this.validateConfiguration()) {
+                    console.log('✅ Configuration valide, affichage des données...');
+                } else {
+                    console.log('❌ Configuration invalide, vérifiez les paramètres URL');
+                }
+            }
+
+            // Clear old cached data for different players
+            clearOldCachedData() {
+                console.log('🧹 Nettoyage des anciennes données en cache...');
+
+                const keys = Object.keys(localStorage);
+                const currentPlayerKey = `lol-rank-data-${this.summonerName}-${this.region}`;
+
+                keys.forEach(key => {
+                    if (key.startsWith('lol-rank-data-') && key !== currentPlayerKey) {
+                        console.log(`🗑️ Suppression des anciennes données de rang: ${key}`);
+                        localStorage.removeItem(key);
+                    }
+                });
+
+                console.log('✅ Nettoyage des anciennes données terminé');
+            }
+
+            // Validate configuration before making API calls
+            validateConfiguration() {
+                console.log('🔍 Validation de la configuration...');
+
+                if (!this.summonerName || this.summonerName === 'SummonerName') {
+                    console.error('❌ Nom du summoner manquant');
+                    this.showConfigurationError('Nom du summoner manquant');
+                    return false;
+                }
+
+                if (!this.region) {
+                    console.error('❌ Région manquante');
+                    this.showConfigurationError('Région manquante');
+                    return false;
+                }
+
+                console.log('✅ Configuration validée');
+                this.resetDisplayStyle();
+                return true;
+            }
+
+            // Show configuration error message
+            showConfigurationError(message) {
+                console.error('❌ Erreur de configuration:', message);
+
+                const rankIcon = document.getElementById('rankIcon');
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                rankIcon.innerHTML = '<div style="color: #ff0000; font-size: 12px; text-align: center;">❌<br>Config<br>Error</div>';
+
+                lpDisplay.textContent = message;
+                lpDisplay.style.color = '#ff0000';
+            }
+
+            // Reset display style after successful configuration
+            resetDisplayStyle() {
+                const lpDisplay = document.getElementById('lpDisplay');
+                if (lpDisplay) {
+                    lpDisplay.style.color = '#ffffff';
+                }
+            }
+
+            // Apply styles (font size, font effect, rank image size)
             applyStyles() {
                 const root = document.documentElement;
 
                 root.style.setProperty('--font-size-main', `${this.fontSize}px`);
                 root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
-                root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
 
-                const rankTier = document.getElementById('rankTier');
                 const lpDisplay = document.getElementById('lpDisplay');
-
-                if (rankTier) {
-                    rankTier.classList.remove('font-normal', 'font-hollow', 'font-border');
-                    rankTier.classList.add(`font-${this.fontEffect}`);
-                }
 
                 if (lpDisplay) {
                     lpDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
                     lpDisplay.classList.add(`font-${this.fontEffect}`);
                 }
 
+                root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
                 const rankIcon = document.getElementById('rankIcon');
                 if (rankIcon) {
                     rankIcon.style.width = `${this.rankImageSize}px`;
@@ -317,6 +500,7 @@
                 if (!container) return;
 
                 const parent = container.parentElement || document.body;
+
                 parent.classList.remove(
                     'overlay-style-default',
                     'overlay-style-card',
@@ -325,210 +509,402 @@
                     'overlay-style-gradient',
                     'overlay-style-glass'
                 );
+
                 parent.classList.add(`overlay-style-${this.overlayStyle}`);
+            }
+
+            // Apply font from parameter
+            applyFont(fontName) {
+                if (!fontName) fontName = 'Arial';
+
+                const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
+
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    fontFamily = fontName;
+                } else {
+                    fontFamily = `'${fontName}'`;
+                }
+
+                document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
+                document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+
+                console.log(`🔤 Police appliquée: ${fontName} (${fontFamily})`);
+            }
+
+            // Set up URL change detection for dynamic configuration updates
+            setupURLChangeDetection() {
+                console.log('🔍 Configuration de la détection des changements d\'URL...');
+
+                let currentURL = window.location.href;
+
+                setInterval(() => {
+                    if (window.location.href !== currentURL) {
+                        console.log('🔄 Changement d\'URL détecté, rechargement de la configuration...');
+                        currentURL = window.location.href;
+                        this.reloadConfiguration();
+                    }
+                }, 1000);
+
+                console.log('✅ Détection des changements d\'URL configurée');
+            }
+
+            // Method to reload configuration from URL parameters
+            reloadConfiguration() {
+                console.log('🔄 Rechargement de la configuration depuis les paramètres URL...');
+
+                const urlParams = new URLSearchParams(window.location.search);
+
+                const oldSummonerName = this.summonerName;
+
+                this.summonerName = urlParams.get('name') || this.summonerName;
+                this.region = urlParams.get('region') || this.region;
+
+                const newInterval = urlParams.get('update_interval');
+                if (newInterval) {
+                    this.updateInterval = parseInt(newInterval) || this.updateInterval;
+                }
+
+                const newFont = urlParams.get('font') || 'Arial';
+                this.applyFont(newFont);
+
+                const newFontSize = urlParams.get('font_size');
+                if (newFontSize) {
+                    this.fontSize = parseInt(newFontSize) || this.fontSize;
+                }
+                const newFontEffect = urlParams.get('font_effect');
+                if (newFontEffect) {
+                    this.fontEffect = newFontEffect;
+                }
+                const newRankImageSize = urlParams.get('rank_image_size');
+                if (newRankImageSize) {
+                    this.rankImageSize = parseInt(newRankImageSize) || this.rankImageSize;
+                }
+                const newOverlayStyle = urlParams.get('overlay_style');
+                if (newOverlayStyle) {
+                    this.overlayStyle = newOverlayStyle;
+                }
+
+                this.applyStyles();
+                this.applyOverlayStyle();
+
+                this.twitchChannel = urlParams.get('channel') || this.twitchChannel;
+                this.twitchNick = urlParams.get('nick') || this.twitchNick;
+                this.twitchPass = urlParams.get('pass') || this.twitchPass;
+
+                const newModerators = this.parseUserList(urlParams.get('moderators'));
+                const newVips = this.parseUserList(urlParams.get('vips'));
+                const newBlacklist = this.parseUserList(urlParams.get('blacklist'));
+
+                if (newModerators.length > 0) this.moderators = newModerators;
+                if (newVips.length > 0) this.vips = newVips;
+                if (newBlacklist.length > 0) this.blacklist = newBlacklist;
+
+                this.logConfiguration();
+
+                if (oldSummonerName !== this.summonerName) {
+                    console.log('🔄 Summoner changé, forçage de la mise à jour des données...');
+                    this.forceRefreshData();
+                }
+
+                console.log('✅ Configuration rechargée avec succès!');
+            }
+
+            // Check if user has permission to use commands
+            hasPermission(username, userTags) {
+                if (this.blacklist.includes(username.toLowerCase())) {
+                    console.log(`🚫 Utilisateur ${username} est dans la blacklist`);
+                    return false;
+                }
+
+                if (this.moderators.includes(username.toLowerCase())) {
+                    console.log(`✅ ${username} est modérateur`);
+                    return true;
+                }
+
+                if (this.vips.includes(username.toLowerCase())) {
+                    console.log(`✅ ${username} est VIP`);
+                    return true;
+                }
+
+                if (userTags) {
+                    if (userTags.includes('moderator=1') || userTags.includes('vip=1')) {
+                        console.log(`✅ ${username} a les permissions via tags Twitch`);
+                        return true;
+                    }
+                }
+
+                console.log(`❌ ${username} n'a pas les permissions`);
+                return false;
+            }
+
+            // Show the overlay
+            showOverlay() {
+                if (!this.isOverlayVisible) {
+                    this.isOverlayVisible = true;
+                    document.body.classList.remove('hidden');
+                    console.log('👁️ Overlay affiché via commande');
+                }
+            }
+
+            // Hide the overlay
+            hideOverlay() {
+                if (this.isOverlayVisible) {
+                    this.isOverlayVisible = false;
+                    document.body.classList.add('hidden');
+                    console.log('🙈 Overlay masqué via commande');
+                }
+            }
+
+            // Show command feedback
+            showCommandFeedback(message, type = 'success') {
+                const feedback = document.getElementById('commandFeedback');
+                feedback.textContent = message;
+                feedback.className = `command-feedback ${type}`;
+
+                setTimeout(() => {
+                    feedback.classList.add('show');
+                }, 100);
+
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 3000);
+            }
+
+            // Parse and handle chat commands
+            parseChatCommand(username, message, userTags) {
+                const command = message.trim().toLowerCase();
+
+                if (command === '!showrank') {
+                    if (this.hasPermission(username, userTags)) {
+                        console.log(`🎮 Commande !showrank reçue de ${username}`);
+                        this.showOverlay();
+                    } else {
+                        console.log(`❌ ${username} a tenté d'utiliser !showrank sans permission`);
+                    }
+                    return;
+                }
+
+                if (command === '!hiderank') {
+                    if (this.hasPermission(username, userTags)) {
+                        console.log(`🎮 Commande !hiderank reçue de ${username}`);
+                        this.hideOverlay();
+                    } else {
+                        console.log(`❌ ${username} a tenté d'utiliser !hiderank sans permission`);
+                    }
+                    return;
+                }
+
+                if (command === '!refreshrank' || command === '!rankreload') {
+                    if (this.hasPermission(username, userTags)) {
+                        console.log(`🔄 Commande ${command} reçue de ${username} - Rechargement forcé de la page...`);
+                        window.location.reload();
+                    } else {
+                        console.log(`❌ ${username} a tenté d'utiliser ${command} sans permission`);
+                    }
+                    return;
+                }
+
+                if (command.startsWith('!')) {
+                    console.log(`❓ Commande inconnue reçue de ${username}: ${command}`);
+                }
             }
 
             async init() {
                 console.log('🎮 Initialisation du widget LoL Rank...');
-                console.log(`👤 Joueur: ${this.riotId}#${this.tagline}`);
-                console.log(`🌐 Région: ${this.region}`);
+                console.log(`👤 Summoner: ${this.summonerName}`);
 
-                // Load cached data first
+                this.clearOldCachedData();
+
                 await this.loadRankData();
+
                 this.displayCurrentRank();
 
-                // Fetch real data
-                await this.fetchRankData();
+                console.log('🧪 Test de l\'API en cours...');
+                await this.fetchRealRankData();
 
-                // Set up periodic updates
+                this.connectToTwitchChat();
+
                 setInterval(async () => {
-                    await this.fetchRankData();
+                    console.log('🔄 Mise à jour automatique via l\'API...');
+                    await this.fetchRealRankData();
                 }, this.updateInterval);
+
+                setInterval(() => {
+                    if (!this.isAnimating) {
+                        this.displayCurrentRank();
+                    }
+                }, 30000);
             }
 
             async loadRankData() {
                 try {
-                    const savedData = localStorage.getItem(`lol-rank-data-${this.riotId}-${this.tagline}`);
+                    const savedData = localStorage.getItem(`lol-rank-data-${this.summonerName}-${this.region}`);
                     if (savedData) {
                         const loadedData = JSON.parse(savedData);
                         this.currentRankData = {
                             tier: loadedData.tier,
-                            division: loadedData.division,
-                            lp: loadedData.lp
+                            rank: loadedData.rank,
+                            lp: loadedData.lp,
+                            wins: loadedData.wins,
+                            losses: loadedData.losses
                         };
                         this.previousLP = loadedData.lp;
-                        console.log('✅ Données chargées depuis localStorage:', this.currentRankData);
+                        this.lastChange = loadedData.lastChange || null;
+                        console.log('✅ Données de rang chargées depuis localStorage:', this.currentRankData);
                         return true;
+                    } else {
+                        console.log('📄 Aucune donnée sauvegardée trouvée');
+                        this.previousLP = this.currentRankData.lp;
+                        return false;
                     }
                 } catch (error) {
                     console.log('📄 Impossible de charger les données sauvegardées');
+                    this.previousLP = this.currentRankData.lp;
+                    return false;
                 }
-                return false;
             }
 
             async saveRankData() {
                 try {
                     const dataToSave = {
                         tier: this.currentRankData.tier,
-                        division: this.currentRankData.division,
+                        rank: this.currentRankData.rank,
                         lp: this.currentRankData.lp,
+                        wins: this.currentRankData.wins,
+                        losses: this.currentRankData.losses,
+                        lastChange: this.lastChange,
                         lastUpdated: new Date().toISOString()
                     };
-                    localStorage.setItem(`lol-rank-data-${this.riotId}-${this.tagline}`, JSON.stringify(dataToSave));
-                    console.log('💾 Données sauvegardées dans localStorage');
+
+                    localStorage.setItem(`lol-rank-data-${this.summonerName}-${this.region}`, JSON.stringify(dataToSave));
+
+                    console.log('💾 Données de rang sauvegardées dans localStorage:', dataToSave);
                 } catch (error) {
                     console.error('❌ Erreur lors de la sauvegarde:', error);
                 }
             }
 
-            async fetchRankData() {
+            connectToTwitchChat() {
+                console.log('🔗 Connexion au chat Twitch pour écouter les commandes...');
+
+                const socket = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+
+                socket.onopen = () => {
+                    console.log('✅ Connecté au chat Twitch');
+                    socket.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+                    socket.send(`PASS ${this.twitchPass}`);
+                    socket.send(`NICK ${this.twitchNick}`);
+                    socket.send(`JOIN #${this.twitchChannel}`);
+                };
+
+                socket.onmessage = (event) => {
+                    const message = event.data;
+
+                    if (message.startsWith('PING')) {
+                        socket.send('PONG :tmi.twitch.tv');
+                        return;
+                    }
+
+                    this.parseChatMessage(message);
+                };
+
+                socket.onerror = (error) => {
+                    console.error('❌ Erreur de connexion au chat Twitch:', error);
+                };
+
+                socket.onclose = () => {
+                    console.log('🔌 Connexion au chat Twitch fermée');
+                    setTimeout(() => {
+                        console.log('🔄 Tentative de reconnexion...');
+                        this.connectToTwitchChat();
+                    }, 10000);
+                };
+            }
+
+            parseChatMessage(rawMessage) {
                 try {
-                    console.log('🔄 Récupération des données depuis OP.GG...');
-                    console.log('👤 Riot ID:', this.riotId, 'Tagline:', this.tagline, 'Région:', this.region);
-
-                    // OP.GG API URL - Format: name=RIOT_ID-TAGLINE
-                    // Note: OP.GG uses the format RiotID-Tagline (e.g., Faker-KR1)
-                    const playerName = `${this.riotId}-${this.tagline}`;
-
-                    // Try different API URL formats
-                    // Format 1: Query string format
-                    let apiUrl = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}?name=${encodeURIComponent(playerName)}`;
-
-                    // Encode the full URL for the proxy
-                    let proxyUrl = `${this.corsProxy}${encodeURIComponent(apiUrl)}`;
-
-                    console.log('🌐 URL API brute (format 1):', apiUrl);
-                    console.log('🌐 URL API avec proxy (format 1):', proxyUrl);
-
-                    let response = await fetch(proxyUrl);
-
-                    console.log('📋 Statut de la réponse (format 1):', response.status, response.statusText);
-
-                    // If 404, try alternative format
-                    if (!response.ok && response.status === 404) {
-                        console.log('🔄 Tentative avec format alternatif (path parameter)...');
-
-                        // Format 2: Path parameter format (original)
-                        const apiUrl2 = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${playerName}`;
-                        const proxyUrl2 = `${this.corsProxy}${encodeURIComponent(apiUrl2)}`;
-
-                        console.log('🌐 URL API brute (format 2):', apiUrl2);
-                        response = await fetch(proxyUrl2);
-                        console.log('📋 Statut de la réponse (format 2):', response.status, response.statusText);
-
-                        if (response.ok) {
-                            proxyUrl = proxyUrl2;
-                        } else if (response.status === 404) {
-                            // Try format 3: URL encoded in path
-                            console.log('🔄 Tentative avec format 3 (encodé dans le path)...');
-                            const apiUrl3 = `https://op.gg/api/v1.0/internal/bypass/summoners/${this.region}/name=${encodeURIComponent(playerName)}`;
-                            const proxyUrl3 = `${this.corsProxy}${encodeURIComponent(apiUrl3)}`;
-
-                            console.log('🌐 URL API brute (format 3):', apiUrl3);
-                            response = await fetch(proxyUrl3);
-                            console.log('📋 Statut de la réponse (format 3):', response.status, response.statusText);
-
-                            if (response.ok) {
-                                proxyUrl = proxyUrl3;
-                            }
-                        }
-                    }
-
-                    if (!response.ok) {
-                        // Try to get error details
-                        let errorText = '';
-                        try {
-                            const errorData = await response.text();
-                            console.error('❌ Réponse d\'erreur:', errorData);
-                            errorText = errorData.substring(0, 200);
-                        } catch (e) {
-                            console.error('❌ Impossible de lire la réponse d\'erreur');
-                        }
-
-                        if (response.status === 404) {
-                            throw new Error(`Joueur non trouvé (404). Vérifiez que le Riot ID "${this.riotId}" et le Tagline "${this.tagline}" sont corrects pour la région "${this.region}". L'API OP.GG peut avoir changé ou le joueur n'est pas disponible via l'API.`);
-                        } else {
-                            throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}${errorText ? ' - ' + errorText : ''}`);
-                        }
-                    }
-
-                    const data = await response.json();
-                    console.log('📄 Données OP.GG complètes:', data);
-
-                    const rankInfo = data?.data?.league_stats;
-
-                    if (!rankInfo || rankInfo.length === 0) {
-                        console.log('❌ Aucune donnée de rang trouvée');
-                        this.currentRankData = {
-                            tier: 'Unranked',
-                            division: '',
-                            lp: 0
-                        };
-                        this.displayCurrentRank();
+                    if (!rawMessage.includes(`PRIVMSG #${this.twitchChannel} :`)) {
                         return;
                     }
 
-                    // Find solo queue rank
-                    const soloRank = rankInfo.find(x => x.queue_info.queue_type === "RANKED_SOLO_5x5");
-
-                    if (!soloRank) {
-                        console.log('❌ Rang solo queue non trouvé');
-                        this.currentRankData = {
-                            tier: 'Unranked',
-                            division: '',
-                            lp: 0
-                        };
-                        this.displayCurrentRank();
-                        return;
+                    const tagsMatch = rawMessage.match(/@([^ ]+) /);
+                    let userTags = '';
+                    if (tagsMatch) {
+                        userTags = tagsMatch[1];
                     }
 
-                    const oldLP = this.currentRankData.lp;
-                    const newTier = soloRank.tier || 'Unranked';
-                    const newDivision = soloRank.division || '';
-                    const newLP = soloRank.lp || 0;
+                    const userMatch = rawMessage.match(/:([^!]+)!/);
+                    if (!userMatch) return;
+                    const username = userMatch[1].toLowerCase();
 
-                    this.currentRankData = {
-                        tier: newTier,
-                        division: newDivision,
-                        lp: newLP
-                    };
+                    const messageMatch = rawMessage.match(new RegExp(`PRIVMSG #${this.twitchChannel} :(.+)`));
+                    if (!messageMatch) return;
+                    const messageContent = messageMatch[1].trim();
 
-                    console.log('✅ Données de rang mises à jour:', this.currentRankData);
+                    console.log(`💬 Message de ${username}: ${messageContent}`);
 
-                    // Animate LP change if different
-                    if (oldLP !== newLP) {
-                        await this.animateLPChange(oldLP, newLP);
-                    } else {
-                        this.displayCurrentRank();
+                    if (messageContent.startsWith('!')) {
+                        this.parseChatCommand(username, messageContent, userTags);
                     }
-
-                    await this.saveRankData();
 
                 } catch (error) {
-                    console.error('❌ Erreur lors de la récupération des données:', error);
-                    const errorMessage = error.message || 'Erreur API';
-                    this.displayError(errorMessage);
-
-                    // Keep cached data if available
-                    if (this.currentRankData && this.currentRankData.tier !== 'Unranked') {
-                        console.log('📦 Conservation des données en cache en cas d\'erreur');
-                    }
+                    console.error('❌ Erreur lors du parsing du message:', error);
                 }
             }
 
-            async animateLPChange(oldLP, newLP) {
+            displayCurrentRank() {
+                const lpDisplay = document.getElementById('lpDisplay');
+                const rankIcon = document.getElementById('rankIcon');
+
+                const data = this.currentRankData;
+
+                if (data.tier === 'UNRANKED' || !data.tier) {
+                    rankIcon.innerHTML = `<img src="images/Unrated.png" alt="Unranked" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
+                    lpDisplay.textContent = 'Unranked';
+                    lpDisplay.style.display = 'block';
+                    console.log(`✅ Affichage mis à jour: Unranked`);
+                    return;
+                }
+
+                lpDisplay.style.display = 'block';
+
+                const rankKey = data.rank ? `${data.tier}-${data.rank}` : data.tier;
+                const rankImagePath = this.rankImages[rankKey] || this.rankImages[data.tier] || 'images/Unrated.png';
+
+                const currentImage = rankIcon.querySelector('img');
+                const currentImageSrc = currentImage ? currentImage.src : '';
+                const newImageName = rankImagePath.split('/').pop();
+                if (!currentImage || !currentImageSrc.includes(newImageName)) {
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.tier} ${data.rank}" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
+                    console.log(`🖼️ Image de rang chargée: ${rankImagePath}`);
+                } else {
+                    currentImage.style.width = `${this.rankImageSize}px`;
+                    currentImage.style.height = `${this.rankImageSize}px`;
+                }
+
+                if (!this.isAnimating) {
+                    const currentLPText = lpDisplay.textContent.trim();
+                    const newLPText = `${data.lp} LP`;
+                    if (currentLPText !== newLPText) {
+                        lpDisplay.textContent = newLPText;
+                    }
+                }
+
+                console.log(`✅ Affichage mis à jour: ${data.tier} ${data.rank} - ${data.lp} LP`);
+            }
+
+            async animateLPChange(oldLP, newLP, changeValue = null) {
                 if (this.isAnimating) return;
                 this.isAnimating = true;
 
                 const lpDisplay = document.getElementById('lpDisplay');
-                const changeValue = newLP - oldLP;
 
-                // Show change indicator
-                if (changeValue !== 0) {
+                if (changeValue !== null && changeValue !== this.lastChange) {
                     this.showChangeIndicator(changeValue);
+                    this.lastChange = changeValue;
                 }
 
-                // Animate LP counting
                 const difference = newLP - oldLP;
                 const steps = Math.min(Math.abs(difference), 50);
                 const stepSize = difference / steps;
@@ -536,7 +912,7 @@
 
                 for (let i = 0; i <= steps; i++) {
                     const currentLP = Math.round(oldLP + (stepSize * i));
-                    this.updateLPDisplay(currentLP);
+                    lpDisplay.textContent = `${currentLP} LP`;
 
                     if (i < steps) {
                         await new Promise(resolve => setTimeout(resolve, stepDelay));
@@ -567,87 +943,147 @@
                 }, 2000);
             }
 
-            updateLPDisplay(lp) {
-                const lpDisplay = document.getElementById('lpDisplay');
-                if (lpDisplay) {
-                    lpDisplay.textContent = `${lp} LP`;
-                }
-            }
-
-            displayCurrentRank() {
-                const rankTier = document.getElementById('rankTier');
-                const lpDisplay = document.getElementById('lpDisplay');
-                const rankIcon = document.getElementById('rankIcon');
-
-                const data = this.currentRankData;
-
-                // Update tier display
-                let tierText = data.tier;
-                if (data.division) {
-                    tierText += ` ${data.division}`;
-                }
-                if (rankTier) {
-                    rankTier.textContent = tierText;
-                }
-
-                // Update LP display
-                if (lpDisplay) {
-                    if (!this.isAnimating) {
-                        lpDisplay.textContent = `${data.lp} LP`;
-                    }
-                }
-
-                // Update rank icon
-                const tierUpper = data.tier.toUpperCase();
-                let rankImagePath = this.rankImages[tierUpper];
-
-                // Handle unranked or invalid tier
-                if (!rankImagePath) {
-                    rankImagePath = this.rankImages['UNRANKED'];
-                }
-
-                if (rankImagePath) {
-                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${tierText}" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px; object-fit: contain;">`;
-                } else {
-                    rankIcon.innerHTML = `<div style="font-size: 12px; text-align: center; color: white;">${tierText}</div>`;
-                }
-
-                console.log(`✅ Affichage mis à jour: ${tierText} - ${data.lp} LP`);
-            }
-
             displayError(message) {
-                const rankTier = document.getElementById('rankTier');
-                const lpDisplay = document.getElementById('lpDisplay');
                 const rankIcon = document.getElementById('rankIcon');
-
-                if (rankTier) {
-                    // Truncate long error messages
-                    const shortMessage = message.length > 30 ? message.substring(0, 27) + '...' : message;
-                    rankTier.textContent = 'Erreur';
-                    rankTier.style.color = '#ff0000';
-                    rankTier.title = message; // Full message in tooltip
-                }
-
-                if (lpDisplay) {
-                    const shortMessage = message.length > 20 ? message.substring(0, 17) + '...' : message;
-                    lpDisplay.textContent = shortMessage;
-                    lpDisplay.style.color = '#ff0000';
-                    lpDisplay.style.fontSize = '14px';
-                    lpDisplay.title = message; // Full message in tooltip
-                }
-
-                if (rankIcon) {
-                    rankIcon.innerHTML = '<div style="font-size: 12px; text-align: center; color: #ff0000;">❌</div>';
-                }
+                const lpDisplay = document.getElementById('lpDisplay');
 
                 console.error('❌ Erreur:', message);
+            }
+
+            async forceRefreshData() {
+                console.log('🔄 Forçage de la mise à jour des données pour', this.summonerName);
+                try {
+                    await this.fetchRealRankData();
+                    console.log('✅ Données forcément mises à jour pour', this.summonerName);
+                } catch (error) {
+                    console.error('❌ Erreur lors du forçage de la mise à jour:', error);
+                }
+            }
+
+            // Fetch rank data from LoL API via Cloudflare worker
+            async fetchRealRankData() {
+                try {
+                    console.log('🚀 Début de fetchRealRankData...');
+                    console.log('👤 Summoner:', this.summonerName);
+                    console.log('🌐 Région:', this.region);
+
+                    if (!this.validateConfiguration()) {
+                        throw new Error('Configuration invalide');
+                    }
+
+                    // Step 1: Get summoner by name
+                    const summonerEndpoint = `summoner/v4/summoners/by-name/${encodeURIComponent(this.summonerName)}`;
+                    const summonerUrl = `${this.proxyUrl}?endpoint=${summonerEndpoint}&region=${this.region}`;
+                    console.log('🌐 URL API Summoner:', summonerUrl);
+
+                    const summonerResponse = await fetch(summonerUrl);
+                    console.log('📋 Statut de la réponse Summoner:', summonerResponse.status, summonerResponse.statusText);
+
+                    if (!summonerResponse.ok) {
+                        if (summonerResponse.status === 404) {
+                            throw new Error('Summoner introuvable');
+                        }
+                        throw new Error(`Erreur HTTP: ${summonerResponse.status} - ${summonerResponse.statusText}`);
+                    }
+
+                    const summonerData = await summonerResponse.json();
+                    console.log('📄 Données du summoner:', summonerData);
+
+                    if (!summonerData || !summonerData.id) {
+                        throw new Error('Données du summoner invalides');
+                    }
+
+                    const summonerId = summonerData.id;
+
+                    // Step 2: Get league entries by summoner ID
+                    const leagueEndpoint = `league/v4/entries/by-summoner/${summonerId}`;
+                    const leagueUrl = `${this.proxyUrl}?endpoint=${leagueEndpoint}&region=${this.region}`;
+                    console.log('🌐 URL API League:', leagueUrl);
+
+                    const leagueResponse = await fetch(leagueUrl);
+                    console.log('📋 Statut de la réponse League:', leagueResponse.status, leagueResponse.statusText);
+
+                    if (!leagueResponse.ok) {
+                        throw new Error(`Erreur HTTP: ${leagueResponse.status} - ${leagueResponse.statusText}`);
+                    }
+
+                    const leagueData = await leagueResponse.json();
+                    console.log('📄 Données de league:', leagueData);
+
+                    // Find RANKED_SOLO_5x5 queue
+                    let rankedEntry = null;
+                    if (Array.isArray(leagueData)) {
+                        rankedEntry = leagueData.find(entry => entry.queueType === 'RANKED_SOLO_5x5');
+                    }
+
+                    if (!rankedEntry) {
+                        // Player is unranked
+                        console.log('⚠️ Joueur non classé');
+                        this.currentRankData = {
+                            tier: 'UNRANKED',
+                            rank: '',
+                            lp: 0,
+                            wins: 0,
+                            losses: 0
+                        };
+                        this.displayCurrentRank();
+                        await this.saveRankData();
+                        return true;
+                    }
+
+                    const oldLP = this.currentRankData.lp;
+                    const oldTier = this.currentRankData.tier;
+                    const oldRank = this.currentRankData.rank;
+
+                    const newLP = rankedEntry.leaguePoints || 0;
+                    const newTier = rankedEntry.tier || 'UNRANKED';
+                    const newRank = rankedEntry.rank || '';
+
+                    this.currentRankData = {
+                        tier: newTier,
+                        rank: newRank,
+                        lp: newLP,
+                        wins: rankedEntry.wins || 0,
+                        losses: rankedEntry.losses || 0
+                    };
+
+                    console.log('✅ Données de rang mises à jour:', this.currentRankData);
+
+                    // Update rank image if tier or rank changed
+                    if (oldTier !== newTier || oldRank !== newRank) {
+                        console.log(`🏆 Changement de rang détecté: ${oldTier} ${oldRank} → ${newTier} ${newRank}`);
+                        this.displayCurrentRank();
+                    }
+
+                    // Update display with animation if LP changed
+                    const lpChange = newLP - oldLP;
+                    if (oldLP !== newLP && oldLP > 0) {
+                        console.log(`🎬 Animation LP: ${oldLP} → ${newLP} (change: ${lpChange})`);
+                        await this.animateLPChange(oldLP, newLP, lpChange);
+                    } else {
+                        this.displayCurrentRank();
+                    }
+
+                    await this.saveRankData();
+
+                    console.log('🎉 fetchRealRankData terminé avec succès!');
+                    return true;
+
+                } catch (error) {
+                    console.error('❌ Erreur dans fetchRealRankData:', error);
+                    console.error('📊 Stack trace:', error.stack);
+                    this.displayError('Erreur API');
+                    return false;
+                }
             }
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 Démarrage du widget LoL Rank...');
             const widget = new LoLRankWidget();
+
             window.lolWidget = widget;
+            console.log('🔧 Widget accessible via window.lolWidget pour les tests');
         });
     </script>
 </body>

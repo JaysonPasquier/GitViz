@@ -1,10 +1,22 @@
 <!DOCTYPE html>
-<!-- GitViz – URL Builder & Editor -->
+<!-- GitViz – URL Builder & Editor
+* what are you doing here ?
+* are you trying to copy my code ? or looking if its ai generated ?
+* if you are, you are not gonna find anything here.
+* this is a custom code that i wrote for my own use.
+* if you want to use it, you can, but you need to ask me for permission.
+* if you are not trying to copy my code, or looking if its ai generated, then you can continue.
+* i hope you enjoy my code.
+* if you have any questions, feel free to ask me.
+* if you have any suggestions, feel free to suggest them.
+* if you have any bugs, feel free to report them.
+-->
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoL Rank Widget Preview</title>
+    <!-- Google Fonts for custom font selection -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&family=Poppins:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Raleway:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Merriweather:wght@400;700&family=Ubuntu:wght@400;700&family=Nunito:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Crimson+Text:wght@400;700&family=Libre+Baskerville:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Anton&family=Fjalla+One&family=Righteous&family=Bangers&family=Fredoka+One:wght@400;700&family=Comfortaa:wght@400;700&family=Quicksand:wght@400;700&family=Rubik:wght@400;700&family=Work+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&family=DM+Sans:wght@400;700&family=Manrope:wght@400;700&family=Sora:wght@400;700&family=Outfit:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&family=Figtree:wght@400;700&family=Geist:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
@@ -21,7 +33,7 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background: radial-gradient(1200px 600px at 10% -10%, rgba(145,70,255,.15), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(54,209,220,.12), transparent 40%), #0e0f14;
+            background: transparent !important;
         }
 
         body {
@@ -29,17 +41,17 @@
             color: #ffffff;
             position: relative;
             min-height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .rank-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: relative;
-            z-index: 10;
+        .preview-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            pointer-events: none;
         }
 
         /* Overlay Style: Default */
@@ -94,6 +106,18 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
+        .rank-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transform-origin: center;
+            z-index: 10;
+        }
+
         .rank-icon {
             width: 80px;
             height: 80px;
@@ -110,20 +134,54 @@
 
         .rank-info {
             display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .rank-tier {
-            font-size: 32px;
-            font-weight: bold;
-            color: #ffffff;
+            align-items: center;
+            gap: 10px;
         }
 
         .lp-display {
             font-size: 32px;
             font-weight: bold;
             color: #ffffff;
+            position: relative;
+        }
+
+        .lp-change {
+            position: absolute;
+            left: -80px;
+            top: 0;
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(0);
+            animation: slideAndFade 2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .lp-change.positive {
+            color: #00ff00;
+        }
+
+        .lp-change.negative {
+            color: #ff0000;
+        }
+
+        @keyframes slideAndFade {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        .error {
+            color: #ff0000;
         }
 
         /* Font effects */
@@ -145,27 +203,63 @@
                 -2px 0 0 currentColor,
                 2px 0 0 currentColor;
         }
+
+        /* Command feedback styles */
+        .command-feedback {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .command-feedback.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .command-feedback.success {
+            background-color: #00ff00;
+            color: #000;
+        }
+
+        .command-feedback.error {
+            background-color: #ff0000;
+        }
+
+        /* Overlay visibility control */
+        body.hidden {
+            display: none !important;
+        }
     </style>
 </head>
-<body class="overlay-style-default">
+<body>
+    <img src="lol-preview-background.jpg" alt="" class="preview-background" onerror="this.style.display='none'" />
     <div class="rank-container" id="rankContainer">
         <div class="rank-icon" id="rankIcon">
             <!-- Will be populated dynamically -->
         </div>
         <div class="rank-info">
-            <div class="rank-tier" id="rankTier">DIAMOND I</div>
-            <div class="lp-display" id="lpDisplay">67 LP</div>
+            <div class="lp-display" id="lpDisplay">-- LP</div>
         </div>
     </div>
+
+    <!-- Command feedback element -->
+    <div class="command-feedback" id="commandFeedback"></div>
 
     <script>
         class LoLRankWidget {
             constructor() {
                 const urlParams = new URLSearchParams(window.location.search);
 
-                this.riotId = urlParams.get('riot_id') || 'Faker';
-                this.tagline = urlParams.get('tagline') || 'KR1';
-                this.region = urlParams.get('region') || 'kr';
+                this.summonerName = urlParams.get('name') || 'SummonerName';
+                this.region = urlParams.get('region') || 'euw1';
 
                 const fontParam = urlParams.get('font') || 'Arial';
                 this.applyFont(fontParam);
@@ -180,37 +274,152 @@
 
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 3000;
 
-                // Preview states
-                this.previewStates = [
-                    { tier: 'DIAMOND', division: 'I', lp: 67 },
-                    { tier: 'MASTER', division: '', lp: 234 },
-                    { tier: 'PLATINUM', division: 'II', lp: 45 }
-                ];
-                this.previewStateIndex = 0;
+                const hasAllInfo = this.summonerName &&
+                                   this.summonerName !== 'SummonerName' &&
+                                   this.region &&
+                                   this.region !== 'euw1';
 
+                this.isPreviewMode = !hasAllInfo;
+
+                if (this.isPreviewMode) {
+                    console.log('🎭 Mode preview activé - données mockées');
+                    this.previewStateIndex = 0;
+                    this.previewStates = [
+                        {
+                            tier: 'GOLD',
+                            rank: 'II',
+                            lp: 67
+                        },
+                        {
+                            tier: 'PLATINUM',
+                            rank: 'IV',
+                            lp: 23
+                        },
+                        {
+                            tier: 'DIAMOND',
+                            rank: 'I',
+                            lp: 89
+                        }
+                    ];
+                } else {
+                    console.log('✅ Mode réel activé');
+                    if (!urlParams.get('update_interval')) {
+                        this.updateInterval = 60000;
+                    }
+                }
+
+                this.isOverlayVisible = true;
+
+                if (this.isPreviewMode) {
+                    const initialState = this.previewStates[0];
+                    this.currentRankData = {
+                        tier: initialState.tier,
+                        rank: initialState.rank,
+                        lp: initialState.lp
+                    };
+                } else {
+                    this.currentRankData = {
+                        tier: 'UNRANKED',
+                        rank: '',
+                        lp: 0
+                    };
+                }
+
+                this.previousLP = this.currentRankData.lp;
+                this.lastChange = null;
+                this.isAnimating = false;
+
+                this.rankImages = {
+                    'IRON-I': 'images/Iron.png',
+                    'IRON-II': 'images/Iron.png',
+                    'IRON-III': 'images/Iron.png',
+                    'IRON-IV': 'images/Iron.png',
+                    'BRONZE-I': 'images/Bronze.png',
+                    'BRONZE-II': 'images/Bronze.png',
+                    'BRONZE-III': 'images/Bronze.png',
+                    'BRONZE-IV': 'images/Bronze.png',
+                    'SILVER-I': 'images/Silver.png',
+                    'SILVER-II': 'images/Silver.png',
+                    'SILVER-III': 'images/Silver.png',
+                    'SILVER-IV': 'images/Silver.png',
+                    'GOLD-I': 'images/Gold.png',
+                    'GOLD-II': 'images/Gold.png',
+                    'GOLD-III': 'images/Gold.png',
+                    'GOLD-IV': 'images/Gold.png',
+                    'PLATINUM-I': 'images/Platinum.png',
+                    'PLATINUM-II': 'images/Platinum.png',
+                    'PLATINUM-III': 'images/Platinum.png',
+                    'PLATINUM-IV': 'images/Platinum.png',
+                    'EMERALD-I': 'images/Emerald.png',
+                    'EMERALD-II': 'images/Emerald.png',
+                    'EMERALD-III': 'images/Emerald.png',
+                    'EMERALD-IV': 'images/Emerald.png',
+                    'DIAMOND-I': 'images/Diamond.png',
+                    'DIAMOND-II': 'images/Diamond.png',
+                    'DIAMOND-III': 'images/Diamond.png',
+                    'DIAMOND-IV': 'images/Diamond.png',
+                    'MASTER': 'images/Master.png',
+                    'GRANDMASTER': 'images/Grandmaster.png',
+                    'CHALLENGER': 'images/Challenger.png',
+                    'UNRANKED': 'images/Unrated.png'
+                };
+
+                this.logConfiguration();
+                this.setupURLChangeDetection();
                 this.init();
+            }
+
+            logConfiguration() {
+                console.log('🔧 Configuration du widget LoL:');
+                console.log(`   👤 Summoner: ${this.summonerName}`);
+                console.log(`   🌐 Région: ${this.region}`);
+                console.log(`   ⏰ Mise à jour: ${this.updateInterval}ms`);
+                console.log(`   🎭 Mode: ${this.isPreviewMode ? 'Preview' : 'Réel'}`);
+            }
+
+            setupURLChangeDetection() {
+                let currentURL = window.location.href;
+                setInterval(() => {
+                    if (window.location.href !== currentURL) {
+                        console.log('🔄 Changement d\'URL détecté');
+                        currentURL = window.location.href;
+                        this.reloadConfiguration();
+                    }
+                }, 1000);
             }
 
             applyFont(fontName) {
                 if (!fontName) fontName = 'Arial';
+
                 const systemFonts = ['Arial', 'Courier New', 'Georgia', 'Times New Roman', 'Verdana', 'Tahoma', 'Trebuchet MS', 'Impact', 'Comic Sans MS', 'Arial Black'];
-                let fontFamily = systemFonts.includes(fontName) ? fontName : `'${fontName}'`;
+
+                let fontFamily;
+                if (systemFonts.includes(fontName)) {
+                    fontFamily = fontName;
+                } else {
+                    fontFamily = `'${fontName}'`;
+                }
+
                 document.documentElement.style.setProperty('--custom-font', `${fontFamily}, sans-serif`);
                 document.body.style.fontFamily = `${fontFamily}, sans-serif`;
             }
 
             applyStyles() {
-                const rankTier = document.getElementById('rankTier');
+                const root = document.documentElement;
+                root.style.setProperty('--font-size-main', `${this.fontSize}px`);
+                root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
+
                 const lpDisplay = document.getElementById('lpDisplay');
-
-                if (rankTier) {
-                    rankTier.classList.remove('font-normal', 'font-hollow', 'font-border');
-                    rankTier.classList.add(`font-${this.fontEffect}`);
-                }
-
                 if (lpDisplay) {
                     lpDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
                     lpDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+
+                root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
+                const rankIcon = document.getElementById('rankIcon');
+                if (rankIcon) {
+                    rankIcon.style.width = `${this.rankImageSize}px`;
+                    rankIcon.style.height = `${this.rankImageSize}px`;
                 }
             }
 
@@ -226,67 +435,189 @@
                 document.body.classList.add(`overlay-style-${this.overlayStyle}`);
             }
 
-            init() {
-                console.log('🎮 Mode preview activé');
-                this.displayCurrentRank();
-                this.startPreviewCycle();
+            reloadConfiguration() {
+                const urlParams = new URLSearchParams(window.location.search);
+                this.summonerName = urlParams.get('name') || this.summonerName;
+                this.region = urlParams.get('region') || this.region;
+
+                const newInterval = urlParams.get('update_interval');
+                if (newInterval) {
+                    this.updateInterval = parseInt(newInterval) || this.updateInterval;
+                }
+
+                const newFont = urlParams.get('font') || 'Arial';
+                this.applyFont(newFont);
+
+                const newFontSize = urlParams.get('font_size');
+                if (newFontSize) {
+                    this.fontSize = parseInt(newFontSize) || this.fontSize;
+                }
+                const newFontEffect = urlParams.get('font_effect');
+                if (newFontEffect) {
+                    this.fontEffect = newFontEffect;
+                }
+                const newRankImageSize = urlParams.get('rank_image_size');
+                if (newRankImageSize) {
+                    this.rankImageSize = parseInt(newRankImageSize) || this.rankImageSize;
+                }
+                const newOverlayStyle = urlParams.get('overlay_style');
+                if (newOverlayStyle) {
+                    this.overlayStyle = newOverlayStyle;
+                }
+
+                this.applyStyles();
+                this.applyOverlayStyle();
+                this.logConfiguration();
             }
 
             startPreviewCycle() {
-                setInterval(() => {
-                    this.previewStateIndex = (this.previewStateIndex + 1) % this.previewStates.length;
+                if (this.previewIntervalId) {
+                    clearTimeout(this.previewIntervalId);
+                    clearInterval(this.previewIntervalId);
+                }
+
+                const cycleWithDelay = async () => {
+                    while (this.isAnimating) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+
+                    await this.cyclePreviewState();
+
+                    while (this.isAnimating) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+
+                    this.previewIntervalId = setTimeout(cycleWithDelay, this.updateInterval);
+                };
+
+                this.previewIntervalId = setTimeout(cycleWithDelay, this.updateInterval);
+            }
+
+            async cyclePreviewState() {
+                this.previewStateIndex = (this.previewStateIndex + 1) % this.previewStates.length;
+                const newState = this.previewStates[this.previewStateIndex];
+
+                const oldLP = this.currentRankData.lp;
+                const oldTier = this.currentRankData.tier;
+                const oldRank = this.currentRankData.rank;
+
+                this.currentRankData = {
+                    tier: newState.tier,
+                    rank: newState.rank,
+                    lp: newState.lp
+                };
+
+                if (oldTier !== newState.tier || oldRank !== newState.rank || oldLP !== newState.lp) {
+                    await this.animateLPChange(oldLP, newState.lp, newState.lp - oldLP);
+                    if (oldTier !== newState.tier || oldRank !== newState.rank) {
+                        this.displayCurrentRank();
+                    }
+                } else {
                     this.displayCurrentRank();
-                }, this.updateInterval);
+                }
+
+                this.previousLP = newState.lp;
+                console.log(`🔄 Preview: Changement vers ${newState.tier} ${newState.rank} ${newState.lp} LP`);
             }
 
             displayCurrentRank() {
-                const state = this.previewStates[this.previewStateIndex];
-                const rankTier = document.getElementById('rankTier');
                 const lpDisplay = document.getElementById('lpDisplay');
                 const rankIcon = document.getElementById('rankIcon');
 
-                let tierText = state.tier;
-                if (state.division) {
-                    tierText += ` ${state.division}`;
+                const data = this.currentRankData;
+
+                if (data.tier === 'UNRANKED' || !data.tier) {
+                    rankIcon.innerHTML = `<img src="images/Unrated.png" alt="Unranked">`;
+                    lpDisplay.textContent = 'Unranked';
+                    lpDisplay.style.display = 'block';
+                    return;
                 }
 
-                if (rankTier) {
-                    rankTier.textContent = tierText;
+                lpDisplay.style.display = 'block';
+
+                const rankKey = data.rank ? `${data.tier}-${data.rank}` : data.tier;
+                const rankImagePath = this.rankImages[rankKey] || this.rankImages[data.tier] || 'images/Unrated.png';
+
+                const currentImage = rankIcon.querySelector('img');
+                const currentImageSrc = currentImage ? currentImage.src : '';
+                const newImageName = rankImagePath.split('/').pop();
+                if (!currentImage || !currentImageSrc.includes(newImageName)) {
+                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.tier} ${data.rank}">`;
                 }
 
-                if (lpDisplay) {
-                    lpDisplay.textContent = `${state.lp} LP`;
+                if (!this.isAnimating) {
+                    const currentLPText = lpDisplay.textContent.trim();
+                    const newLPText = `${data.lp} LP`;
+                    if (currentLPText !== newLPText) {
+                        lpDisplay.textContent = newLPText;
+                    }
+                }
+            }
+
+            async animateLPChange(oldLP, newLP, changeValue = null) {
+                if (this.isAnimating) return;
+                this.isAnimating = true;
+
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                if (changeValue !== null && changeValue !== this.lastChange) {
+                    this.showChangeIndicator(changeValue);
+                    this.lastChange = changeValue;
                 }
 
-                // Rank images mapping
-                const rankImages = {
-                    'DIAMOND': 'images/Diamond-border.png',
-                    'MASTER': 'images/Master-border.png',
-                    'PLATINUM': 'images/Platinum-border.png',
-                    'EMERALD': 'images/Emerald-border.png',
-                    'GOLD': 'images/Gold-border.png',
-                    'SILVER': 'images/Silver-border.png',
-                    'BRONZE': 'images/Bronze-border.png',
-                    'IRON': 'images/Iron-border.png',
-                    'GRANDMASTER': 'images/Grandmaster-border.png',
-                    'CHALLENGER': 'images/Challenger-border.png',
-                    'UNRANKED': 'images/Unrated.png'
-                };
+                const difference = newLP - oldLP;
+                const steps = Math.min(Math.abs(difference), 50);
+                const stepSize = difference / steps;
+                const stepDelay = 30;
 
-                const tierUpper = state.tier.toUpperCase();
-                const rankImagePath = rankImages[tierUpper] || rankImages['UNRANKED'];
+                for (let i = 0; i <= steps; i++) {
+                    const currentLP = Math.round(oldLP + (stepSize * i));
+                    lpDisplay.textContent = `${currentLP} LP`;
 
-                if (rankImagePath) {
-                    rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${tierText}" style="width: 80px; height: 80px; object-fit: contain;">`;
-                } else {
-                    rankIcon.innerHTML = `<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; text-align: center; color: white; font-weight: bold;">${state.tier}</div>`;
+                    if (i < steps) {
+                        await new Promise(resolve => setTimeout(resolve, stepDelay));
+                    }
                 }
 
-                console.log(`✅ Preview: ${tierText} - ${state.lp} LP`);
+                this.isAnimating = false;
+            }
+
+            showChangeIndicator(changeValue) {
+                const lpDisplay = document.getElementById('lpDisplay');
+
+                const existingIndicator = lpDisplay.querySelector('.lp-change');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+
+                const changeElement = document.createElement('div');
+                changeElement.className = `lp-change ${changeValue > 0 ? 'positive' : 'negative'}`;
+                changeElement.textContent = changeValue > 0 ? `+${changeValue}` : `${changeValue}`;
+
+                lpDisplay.appendChild(changeElement);
+
+                setTimeout(() => {
+                    if (changeElement.parentNode) {
+                        changeElement.remove();
+                    }
+                }, 2000);
+            }
+
+            async init() {
+                const modeText = this.isPreviewMode ? 'Preview Mode' : 'Real Mode';
+                console.log(`🎮 Initialisation du widget LoL (${modeText})...`);
+
+                this.displayCurrentRank();
+
+                if (this.isPreviewMode) {
+                    console.log('🔄 Mode preview activé - cycle entre les états...');
+                    this.startPreviewCycle();
+                }
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Démarrage du widget LoL Rank Preview...');
             const widget = new LoLRankWidget();
             window.lolWidget = widget;
         });

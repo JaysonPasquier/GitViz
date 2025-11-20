@@ -67,25 +67,6 @@
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         },
-        lol: {
-            label: 'League of Legends',
-            path: 'overlay/lol/rank/rank-widget.html',
-            configParams: [
-                { key: 'riot_id', label: 'Riot ID', type: 'text', placeholder: 'ex: Faker', required: true },
-                { key: 'tagline', label: 'Tagline', type: 'text', placeholder: 'ex: KR1', required: true },
-                { key: 'region', label: 'Région', type: 'select', options: ['kr', 'euw', 'na', 'eune', 'oce', 'br', 'lan', 'las', 'ru', 'tr', 'jp'], default: 'kr', required: true },
-                { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 2000, max: 300000, step: 1000, default: 60000 },
-                { key: 'cors_proxy', label: 'Proxy CORS (optionnel)', type: 'text', placeholder: 'https://corsproxy.io/?', default: 'https://corsproxy.io/?', help: 'Proxy CORS pour contourner les restrictions. Alternatives: https://api.allorigins.win/raw?url= ou https://thingproxy.freeboard.io/fetch/' },
-                { key: 'rank_border', label: 'Version avec bordure', type: 'select', options: ['true', 'false'], default: 'true', help: 'Utiliser la version avec bordure des images de rang (plus visible)' },
-            ],
-            styleParams: [
-                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
-                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
-                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
-                { key: 'rank_image_size', label: 'Taille de l\'image du rang (px)', type: 'number', min: 20, max: 200, step: 5, default: 60 },
-                { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
-            ]
-        },
         sub: {
             label: 'Sub Goal',
             path: 'overlay/sub/sub-count-widget.html',
@@ -104,21 +85,40 @@
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         },
-                spotify: {
-                    label: 'Spotify',
-                    path: 'overlay/spotify/spotify-widget.html',
-                    configParams: [
-                        { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
-                        { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', default: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', required: true, readonly: true, help: '⚠️ IMPORTANT: Cette URL est verrouillée et ne peut pas être modifiée. Elle doit correspondre EXACTEMENT à celle configurée dans Spotify Dashboard' },
-                        { key: 'display_mode', label: 'Mode d\'affichage', type: 'select', options: ['always', 'changement', 'commande', 'changement_ou_commande', 'changement_et_commande'], default: 'always', help: 'always: Toujours affiché | changement: Apparaît à chaque changement de musique | commande: Apparaît sur commande Twitch | changement_ou_commande: Apparaît sur changement OU commande | changement_et_commande: Apparaît sur changement ET commande' },
-                        { key: 'display_duration', label: 'Durée d\'affichage (ms)', type: 'number', min: 1000, max: 60000, step: 1000, default: 5000, help: 'Durée pendant laquelle l\'overlay reste visible (uniquement pour les modes avec cooldown)' },
-                        { key: 'twitch_channel', label: 'Chaine Twitch (pour commandes)', type: 'text', placeholder: 'nom de la chaine', help: 'Optionnel: Nom du canal Twitch pour écouter les commandes (ex: !music)' },
-                        { key: 'twitch_command', label: 'Commande Twitch', type: 'text', placeholder: '!music', default: '!music', help: 'Commande à écouter dans le chat Twitch (ex: !music)' },
-                    ],
+        spotify: {
+            label: 'Spotify',
+            path: 'overlay/spotify/spotify-widget.html',
+            configParams: [
+                { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Votre Client ID Spotify', required: true },
+                { key: 'redirect_uri', label: 'Redirect URI', type: 'text', placeholder: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', default: 'https://jaysonpasquier.github.io/GitViz/overlay/spotify/spotify-widget.html', required: true, readonly: true, help: '⚠️ IMPORTANT: Cette URL est verrouillée et ne peut pas être modifiée. Elle doit correspondre EXACTEMENT à celle configurée dans Spotify Dashboard' },
+                { key: 'display_mode', label: 'Mode d\'affichage', type: 'select', options: ['always', 'changement', 'commande', 'changement_ou_commande', 'changement_et_commande'], default: 'always', help: 'always: Toujours affiché | changement: Apparaît à chaque changement de musique | commande: Apparaît sur commande Twitch | changement_ou_commande: Apparaît sur changement OU commande | changement_et_commande: Apparaît sur changement ET commande' },
+                { key: 'display_duration', label: 'Durée d\'affichage (ms)', type: 'number', min: 1000, max: 60000, step: 1000, default: 5000, help: 'Durée pendant laquelle l\'overlay reste visible (uniquement pour les modes avec cooldown)' },
+                { key: 'twitch_channel', label: 'Chaine Twitch (pour commandes)', type: 'text', placeholder: 'nom de la chaine', help: 'Optionnel: Nom du canal Twitch pour écouter les commandes (ex: !music)' },
+                { key: 'twitch_command', label: 'Commande Twitch', type: 'text', placeholder: '!music', default: '!music', help: 'Commande à écouter dans le chat Twitch (ex: !music)' },
+            ],
             styleParams: [
                 { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
                 { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
                 { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
+            ]
+        },
+        lol: {
+            label: 'LoL Rank',
+            path: 'overlay/lol/rank/rank-widget.html',
+            configParams: [
+                { key: 'name', label: 'Nom du summoner', type: 'text', placeholder: 'ex: SummonerName', required: true },
+                { key: 'region', label: 'Région', type: 'select', options: ['euw1', 'eun1', 'na1', 'kr', 'br1', 'la1', 'la2', 'jp1', 'ru', 'tr1', 'oc1', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'], default: 'euw1', required: true },
+                { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 2000, max: 300000, step: 1000, default: 60000 },
+                { key: 'channel', label: 'Canal Twitch (optionnel)', type: 'text', placeholder: 'ex: twitch_channel' },
+                { key: 'moderators', label: 'Modérateurs (optionnel)', type: 'text', placeholder: 'user1,user2,user3' },
+                { key: 'vips', label: 'VIPs (optionnel)', type: 'text', placeholder: 'user1,user2' },
+            ],
+            styleParams: [
+                { key: 'font', label: 'Police', type: 'select', options: FONT_OPTIONS, default: 'Arial' },
+                { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
+                { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
+                { key: 'rank_image_size', label: 'Taille de l\'image du rang (px)', type: 'number', min: 20, max: 200, step: 5, default: 60 },
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         }
@@ -141,10 +141,12 @@
         if (p.includes('/overlay/valorant')) return 'valorant';
         if (p.includes('/overlay/sub')) return 'sub';
         if (p.includes('/overlay/spotify')) return 'spotify';
+        if (p.includes('/overlay/lol')) return 'lol';
         if (p.endsWith('overlay/chat/') || p.endsWith('overlay/chat')) return 'chat';
         if (p.endsWith('overlay/valorant/') || p.endsWith('overlay/valorant')) return 'valorant';
         if (p.endsWith('overlay/sub/') || p.endsWith('overlay/sub')) return 'sub';
         if (p.endsWith('overlay/spotify/') || p.endsWith('overlay/spotify')) return 'spotify';
+        if (p.endsWith('overlay/lol/') || p.endsWith('overlay/lol')) return 'lol';
         return null;
     };
 
@@ -196,11 +198,6 @@
         const spotifyHelpSection = document.getElementById('spotifyHelpSection');
         if (spotifyHelpSection) {
             spotifyHelpSection.style.display = templateKey === 'spotify' ? 'block' : 'none';
-        }
-
-        const lolHelpSection = document.getElementById('lolHelpSection');
-        if (lolHelpSection) {
-            lolHelpSection.style.display = templateKey === 'lol' ? 'block' : 'none';
         }
 
         if (twitchTokenLink) {
@@ -476,63 +473,7 @@
             }
         }
 
-        if (tKey === 'lol') {
-            const previewIframe = document.getElementById('lolPreview');
-            const previewCardIframe = document.getElementById('lolPreviewCard');
-
-            const previewParams = new URLSearchParams();
-            previewParams.set('riot_id', vals.riot_id || 'Faker');
-            previewParams.set('tagline', vals.tagline || 'KR1');
-            previewParams.set('region', vals.region || 'kr');
-            const fontValue = vals.font || 'Arial';
-            previewParams.set('font', fontValue);
-            if (vals.font_size) previewParams.set('font_size', vals.font_size);
-            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
-            if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
-            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
-            previewParams.set('update_interval', '3000');
-
-            const previewUrl = `overlay/lol/rank/rank-widget-preview.html?${previewParams.toString()}`;
-            console.log('⚔️ LoL preview URL:', previewUrl);
-
-            const timestamp = Date.now();
-            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
-
-            if (previewIframe) {
-                previewIframe.src = '';
-                setTimeout(() => {
-                    previewIframe.src = previewUrlWithCache;
-                }, 50);
-            }
-            if (previewCardIframe) {
-                previewCardIframe.src = '';
-                setTimeout(() => {
-                    previewCardIframe.src = previewUrlWithCache;
-                }, 50);
-            }
-        }
-
         if (tKey === 'chat') {
-            const previewIframe = document.getElementById('lolPreview');
-            const previewCardIframe = document.getElementById('lolPreviewCard');
-
-            const previewParams = new URLSearchParams();
-            previewParams.set('riot_id', riotId || 'Faker');
-            previewParams.set('tagline', tagline || 'KR1');
-            previewParams.set('region', region || 'kr');
-            previewParams.set('font', font || 'Arial');
-            previewParams.set('font_size', fontSize || '24');
-            previewParams.set('font_effect', fontEffect || 'normal');
-            previewParams.set('rank_image_size', rankImageSize || '60');
-            previewParams.set('overlay_style', overlayStyle || 'default');
-            previewParams.set('update_interval', '3000');
-
-            const previewUrl = `${baseUrl()}overlay/lol/rank/rank-widget-preview.html?${previewParams.toString()}`;
-            if (previewIframe) previewIframe.src = previewUrl;
-            if (previewCardIframe) previewCardIframe.src = previewUrl;
-        }
-
-        if (templateKey === 'chat') {
             const previewIframe = document.getElementById('chatPreview');
             const previewCardIframe = document.getElementById('chatPreviewCard');
 
@@ -553,6 +494,41 @@
             const previewUrl = `overlay/chat/chat-widget-preview.html?${previewParams.toString()}`;
             console.log('💬 Chat preview URL:', previewUrl);
             console.log('💬 Chat preview vals:', vals);
+
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe) {
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+            if (previewCardIframe) {
+                previewCardIframe.src = '';
+                setTimeout(() => {
+                    previewCardIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
+        if (tKey === 'lol') {
+            const previewIframe = document.getElementById('lolPreview');
+            const previewCardIframe = document.getElementById('lolPreviewCard');
+
+            const previewParams = new URLSearchParams();
+            previewParams.set('name', vals.name || 'SummonerName');
+            previewParams.set('region', vals.region || 'euw1');
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+            previewParams.set('update_interval', vals.update_interval || '3000');
+
+            const previewUrl = `overlay/lol/rank/rank-widget-preview.html?${previewParams.toString()}`;
+            console.log('⚔️ LoL preview URL:', previewUrl);
 
             const timestamp = Date.now();
             const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
