@@ -198,6 +198,11 @@
             spotifyHelpSection.style.display = templateKey === 'spotify' ? 'block' : 'none';
         }
 
+        const lolHelpSection = document.getElementById('lolHelpSection');
+        if (lolHelpSection) {
+            lolHelpSection.style.display = templateKey === 'lol' ? 'block' : 'none';
+        }
+
         if (twitchTokenLink) {
             if (templateKey === 'spotify') {
                 const spotifyPreviewContainer = document.getElementById('spotifyPreviewContainer');
@@ -226,7 +231,7 @@
         const subPreviewContainer = document.getElementById('subPreviewContainer');
 
         if (previewSection) {
-            if (templateKey === 'valorant' || templateKey === 'chat' || templateKey === 'sub' || templateKey === 'spotify') {
+            if (templateKey === 'valorant' || templateKey === 'chat' || templateKey === 'sub' || templateKey === 'spotify' || templateKey === 'lol') {
                 previewSection.style.display = 'block';
                 if (valorantPreviewContainer) {
                     valorantPreviewContainer.style.display = templateKey === 'valorant' ? 'block' : 'none';
@@ -240,6 +245,10 @@
                 const spotifyPreviewContainer = document.getElementById('spotifyPreviewContainer');
                 if (spotifyPreviewContainer) {
                     spotifyPreviewContainer.style.display = templateKey === 'spotify' ? 'block' : 'none';
+                }
+                const lolPreviewContainer = document.getElementById('lolPreviewContainer');
+                if (lolPreviewContainer) {
+                    lolPreviewContainer.style.display = templateKey === 'lol' ? 'block' : 'none';
                 }
             } else {
                 previewSection.style.display = 'none';
@@ -467,7 +476,63 @@
             }
         }
 
+        if (tKey === 'lol') {
+            const previewIframe = document.getElementById('lolPreview');
+            const previewCardIframe = document.getElementById('lolPreviewCard');
+
+            const previewParams = new URLSearchParams();
+            previewParams.set('riot_id', vals.riot_id || 'Faker');
+            previewParams.set('tagline', vals.tagline || 'KR1');
+            previewParams.set('region', vals.region || 'kr');
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+            previewParams.set('update_interval', '3000');
+
+            const previewUrl = `overlay/lol/rank/rank-widget-preview.html?${previewParams.toString()}`;
+            console.log('⚔️ LoL preview URL:', previewUrl);
+
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe) {
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+            if (previewCardIframe) {
+                previewCardIframe.src = '';
+                setTimeout(() => {
+                    previewCardIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
         if (tKey === 'chat') {
+            const previewIframe = document.getElementById('lolPreview');
+            const previewCardIframe = document.getElementById('lolPreviewCard');
+
+            const previewParams = new URLSearchParams();
+            previewParams.set('riot_id', riotId || 'Faker');
+            previewParams.set('tagline', tagline || 'KR1');
+            previewParams.set('region', region || 'kr');
+            previewParams.set('font', font || 'Arial');
+            previewParams.set('font_size', fontSize || '24');
+            previewParams.set('font_effect', fontEffect || 'normal');
+            previewParams.set('rank_image_size', rankImageSize || '60');
+            previewParams.set('overlay_style', overlayStyle || 'default');
+            previewParams.set('update_interval', '3000');
+
+            const previewUrl = `${baseUrl()}overlay/lol/rank/rank-widget-preview.html?${previewParams.toString()}`;
+            if (previewIframe) previewIframe.src = previewUrl;
+            if (previewCardIframe) previewCardIframe.src = previewUrl;
+        }
+
+        if (templateKey === 'chat') {
             const previewIframe = document.getElementById('chatPreview');
             const previewCardIframe = document.getElementById('chatPreviewCard');
 

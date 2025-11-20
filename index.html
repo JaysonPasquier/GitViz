@@ -113,6 +113,19 @@
                                 <p class="muted">Affiche la chanson actuellement en cours sur Spotify. Options: access_token, police, style, taille de police.</p>
                             </div>
                         </button>
+
+                        <button class="template-card template-choice" data-template="lol">
+                            <div class="template-image">
+                                <div class="preview-overlay-container">
+                                    <iframe id="lolPreviewCard" src="overlay/lol/rank/rank-widget-preview.html?riot_id=Faker&tagline=KR1&region=kr&font=Arial&update_interval=3000"></iframe>
+                                </div>
+                            </div>
+                            <div class="template-icon">⚔️</div>
+                            <div class="template-body">
+                                <h3 class="h3">League of Legends Rang</h3>
+                                <p class="muted">Affiche le rang solo queue d'un joueur LoL. Options: Riot ID, Tagline, région, police, style.</p>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
@@ -238,6 +251,49 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="lolHelpSection" class="api-key-help" style="display: none;">
+                            <div class="api-key-help-content">
+                                <h3 class="h3">⚔️ Configuration League of Legends</h3>
+                                <p class="muted" style="margin-bottom: 12px;">Cet overlay affiche le rang solo queue d'un joueur League of Legends en utilisant les données publiques d'OP.GG.</p>
+
+                                <div style="margin-bottom: 16px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text); font-weight: bold;">1. Informations nécessaires</h4>
+                                    <ul style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li><strong>Riot ID</strong> : Le nom d'utilisateur du joueur (ex: Faker)</li>
+                                        <li><strong>Tagline</strong> : Le tag du joueur (ex: KR1, EUW1, NA1)</li>
+                                        <li><strong>Région</strong> : La région du compte (kr, euw, na, eune, oce, br, lan, las, ru, tr, jp)</li>
+                                    </ul>
+                                </div>
+
+                                <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-bottom: 12px;">
+                                    <p class="muted" style="margin: 0; font-size: 13px;"><strong>💡 Comment ça fonctionne :</strong> L'overlay utilise l'API publique d'OP.GG via un proxy CORS pour récupérer les données de rang. Aucune clé API n'est nécessaire !</p>
+                                </div>
+
+                                <div style="padding: 12px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px; margin-top: 12px; margin-bottom: 12px;">
+                                    <p class="muted" style="margin: 0; font-size: 13px; margin-bottom: 8px;"><strong>⚠️ Note importante :</strong> Cet overlay utilise un proxy CORS public pour contourner les restrictions de navigateur. Par défaut, il utilise <code style="background: var(--bg); padding: 2px 4px; border-radius: 3px; font-size: 11px;">corsproxy.io</code>.</p>
+                                    <p class="muted" style="margin: 8px 0 0; font-size: 12px;">Si vous rencontrez des problèmes de rate limiting, vous pouvez changer le proxy CORS dans les paramètres. Alternatives disponibles :</p>
+                                    <ul style="margin-left: 20px; margin-top: 8px; color: var(--muted); line-height: 1.8; font-size: 12px;">
+                                        <li><code style="background: var(--bg); padding: 2px 4px; border-radius: 3px;">https://api.allorigins.win/raw?url=</code></li>
+                                        <li><code style="background: var(--bg); padding: 2px 4px; border-radius: 3px;">https://thingproxy.freeboard.io/fetch/</code></li>
+                                    </ul>
+                                </div>
+
+                                <div style="margin-top: 20px; padding: 16px; background: rgba(138, 43, 226, 0.1); border-left: 3px solid #8a2be2; border-radius: 4px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 12px; color: var(--text);">📺 Utilisation dans OBS</h4>
+                                    <p class="muted" style="margin-bottom: 12px;">Une fois votre URL générée, suivez ces étapes pour l'utiliser dans OBS :</p>
+                                    <ol style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li>Copiez l'URL générée ci-dessus</li>
+                                        <li>Dans OBS, ajoutez une nouvelle source de type <strong>"Source navigateur"</strong> (Browser Source)</li>
+                                        <li>Collez l'URL dans le champ <strong>"URL"</strong></li>
+                                        <li>Configurez la largeur et la hauteur selon vos besoins (ex: 300x100)</li>
+                                        <li>L'overlay devrait s'afficher automatiquement avec le rang du joueur</li>
+                                    </ol>
+                                    <div style="padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 12px;"><strong>💡 Astuce :</strong> L'overlay se met à jour automatiquement toutes les 60 secondes par défaut. Vous pouvez ajuster l'intervalle dans les paramètres.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div id="previewSection" class="preview-section" style="display: none; margin-bottom: 20px;">
                             <label style="margin-bottom: 8px; display: block;">Aperçu en direct</label>
                             <div id="valorantPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background-image: url('overlay/valorant/rang/valorant-preview-background.jpg'); display: none;">
@@ -251,6 +307,9 @@
                             </div>
                             <div id="spotifyPreviewContainer" class="preview-container" style="width: 100%; height: 150px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
                                 <iframe id="spotifyPreview" src="overlay/spotify/spotify-widget-preview.html?font=Arial"></iframe>
+                            </div>
+                            <div id="lolPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                                <iframe id="lolPreview" src="overlay/lol/rank/rank-widget-preview.html?riot_id=Faker&tagline=KR1&region=kr&font=Arial&update_interval=3000"></iframe>
                             </div>
                         </div>
                         <div class="form-grid">
