@@ -1540,6 +1540,10 @@
                         this.display.innerHTML = '<span class="no-track">Aucune musique en cours</span>';
                     }
                     this.currentTrack = null;
+                    // Hide display if no track and not always mode
+                    if (this.displayMode !== 'always') {
+                        this.setVisibility(false);
+                    }
                     return;
                 }
 
@@ -1574,15 +1578,22 @@
                         this.displayMode === 'on_change_or_command') {
                         this.showDisplayTemporarily();
                     } else if (this.displayMode === 'on_change_and_command') {
-                        // Only show if command was also triggered
+                        // Show on change OR command (treat as OR, not AND)
+                        this.showDisplayTemporarily();
+                        // Reset command flag if it was set
                         if (this.commandTriggered) {
-                            this.showDisplayTemporarily();
-                            this.commandTriggered = false; // Reset
+                            this.commandTriggered = false;
                         }
                     }
                 }
 
                 this.currentTrack = { name: trackName, artists: artists, albumImage: albumImage };
+
+                // If this is the first track loaded and not always mode, show it temporarily
+                const isFirstTrack = !this.lastTrackId;
+                if (this.displayMode !== 'always' && isFirstTrack) {
+                    this.showDisplayTemporarily();
+                }
 
                 if (this.overlayStyle === 'default') {
                     this.display.innerHTML = `
@@ -1615,6 +1626,10 @@
                 if (this.fontEffect !== 'normal') {
                     this.display.classList.add(`font-${this.fontEffect}`);
                 }
+
+                // Store track ID for change detection
+                const trackId = track.id || `${trackName}-${artists}`;
+                this.lastTrackId = trackId;
             }
 
             escapeHtml(text) {
