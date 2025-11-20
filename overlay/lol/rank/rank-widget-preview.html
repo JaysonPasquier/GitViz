@@ -258,7 +258,8 @@
             constructor() {
                 const urlParams = new URLSearchParams(window.location.search);
 
-                this.summonerName = urlParams.get('name') || 'SummonerName';
+                this.playerName = urlParams.get('name') || 'username';
+                this.playerTag = urlParams.get('tag') || 'tags';
                 this.region = urlParams.get('region') || 'euw1';
 
                 const fontParam = urlParams.get('font') || 'Arial';
@@ -274,8 +275,10 @@
 
                 this.updateInterval = parseInt(urlParams.get('update_interval')) || 3000;
 
-                const hasAllInfo = this.summonerName &&
-                                   this.summonerName !== 'SummonerName' &&
+                const hasAllInfo = this.playerName &&
+                                   this.playerName !== 'username' &&
+                                   this.playerTag &&
+                                   this.playerTag !== 'tags' &&
                                    this.region &&
                                    this.region !== 'euw1';
 
@@ -371,7 +374,7 @@
 
             logConfiguration() {
                 console.log('🔧 Configuration du widget LoL:');
-                console.log(`   👤 Summoner: ${this.summonerName}`);
+                console.log(`   👤 Joueur: ${this.playerName}#${this.playerTag}`);
                 console.log(`   🌐 Région: ${this.region}`);
                 console.log(`   ⏰ Mise à jour: ${this.updateInterval}ms`);
                 console.log(`   🎭 Mode: ${this.isPreviewMode ? 'Preview' : 'Réel'}`);
@@ -437,7 +440,8 @@
 
             reloadConfiguration() {
                 const urlParams = new URLSearchParams(window.location.search);
-                this.summonerName = urlParams.get('name') || this.summonerName;
+                this.playerName = urlParams.get('name') || this.playerName;
+                this.playerTag = urlParams.get('tag') || this.playerTag;
                 this.region = urlParams.get('region') || this.region;
 
                 const newInterval = urlParams.get('update_interval');

@@ -276,7 +276,8 @@
                 const urlParams = new URLSearchParams(window.location.search);
 
                 // Player info
-                this.summonerName = urlParams.get('name') || 'SummonerName';
+                this.playerName = urlParams.get('name') || 'username';
+                this.playerTag = urlParams.get('tag') || 'tags';
 
                 // Region configuration
                 this.region = urlParams.get('region') || 'euw1';
@@ -394,7 +395,7 @@
             // Log current configuration for debugging
             logConfiguration() {
                 console.log('🔧 Configuration du widget LoL:');
-                console.log(`   👤 Summoner: ${this.summonerName}`);
+                console.log(`   👤 Joueur: ${this.playerName}#${this.playerTag}`);
                 console.log(`   🌐 Région: ${this.region}`);
                 console.log(`   ⏰ Mise à jour: ${this.updateInterval}ms`);
                 console.log(`   📺 Canal Twitch: #${this.twitchChannel}`);
@@ -414,7 +415,7 @@
                 console.log('🧹 Nettoyage des anciennes données en cache...');
 
                 const keys = Object.keys(localStorage);
-                const currentPlayerKey = `lol-rank-data-${this.summonerName}-${this.region}`;
+                const currentPlayerKey = `lol-rank-data-${this.playerName}-${this.playerTag}-${this.region}`;
 
                 keys.forEach(key => {
                     if (key.startsWith('lol-rank-data-') && key !== currentPlayerKey) {
@@ -430,9 +431,15 @@
             validateConfiguration() {
                 console.log('🔍 Validation de la configuration...');
 
-                if (!this.summonerName || this.summonerName === 'SummonerName') {
-                    console.error('❌ Nom du summoner manquant');
-                    this.showConfigurationError('Nom du summoner manquant');
+                if (!this.playerName || this.playerName === 'username') {
+                    console.error('❌ Nom du joueur manquant');
+                    this.showConfigurationError('Nom du joueur manquant');
+                    return false;
+                }
+
+                if (!this.playerTag || this.playerTag === 'tags') {
+                    console.error('❌ Tag du joueur manquant');
+                    this.showConfigurationError('Tag du joueur manquant');
                     return false;
                 }
 
@@ -555,9 +562,11 @@
 
                 const urlParams = new URLSearchParams(window.location.search);
 
-                const oldSummonerName = this.summonerName;
+                const oldPlayerName = this.playerName;
+                const oldPlayerTag = this.playerTag;
 
-                this.summonerName = urlParams.get('name') || this.summonerName;
+                this.playerName = urlParams.get('name') || this.playerName;
+                this.playerTag = urlParams.get('tag') || this.playerTag;
                 this.region = urlParams.get('region') || this.region;
 
                 const newInterval = urlParams.get('update_interval');
@@ -602,8 +611,8 @@
 
                 this.logConfiguration();
 
-                if (oldSummonerName !== this.summonerName) {
-                    console.log('🔄 Summoner changé, forçage de la mise à jour des données...');
+                if (oldPlayerName !== this.playerName || oldPlayerTag !== this.playerTag) {
+                    console.log('🔄 Joueur changé, forçage de la mise à jour des données...');
                     this.forceRefreshData();
                 }
 
@@ -712,7 +721,7 @@
 
             async init() {
                 console.log('🎮 Initialisation du widget LoL Rank...');
-                console.log(`👤 Summoner: ${this.summonerName}`);
+                console.log(`👤 Joueur: ${this.playerName}#${this.playerTag}`);
 
                 this.clearOldCachedData();
 
@@ -739,7 +748,7 @@
 
             async loadRankData() {
                 try {
-                    const savedData = localStorage.getItem(`lol-rank-data-${this.summonerName}-${this.region}`);
+                    const savedData = localStorage.getItem(`lol-rank-data-${this.playerName}-${this.playerTag}-${this.region}`);
                     if (savedData) {
                         const loadedData = JSON.parse(savedData);
                         this.currentRankData = {
@@ -777,7 +786,7 @@
                         lastUpdated: new Date().toISOString()
                     };
 
-                    localStorage.setItem(`lol-rank-data-${this.summonerName}-${this.region}`, JSON.stringify(dataToSave));
+                    localStorage.setItem(`lol-rank-data-${this.playerName}-${this.playerTag}-${this.region}`, JSON.stringify(dataToSave));
 
                     console.log('💾 Données de rang sauvegardées dans localStorage:', dataToSave);
                 } catch (error) {
@@ -951,10 +960,10 @@
             }
 
             async forceRefreshData() {
-                console.log('🔄 Forçage de la mise à jour des données pour', this.summonerName);
+                console.log('🔄 Forçage de la mise à jour des données pour', this.playerName, this.playerTag);
                 try {
                     await this.fetchRealRankData();
-                    console.log('✅ Données forcément mises à jour pour', this.summonerName);
+                    console.log('✅ Données forcément mises à jour pour', this.playerName, this.playerTag);
                 } catch (error) {
                     console.error('❌ Erreur lors du forçage de la mise à jour:', error);
                 }
@@ -964,15 +973,49 @@
             async fetchRealRankData() {
                 try {
                     console.log('🚀 Début de fetchRealRankData...');
-                    console.log('👤 Summoner:', this.summonerName);
+                    console.log('👤 Joueur:', this.playerName, '/', this.playerTag);
                     console.log('🌐 Région:', this.region);
 
                     if (!this.validateConfiguration()) {
                         throw new Error('Configuration invalide');
                     }
 
-                    // Step 1: Get summoner by name
-                    const summonerEndpoint = `summoner/v4/summoners/by-name/${encodeURIComponent(this.summonerName)}`;
+                    // Step 1: Get account by Riot ID (gameName + tagLine)
+                    // The account API uses routing regions (americas, europe, asia)
+                    const accountRegionMap = {
+                        'euw1': 'europe', 'eun1': 'europe',
+                        'na1': 'americas', 'la1': 'americas', 'la2': 'americas', 'br1': 'americas',
+                        'kr': 'asia', 'jp1': 'asia', 'ru': 'europe', 'tr1': 'europe',
+                        'oc1': 'asia', 'ph2': 'asia', 'sg2': 'asia', 'th2': 'asia', 'tw2': 'asia', 'vn2': 'asia'
+                    };
+                    const routingRegion = accountRegionMap[this.region] || 'europe';
+
+                    // Get PUUID from Riot Account API
+                    const accountEndpoint = `account/v1/accounts/by-riot-id/${encodeURIComponent(this.playerName)}/${encodeURIComponent(this.playerTag)}`;
+                    const accountUrl = `${this.proxyUrl}?endpoint=${accountEndpoint}&region=${routingRegion}`;
+                    console.log('🌐 URL API Account:', accountUrl);
+
+                    const accountResponse = await fetch(accountUrl);
+                    console.log('📋 Statut de la réponse Account:', accountResponse.status, accountResponse.statusText);
+
+                    if (!accountResponse.ok) {
+                        if (accountResponse.status === 404) {
+                            throw new Error('Joueur introuvable');
+                        }
+                        throw new Error(`Erreur HTTP: ${accountResponse.status} - ${accountResponse.statusText}`);
+                    }
+
+                    const accountData = await accountResponse.json();
+                    console.log('📄 Données du compte:', accountData);
+
+                    if (!accountData || !accountData.puuid) {
+                        throw new Error('Données du compte invalides');
+                    }
+
+                    const puuid = accountData.puuid;
+
+                    // Step 2: Get summoner by PUUID
+                    const summonerEndpoint = `summoner/v4/summoners/by-puuid/${puuid}`;
                     const summonerUrl = `${this.proxyUrl}?endpoint=${summonerEndpoint}&region=${this.region}`;
                     console.log('🌐 URL API Summoner:', summonerUrl);
 

@@ -107,7 +107,8 @@
             label: 'LoL Rank',
             path: 'overlay/lol/rank/rank-widget.html',
             configParams: [
-                { key: 'name', label: 'Nom du summoner', type: 'text', placeholder: 'ex: SummonerName', required: true },
+                { key: 'name', label: 'Nom du joueur', type: 'text', placeholder: 'ex: SummonerName', required: true },
+                { key: 'tag', label: 'Tag du joueur', type: 'text', placeholder: 'ex: EUW', required: true },
                 { key: 'region', label: 'Région', type: 'select', options: ['euw1', 'eun1', 'na1', 'kr', 'br1', 'la1', 'la2', 'jp1', 'ru', 'tr1', 'oc1', 'ph2', 'sg2', 'th2', 'tw2', 'vn2'], default: 'euw1', required: true },
                 { key: 'update_interval', label: 'Intervalle de mise à jour (ms)', type: 'number', min: 2000, max: 300000, step: 1000, default: 60000 },
                 { key: 'channel', label: 'Canal Twitch (optionnel)', type: 'text', placeholder: 'ex: twitch_channel' },
@@ -517,7 +518,8 @@
             const previewCardIframe = document.getElementById('lolPreviewCard');
 
             const previewParams = new URLSearchParams();
-            previewParams.set('name', vals.name || 'SummonerName');
+            previewParams.set('name', vals.name || 'username');
+            previewParams.set('tag', vals.tag || 'tags');
             previewParams.set('region', vals.region || 'euw1');
             const fontValue = vals.font || 'Arial';
             previewParams.set('font', fontValue);
