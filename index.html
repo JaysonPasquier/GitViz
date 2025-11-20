@@ -199,6 +199,67 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="lolHelpSection" class="api-key-help" style="display: none;">
+                            <div class="api-key-help-content">
+                                <h3 class="h3">⚔️ Configuration LoL Rank</h3>
+                                <p class="muted" style="margin-bottom: 16px;">Voici les informations nécessaires pour configurer votre overlay de rang League of Legends :</p>
+
+                                <div style="margin-bottom: 16px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text); font-weight: bold;">1. Nom du joueur et Tag</h4>
+                                    <p class="muted" style="margin-bottom: 8px;">Le système utilise le Riot ID (gameName + tagLine) :</p>
+                                    <ul style="margin-left: 20px; margin-bottom: 12px; color: var(--muted); line-height: 1.8;">
+                                        <li><strong>Nom du joueur</strong> : Le nom de jeu (gameName) de votre Riot ID</li>
+                                        <li><strong>Tag du joueur</strong> : Le tag (tagLine) de votre Riot ID (ex: 0618, EUW, etc.)</li>
+                                    </ul>
+                                    <p class="muted" style="font-size: 13px; margin-top: 8px;"><strong>Exemple :</strong> Si votre Riot ID est "geonbu#0618", alors Nom = "geonbu" et Tag = "0618"</p>
+                                </div>
+
+                                <div style="margin-bottom: 16px;">
+                                    <h4 class="h4" style="font-size: 16px; margin-bottom: 8px; color: var(--text); font-weight: bold;">2. Codes de région</h4>
+                                    <p class="muted" style="margin-bottom: 8px;">Sélectionnez la région correspondant à votre compte :</p>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px;">
+                                        <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px;">
+                                            <strong style="color: var(--text);">Europe</strong>
+                                            <ul style="margin: 8px 0 0 20px; color: var(--muted); line-height: 1.8; font-size: 13px;">
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">euw1</code> - Europe West</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">eun1</code> - Europe Nordic & East</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">ru</code> - Russia</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">tr1</code> - Turkey</li>
+                                            </ul>
+                                        </div>
+                                        <div style="padding: 12px; background: rgba(76, 175, 80, 0.1); border-left: 3px solid #4CAF50; border-radius: 4px;">
+                                            <strong style="color: var(--text);">Amériques</strong>
+                                            <ul style="margin: 8px 0 0 20px; color: var(--muted); line-height: 1.8; font-size: 13px;">
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">na1</code> - North America</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">br1</code> - Brazil</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">la1</code> - Latin America North</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">la2</code> - Latin America South</li>
+                                            </ul>
+                                        </div>
+                                        <div style="padding: 12px; background: rgba(255, 152, 0, 0.1); border-left: 3px solid #FF9800; border-radius: 4px;">
+                                            <strong style="color: var(--text);">Asie</strong>
+                                            <ul style="margin: 8px 0 0 20px; color: var(--muted); line-height: 1.8; font-size: 13px;">
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">kr</code> - Korea</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">jp1</code> - Japan</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">oc1</code> - Oceania</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">ph2</code> - Philippines</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">sg2</code> - Singapore</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">th2</code> - Thailand</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">tw2</code> - Taiwan</li>
+                                                <li><code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">vn2</code> - Vietnam</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 12px; background: rgba(138, 43, 226, 0.1); border-left: 3px solid #8a2be2; border-radius: 4px; margin-top: 12px;">
+                                        <p class="muted" style="margin: 0; font-size: 13px;"><strong>💡 Note sur les numéros :</strong> Les numéros après les codes de région (comme "1" dans "euw1" ou "2" dans "ph2") indiquent le numéro du serveur dans cette région. Par exemple, "euw1" signifie "Europe West - Serveur 1". Certaines régions ont plusieurs serveurs, d'où les numéros différents.</p>
+                                    </div>
+                                </div>
+
+                                <div style="padding: 12px; background: rgba(33, 150, 243, 0.1); border-left: 3px solid #2196F3; border-radius: 4px; margin-top: 12px;">
+                                    <p class="muted" style="margin: 0; font-size: 13px;"><strong>ℹ️ Comment trouver votre région :</strong> Votre région correspond à celle où vous avez créé votre compte League of Legends. Si vous n'êtes pas sûr, vérifiez dans les paramètres du client LoL ou consultez votre historique de parties.</p>
+                                </div>
+                            </div>
+                        </div>
                         <div id="spotifyHelpSection" class="api-key-help" style="display: none;">
                             <div class="api-key-help-content">
                                 <h3 class="h3">🔑 Configuration Spotify</h3>

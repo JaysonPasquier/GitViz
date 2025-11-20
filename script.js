@@ -201,6 +201,11 @@
             spotifyHelpSection.style.display = templateKey === 'spotify' ? 'block' : 'none';
         }
 
+        const lolHelpSection = document.getElementById('lolHelpSection');
+        if (lolHelpSection) {
+            lolHelpSection.style.display = templateKey === 'lol' ? 'block' : 'none';
+        }
+
         if (twitchTokenLink) {
             if (templateKey === 'spotify') {
                 const spotifyPreviewContainer = document.getElementById('spotifyPreviewContainer');
