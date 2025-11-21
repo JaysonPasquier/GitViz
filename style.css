@@ -374,9 +374,8 @@ label { font-size: 14px; color: var(--muted); }
 /* Footer */
 .site-footer { border-top: 1px solid var(--border); padding: 24px 0; margin-top: 24px; text-align: center; }
 
-/* OLD SUPPORTERS BANNER STYLES - DISABLED (using supporters-banner-clean.css instead) */
 /* Supporters Banner */
-/* .supporters-banner {
+.supporters-banner {
     background: linear-gradient(135deg, rgba(255, 94, 94, 0.15), rgba(255, 140, 140, 0.1));
     border-bottom: 1px solid rgba(255, 94, 94, 0.2);
     padding: 12px 0;
@@ -405,53 +404,39 @@ label { font-size: 14px; color: var(--muted); }
     padding: 0 20px;
 }
 
-.supporters-scroll-container {
+.supporters-scroll {
     flex: 1;
     overflow: hidden;
     position: relative;
-    width: 100%;
-    height: 100%;
     mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
-}
-
-.supporters-scroll {
-    display: inline-block;
-    white-space: nowrap;
-    animation: scroll-supporters-right 30s linear infinite;
-    will-change: transform;
-    top: 0;
-    left: 0;
-    width: max-content;
-}
-
-.supporters-scroll:nth-of-type(2) {
-    --initial-offset: var(--scroll-width, 0px);
-    transform: translateX(var(--initial-offset));
-}
-
-.supporters-scroll:first-of-type {
-    --start-offset: var(--scroll-width, 0px);
-    transform: translateX(var(--start-offset));
 }
 
 .supporters-list {
     display: inline-block;
     white-space: nowrap;
+    animation: scroll-supporters 40s linear infinite;
+    padding-right: 50px;
 }
 
-@keyframes scroll-supporters-right {
+.supporters-list::after {
+    content: attr(data-duplicate);
+    display: inline-block;
+    padding-left: 50px;
+}
+
+@keyframes scroll-supporters {
     0% {
-        transform: translateX(var(--initial-offset, var(--start-offset, 0)));
+        transform: translateX(0);
     }
     100% {
-        transform: translateX(calc(var(--initial-offset, var(--start-offset, 0)) - 100%));
+        transform: translateX(calc(-50% - 25px));
     }
 }
 
 .supporters-banner:has(.supporters-list:empty) {
     display: none !important;
-} */
+}
 
 /* Responsive */
 @media (max-width: 700px) {

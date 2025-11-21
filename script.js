@@ -663,9 +663,8 @@
     }
 
     fetchGitHubStars();
-    // OLD SUPPORTERS CODE - DISABLED (using supporters-banner-clean.js instead)
     // Load and display supporters from Ko-fi API
-    /* async function loadSupporters() {
+    async function loadSupporters() {
         try {
             const response = await fetch('https://kofi-supporters.jaysonpasquier-contact.workers.dev/supporters', {
                 method: 'GET',
@@ -687,25 +686,9 @@
 
             // Check if it's an array and has data
             if (!Array.isArray(supporters) || supporters.length === 0) {
-                // Show message if no supporters
-                const noSupportersText = '☕ Vous pouvez faire un petit don sur Ko-fi pour soutenir le projet !';
-
-                const topBanner1 = $('#supportersScrollTop1 .supporters-list');
-                const topBanner2 = $('#supportersScrollTop2 .supporters-list');
-                const bottomBanner1 = $('#supportersScrollBottom1 .supporters-list');
-                const bottomBanner2 = $('#supportersScrollBottom2 .supporters-list');
-
-                if (topBanner1 && topBanner2) {
-                    topBanner1.textContent = noSupportersText;
-                    topBanner2.textContent = noSupportersText;
-                    $('#supportersBannerTop').style.display = 'block';
-                }
-
-                if (bottomBanner1 && bottomBanner2) {
-                    bottomBanner1.textContent = noSupportersText;
-                    bottomBanner2.textContent = noSupportersText;
-                    $('#supportersBannerBottom').style.display = 'block';
-                }
+                // Hide banners if no supporters
+                $('#supportersBannerTop').style.display = 'none';
+                $('#supportersBannerBottom').style.display = 'none';
                 return;
             }
 
@@ -724,87 +707,32 @@
                 return symbol + parseFloat(amount).toFixed(2) + ' ' + currency;
             };
 
-            // Format each supporter
-            const formattedSupporters = supporters.map(supporter => {
-                const name = supporter.name || 'Anonymous';
-                const amount = supporter.amount || '0.00';
-                const currency = supporter.currency || 'USD';
-                return `${name} - ${formatCurrency(amount, currency)}`;
-            });
+            const supportersText = supporters
+                .map(supporter => {
+                    const name = supporter.name || 'Anonymous';
+                    const amount = supporter.amount || '0.00';
+                    const currency = supporter.currency || 'USD';
+                    return `${name} - ${formatCurrency(amount, currency)}`;
+                })
+                .join(' • ');
 
-            // Ensure we have enough repetitions for smooth scrolling
-            // If only 1 supporter, repeat it 5 times. If 2, repeat 3 times. Otherwise use as is.
-            let repeatedSupporters;
-            if (formattedSupporters.length === 1) {
-                repeatedSupporters = Array(5).fill(formattedSupporters[0]);
-            } else if (formattedSupporters.length === 2) {
-                repeatedSupporters = [...formattedSupporters, ...formattedSupporters, ...formattedSupporters];
-            } else {
-                repeatedSupporters = [...formattedSupporters, ...formattedSupporters];
-            }
+            // Duplicate for seamless infinite scroll
+            const fullText = supportersText + ' • ';
+            const duplicateText = fullText + fullText;
 
-            // Join with separators - no need to duplicate since we have two scroll elements
-            const supportersText = repeatedSupporters.join(' • ');
+            // Update both banners
+            const topBanner = $('#supportersBannerTop .supporters-list');
+            const bottomBanner = $('#supportersBannerBottom .supporters-list');
 
-            // Update both scroll elements in each banner
-            const topBanner1 = $('#supportersScrollTop1 .supporters-list');
-            const topBanner2 = $('#supportersScrollTop2 .supporters-list');
-            const bottomBanner1 = $('#supportersScrollBottom1 .supporters-list');
-            const bottomBanner2 = $('#supportersScrollBottom2 .supporters-list');
-
-            if (topBanner1 && topBanner2) {
-                topBanner1.textContent = supportersText;
-                topBanner2.textContent = supportersText;
-
-                // Wait for DOM to update, then calculate width and set animation
-                requestAnimationFrame(() => {
-                    const scroll1 = $('#supportersScrollTop1');
-                    const scroll2 = $('#supportersScrollTop2');
-                    if (scroll1 && scroll2) {
-                        const width = scroll1.scrollWidth || scroll1.offsetWidth;
-                        const scrollSpeed = 50; // pixels per second
-                        const animationDuration = Math.max(width / scrollSpeed, 20);
-
-                        // Position scrolls: both start at left: 0
-                        // scroll2 is offset by width using CSS variable so it appears right after scroll1
-                        scroll1.style.left = `0px`;
-                        scroll2.style.left = `0px`;
-                        scroll2.style.setProperty('--scroll-width', `${width}px`);
-
-                        scroll1.style.animationDuration = `${animationDuration}s`;
-                        scroll2.style.animationDuration = `${animationDuration}s`;
-                        scroll2.style.animationDelay = `-${animationDuration / 2}s`;
-                    }
-                });
-
+            if (topBanner) {
+                topBanner.textContent = duplicateText;
+                topBanner.setAttribute('data-duplicate', duplicateText);
                 $('#supportersBannerTop').style.display = 'block';
             }
 
-            if (bottomBanner1 && bottomBanner2) {
-                bottomBanner1.textContent = supportersText;
-                bottomBanner2.textContent = supportersText;
-
-                // Wait for DOM to update, then calculate width and set animation
-                requestAnimationFrame(() => {
-                    const scroll1 = $('#supportersScrollBottom1');
-                    const scroll2 = $('#supportersScrollBottom2');
-                    if (scroll1 && scroll2) {
-                        const width = scroll1.scrollWidth || scroll1.offsetWidth;
-                        const scrollSpeed = 50; // pixels per second
-                        const animationDuration = Math.max(width / scrollSpeed, 20);
-
-                        // Position scrolls: both start at left: 0
-                        // scroll2 is offset by width using CSS variable so it appears right after scroll1
-                        scroll1.style.left = `0px`;
-                        scroll2.style.left = `0px`;
-                        scroll2.style.setProperty('--scroll-width', `${width}px`);
-
-                        scroll1.style.animationDuration = `${animationDuration}s`;
-                        scroll2.style.animationDuration = `${animationDuration}s`;
-                        scroll2.style.animationDelay = `-${animationDuration / 2}s`;
-                    }
-                });
-
+            if (bottomBanner) {
+                bottomBanner.textContent = duplicateText;
+                bottomBanner.setAttribute('data-duplicate', duplicateText);
                 $('#supportersBannerBottom').style.display = 'block';
             }
         } catch (error) {
@@ -836,7 +764,7 @@
         document.addEventListener('DOMContentLoaded', initSupporters);
     } else {
         initSupporters();
-    } */
+    }
 })();
 
 
