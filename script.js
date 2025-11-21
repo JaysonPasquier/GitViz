@@ -666,9 +666,19 @@
     // Load and display supporters from Ko-fi API
     async function loadSupporters() {
         try {
-            const response = await fetch('https://kofi-supporters.jaysonpasquier-contact.workers.dev/supporters');
+            const response = await fetch('https://kofi-supporters.jaysonpasquier-contact.workers.dev/supporters', {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+
             if (!response.ok) {
-                // Silently fail if API is unavailable
+                console.warn('Supporters API returned non-OK status:', response.status, response.statusText);
+                $('#supportersBannerTop').style.display = 'none';
+                $('#supportersBannerBottom').style.display = 'none';
                 return;
             }
 
@@ -726,8 +736,16 @@
                 $('#supportersBannerBottom').style.display = 'block';
             }
         } catch (error) {
-            // Silently fail - supporters banner is optional
-            console.error('Error loading supporters:', error);
+            // Log detailed error for debugging
+            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                console.warn('Supporters API: CORS or network error. Make sure your Cloudflare Worker includes CORS headers:', {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                });
+            } else {
+                console.error('Error loading supporters:', error);
+            }
             $('#supportersBannerTop').style.display = 'none';
             $('#supportersBannerBottom').style.display = 'none';
         }
