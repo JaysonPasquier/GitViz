@@ -754,12 +754,44 @@
             if (topBanner1 && topBanner2) {
                 topBanner1.textContent = supportersText;
                 topBanner2.textContent = supportersText;
+
+                // Wait for DOM to update, then calculate width and set animation
+                requestAnimationFrame(() => {
+                    const scroll1 = $('#supportersScrollTop1');
+                    const scroll2 = $('#supportersScrollTop2');
+                    if (scroll1 && scroll2) {
+                        const width = scroll1.scrollWidth || scroll1.offsetWidth;
+                        const scrollSpeed = 50; // pixels per second
+                        const animationDuration = Math.max(width / scrollSpeed, 20);
+
+                        scroll1.style.animationDuration = `${animationDuration}s`;
+                        scroll2.style.animationDuration = `${animationDuration}s`;
+                        scroll2.style.animationDelay = `-${animationDuration / 2}s`;
+                    }
+                });
+
                 $('#supportersBannerTop').style.display = 'block';
             }
 
             if (bottomBanner1 && bottomBanner2) {
                 bottomBanner1.textContent = supportersText;
                 bottomBanner2.textContent = supportersText;
+
+                // Wait for DOM to update, then calculate width and set animation
+                requestAnimationFrame(() => {
+                    const scroll1 = $('#supportersScrollBottom1');
+                    const scroll2 = $('#supportersScrollBottom2');
+                    if (scroll1 && scroll2) {
+                        const width = scroll1.scrollWidth || scroll1.offsetWidth;
+                        const scrollSpeed = 50; // pixels per second
+                        const animationDuration = Math.max(width / scrollSpeed, 20);
+
+                        scroll1.style.animationDuration = `${animationDuration}s`;
+                        scroll2.style.animationDuration = `${animationDuration}s`;
+                        scroll2.style.animationDelay = `-${animationDuration / 2}s`;
+                    }
+                });
+
                 $('#supportersBannerBottom').style.display = 'block';
             }
         } catch (error) {

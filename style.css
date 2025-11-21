@@ -409,6 +409,7 @@ label { font-size: 14px; color: var(--muted); }
     overflow: hidden;
     position: relative;
     width: 100%;
+    height: 100%;
     mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
 }
@@ -421,11 +422,11 @@ label { font-size: 14px; color: var(--muted); }
     will-change: transform;
     top: 0;
     left: 0;
+    width: max-content;
 }
 
 .supporters-scroll:nth-of-type(2) {
-    transform: translateX(100%);
-    animation-delay: 15s;
+    left: 100%;
 }
 
 .supporters-list {
@@ -435,7 +436,7 @@ label { font-size: 14px; color: var(--muted); }
 
 @keyframes scroll-supporters-right {
     0% {
-        transform: translateX(100%);
+        transform: translateX(0);
     }
     100% {
         transform: translateX(-100%);
