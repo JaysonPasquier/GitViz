@@ -688,7 +688,7 @@
             if (!Array.isArray(supporters) || supporters.length === 0) {
                 // Show message if no supporters
                 const noSupportersText = '☕ Vous pouvez faire un petit don sur Ko-fi pour soutenir le projet !';
-                const duplicateText = noSupportersText + ' • ' + noSupportersText + ' • ';
+                const duplicateText = noSupportersText + ' • ' + noSupportersText;
 
                 const topBanner = $('#supportersBannerTop .supporters-list');
                 const bottomBanner = $('#supportersBannerBottom .supporters-list');
@@ -742,8 +742,9 @@
             }
 
             // Join with separators and duplicate for seamless infinite scroll
+            // We need exactly 2 copies for seamless looping (animation moves 50% = one full copy)
             const supportersText = repeatedSupporters.join(' • ');
-            const duplicateText = supportersText + ' • ' + supportersText + ' • ';
+            const duplicateText = supportersText + ' • ' + supportersText;
 
             // Update both banners
             const topBanner = $('#supportersBannerTop .supporters-list');

@@ -415,7 +415,7 @@ label { font-size: 14px; color: var(--muted); }
 .supporters-list {
     display: inline-block;
     white-space: nowrap;
-    animation: scroll-supporters-right 60s linear infinite;
+    animation: scroll-supporters-right linear infinite;
     will-change: transform;
 }
 
@@ -427,10 +427,10 @@ label { font-size: 14px; color: var(--muted); }
 
 @keyframes scroll-supporters-right {
     0% {
-        transform: translateX(100%);
+        transform: translateX(0);
     }
     100% {
-        transform: translateX(calc(-50% + 25px));
+        transform: translateX(-50%);
     }
 }
 
