@@ -686,9 +686,24 @@
 
             // Check if it's an array and has data
             if (!Array.isArray(supporters) || supporters.length === 0) {
-                // Hide banners if no supporters
-                $('#supportersBannerTop').style.display = 'none';
-                $('#supportersBannerBottom').style.display = 'none';
+                // Show message if no supporters
+                const noSupportersText = '☕ Vous pouvez faire un petit don sur Ko-fi pour soutenir le projet !';
+                const duplicateText = noSupportersText + ' • ' + noSupportersText + ' • ';
+
+                const topBanner = $('#supportersBannerTop .supporters-list');
+                const bottomBanner = $('#supportersBannerBottom .supporters-list');
+
+                if (topBanner) {
+                    topBanner.textContent = duplicateText;
+                    topBanner.setAttribute('data-duplicate', duplicateText);
+                    $('#supportersBannerTop').style.display = 'block';
+                }
+
+                if (bottomBanner) {
+                    bottomBanner.textContent = duplicateText;
+                    bottomBanner.setAttribute('data-duplicate', duplicateText);
+                    $('#supportersBannerBottom').style.display = 'block';
+                }
                 return;
             }
 
@@ -707,18 +722,28 @@
                 return symbol + parseFloat(amount).toFixed(2) + ' ' + currency;
             };
 
-            const supportersText = supporters
-                .map(supporter => {
-                    const name = supporter.name || 'Anonymous';
-                    const amount = supporter.amount || '0.00';
-                    const currency = supporter.currency || 'USD';
-                    return `${name} - ${formatCurrency(amount, currency)}`;
-                })
-                .join(' • ');
+            // Format each supporter
+            const formattedSupporters = supporters.map(supporter => {
+                const name = supporter.name || 'Anonymous';
+                const amount = supporter.amount || '0.00';
+                const currency = supporter.currency || 'USD';
+                return `${name} - ${formatCurrency(amount, currency)}`;
+            });
 
-            // Duplicate for seamless infinite scroll
-            const fullText = supportersText + ' • ';
-            const duplicateText = fullText + fullText;
+            // Ensure we have enough repetitions for smooth scrolling
+            // If only 1 supporter, repeat it 5 times. If 2, repeat 3 times. Otherwise use as is.
+            let repeatedSupporters;
+            if (formattedSupporters.length === 1) {
+                repeatedSupporters = Array(5).fill(formattedSupporters[0]);
+            } else if (formattedSupporters.length === 2) {
+                repeatedSupporters = [...formattedSupporters, ...formattedSupporters, ...formattedSupporters];
+            } else {
+                repeatedSupporters = [...formattedSupporters, ...formattedSupporters];
+            }
+
+            // Join with separators and duplicate for seamless infinite scroll
+            const supportersText = repeatedSupporters.join(' • ');
+            const duplicateText = supportersText + ' • ' + supportersText + ' • ';
 
             // Update both banners
             const topBanner = $('#supportersBannerTop .supporters-list');

@@ -415,8 +415,8 @@ label { font-size: 14px; color: var(--muted); }
 .supporters-list {
     display: inline-block;
     white-space: nowrap;
-    animation: scroll-supporters 40s linear infinite;
-    padding-right: 50px;
+    animation: scroll-supporters-right 60s linear infinite;
+    will-change: transform;
 }
 
 .supporters-list::after {
@@ -425,12 +425,12 @@ label { font-size: 14px; color: var(--muted); }
     padding-left: 50px;
 }
 
-@keyframes scroll-supporters {
+@keyframes scroll-supporters-right {
     0% {
-        transform: translateX(0);
+        transform: translateX(100%);
     }
     100% {
-        transform: translateX(calc(-50% - 25px));
+        transform: translateX(calc(-50% + 25px));
     }
 }
 
