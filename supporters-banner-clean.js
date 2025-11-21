@@ -91,26 +91,20 @@
             const items = createBannerContent(supporters);
             const content = items.join(' • ');
 
-            // Duplicate content for seamless infinite scroll
-            // Each scroll element needs the full content duplicated
+            // Duplicate content for seamless infinite scroll (left-to-right)
             const duplicatedContent = content + ' • ' + content;
 
-            // Set content for both scroll elements (same duplicated content)
             scroll1.textContent = duplicatedContent;
             scroll2.textContent = duplicatedContent;
 
-            // Wait for DOM to calculate width
             requestAnimationFrame(() => {
                 const width = scroll1.scrollWidth || scroll1.offsetWidth;
                 const duration = Math.max(width / SCROLL_SPEED, MIN_DURATION);
-
-                // Set animation duration for both scrolls
-                scroll1.style.animationDuration = `${duration}s`;
-                scroll2.style.animationDuration = `${duration}s`;
+                // Use CSS variable for consistency
+                scroll1.style.setProperty('--duration', `${duration}s`);
                 scroll2.style.setProperty('--duration', `${duration}s`);
+                // Second stream offset for seamless loop
                 scroll2.style.animationDelay = `-${duration / 2}s`;
-
-                // Show banner
                 container.style.display = 'block';
             });
         })
@@ -125,9 +119,8 @@
             requestAnimationFrame(() => {
                 const width = scroll1.scrollWidth || scroll1.offsetWidth;
                 const duration = Math.max(width / SCROLL_SPEED, MIN_DURATION);
-                scroll1.style.animationDuration = `${duration}s`;
-                scroll2.style.animationDuration = `${duration}s`;
-                scroll2.setProperty('--duration', `${duration}s`);
+                scroll1.style.setProperty('--duration', `${duration}s`);
+                scroll2.style.setProperty('--duration', `${duration}s`);
                 scroll2.style.animationDelay = `-${duration / 2}s`;
                 container.style.display = 'block';
             });

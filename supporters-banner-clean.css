@@ -44,7 +44,7 @@
 .supporters-scroll {
     display: inline-block;
     white-space: nowrap;
-    animation: scroll-left-to-right 30s linear infinite;
+    animation: scroll-right var(--duration, 30s) linear infinite;
     will-change: transform;
     flex-shrink: 0;
     color: var(--text, #e8eaf1);
@@ -55,13 +55,9 @@
     animation-delay: calc(var(--duration, 30s) / -2);
 }
 
-@keyframes scroll-left-to-right {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
+@keyframes scroll-right {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
 }
 
 /* Responsive adjustments */
