@@ -415,7 +415,6 @@ label { font-size: 14px; color: var(--muted); }
 }
 
 .supporters-scroll {
-    position: absolute;
     display: inline-block;
     white-space: nowrap;
     animation: scroll-supporters-right 30s linear infinite;
@@ -426,7 +425,13 @@ label { font-size: 14px; color: var(--muted); }
 }
 
 .supporters-scroll:nth-of-type(2) {
-    left: 100%;
+    --initial-offset: var(--scroll-width, 0px);
+    transform: translateX(var(--initial-offset));
+}
+
+.supporters-scroll:first-of-type {
+    --start-offset: var(--scroll-width, 0px);
+    transform: translateX(var(--start-offset));
 }
 
 .supporters-list {
@@ -436,10 +441,10 @@ label { font-size: 14px; color: var(--muted); }
 
 @keyframes scroll-supporters-right {
     0% {
-        transform: translateX(0);
+        transform: translateX(var(--initial-offset, var(--start-offset, 0)));
     }
     100% {
-        transform: translateX(-100%);
+        transform: translateX(calc(var(--initial-offset, var(--start-offset, 0)) - 100%));
     }
 }
 

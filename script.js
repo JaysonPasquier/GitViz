@@ -764,6 +764,12 @@
                         const scrollSpeed = 50; // pixels per second
                         const animationDuration = Math.max(width / scrollSpeed, 20);
 
+                        // Position scrolls: both start at left: 0
+                        // scroll2 is offset by width using CSS variable so it appears right after scroll1
+                        scroll1.style.left = `0px`;
+                        scroll2.style.left = `0px`;
+                        scroll2.style.setProperty('--scroll-width', `${width}px`);
+
                         scroll1.style.animationDuration = `${animationDuration}s`;
                         scroll2.style.animationDuration = `${animationDuration}s`;
                         scroll2.style.animationDelay = `-${animationDuration / 2}s`;
@@ -785,6 +791,12 @@
                         const width = scroll1.scrollWidth || scroll1.offsetWidth;
                         const scrollSpeed = 50; // pixels per second
                         const animationDuration = Math.max(width / scrollSpeed, 20);
+
+                        // Position scrolls: both start at left: 0
+                        // scroll2 is offset by width using CSS variable so it appears right after scroll1
+                        scroll1.style.left = `0px`;
+                        scroll2.style.left = `0px`;
+                        scroll2.style.setProperty('--scroll-width', `${width}px`);
 
                         scroll1.style.animationDuration = `${animationDuration}s`;
                         scroll2.style.animationDuration = `${animationDuration}s`;
