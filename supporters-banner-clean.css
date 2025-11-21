@@ -38,32 +38,29 @@
     height: 100%;
     mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent);
+    display: flex;
 }
 
 .supporters-scroll {
-    position: absolute;
     display: inline-block;
     white-space: nowrap;
     animation: scroll-left-to-right 30s linear infinite;
     will-change: transform;
-    top: 0;
-    left: 0;
-    width: max-content;
+    flex-shrink: 0;
     color: var(--text, #e8eaf1);
     font-size: 14px;
 }
 
 .supporters-scroll-2 {
-    --offset: 0px;
-    transform: translateX(var(--offset));
+    animation-delay: calc(var(--duration, 30s) / -2);
 }
 
 @keyframes scroll-left-to-right {
     0% {
-        transform: translateX(calc(-100% - var(--offset, 0px)));
+        transform: translateX(0);
     }
     100% {
-        transform: translateX(var(--offset, 0px));
+        transform: translateX(-50%);
     }
 }
 

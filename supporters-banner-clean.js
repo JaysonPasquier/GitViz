@@ -91,25 +91,24 @@
             const items = createBannerContent(supporters);
             const content = items.join(' • ');
 
-            // Set content for both scroll elements
-            scroll1.textContent = content;
-            scroll2.textContent = content;
+            // Duplicate content for seamless infinite scroll
+            // Each scroll element needs the full content duplicated
+            const duplicatedContent = content + ' • ' + content;
+
+            // Set content for both scroll elements (same duplicated content)
+            scroll1.textContent = duplicatedContent;
+            scroll2.textContent = duplicatedContent;
 
             // Wait for DOM to calculate width
             requestAnimationFrame(() => {
                 const width = scroll1.scrollWidth || scroll1.offsetWidth;
                 const duration = Math.max(width / SCROLL_SPEED, MIN_DURATION);
 
-                // Set animation duration
+                // Set animation duration for both scrolls
                 scroll1.style.animationDuration = `${duration}s`;
                 scroll2.style.animationDuration = `${duration}s`;
+                scroll2.style.setProperty('--duration', `${duration}s`);
                 scroll2.style.animationDelay = `-${duration / 2}s`;
-
-                // Position scroll2 right after scroll1 (no gap)
-                scroll2.style.setProperty('--offset', `${width}px`);
-
-                // Set initial position for scroll1 to start off-screen left
-                scroll1.style.setProperty('--offset', '0px');
 
                 // Show banner
                 container.style.display = 'block';
@@ -119,16 +118,17 @@
             console.warn('Supporters banner: Failed to load', error);
             // Show fallback message
             const fallback = '☕ Vous pouvez faire un petit don sur Ko-fi pour soutenir le projet !';
-            scroll1.textContent = fallback;
-            scroll2.textContent = fallback;
+            const duplicatedFallback = fallback + ' • ' + fallback;
+            scroll1.textContent = duplicatedFallback;
+            scroll2.textContent = duplicatedFallback;
 
             requestAnimationFrame(() => {
                 const width = scroll1.scrollWidth || scroll1.offsetWidth;
                 const duration = Math.max(width / SCROLL_SPEED, MIN_DURATION);
                 scroll1.style.animationDuration = `${duration}s`;
                 scroll2.style.animationDuration = `${duration}s`;
+                scroll2.setProperty('--duration', `${duration}s`);
                 scroll2.style.animationDelay = `-${duration / 2}s`;
-                scroll2.style.setProperty('--offset', `${width}px`);
                 container.style.display = 'block';
             });
         });
