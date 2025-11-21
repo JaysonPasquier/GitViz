@@ -663,6 +663,91 @@
     }
 
     fetchGitHubStars();
+    // Load and display supporters from Ko-fi API
+    async function loadSupporters() {
+        try {
+            const response = await fetch('https://kofi-supporters.jaysonpasquier-contact.workers.dev/supporters');
+            if (!response.ok) {
+                // Silently fail if API is unavailable
+                return;
+            }
+
+            const supporters = await response.json();
+
+            // Check if it's an array and has data
+            if (!Array.isArray(supporters) || supporters.length === 0) {
+                // Hide banners if no supporters
+                $('#supportersBannerTop').style.display = 'none';
+                $('#supportersBannerBottom').style.display = 'none';
+                return;
+            }
+
+            // Format supporters: "Name - $amount currency"
+            const formatCurrency = (amount, currency) => {
+                const symbolMap = {
+                    'USD': '$',
+                    'EUR': '€',
+                    'GBP': '£',
+                    'CAD': 'C$',
+                    'AUD': 'A$',
+                    'JPY': '¥',
+                    'CNY': '¥'
+                };
+                const symbol = symbolMap[currency] || currency + ' ';
+                return symbol + parseFloat(amount).toFixed(2) + ' ' + currency;
+            };
+
+            const supportersText = supporters
+                .map(supporter => {
+                    const name = supporter.name || 'Anonymous';
+                    const amount = supporter.amount || '0.00';
+                    const currency = supporter.currency || 'USD';
+                    return `${name} - ${formatCurrency(amount, currency)}`;
+                })
+                .join(' • ');
+
+            // Duplicate for seamless infinite scroll
+            const fullText = supportersText + ' • ';
+            const duplicateText = fullText + fullText;
+
+            // Update both banners
+            const topBanner = $('#supportersBannerTop .supporters-list');
+            const bottomBanner = $('#supportersBannerBottom .supporters-list');
+
+            if (topBanner) {
+                topBanner.textContent = duplicateText;
+                topBanner.setAttribute('data-duplicate', duplicateText);
+                $('#supportersBannerTop').style.display = 'block';
+            }
+
+            if (bottomBanner) {
+                bottomBanner.textContent = duplicateText;
+                bottomBanner.setAttribute('data-duplicate', duplicateText);
+                $('#supportersBannerBottom').style.display = 'block';
+            }
+        } catch (error) {
+            // Silently fail - supporters banner is optional
+            console.error('Error loading supporters:', error);
+            $('#supportersBannerTop').style.display = 'none';
+            $('#supportersBannerBottom').style.display = 'none';
+        }
+    }
+
+    // Load supporters when DOM is ready and then every hour
+    function initSupporters() {
+        // Initial load
+        loadSupporters();
+
+        // Refresh every hour (3600000 milliseconds)
+        setInterval(loadSupporters, 3600000);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSupporters);
+    } else {
+        initSupporters();
+    }
 })();
+
 
 
