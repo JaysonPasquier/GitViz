@@ -374,8 +374,9 @@ label { font-size: 14px; color: var(--muted); }
 /* Footer */
 .site-footer { border-top: 1px solid var(--border); padding: 24px 0; margin-top: 24px; text-align: center; }
 
+/* OLD SUPPORTERS BANNER STYLES - DISABLED (using supporters-banner-clean.css instead) */
 /* Supporters Banner */
-.supporters-banner {
+/* .supporters-banner {
     background: linear-gradient(135deg, rgba(255, 94, 94, 0.15), rgba(255, 140, 140, 0.1));
     border-bottom: 1px solid rgba(255, 94, 94, 0.2);
     padding: 12px 0;
@@ -450,7 +451,7 @@ label { font-size: 14px; color: var(--muted); }
 
 .supporters-banner:has(.supporters-list:empty) {
     display: none !important;
-}
+} */
 
 /* Responsive */
 @media (max-width: 700px) {

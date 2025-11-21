@@ -17,7 +17,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>GitViz • Générateur d’URL d’overlays</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="supporters-banner-clean.css" />
     <script defer src="script.js"></script>
+    <script defer src="supporters-banner-clean.js"></script>
     <link rel="icon" href="GitViz-logo.png" />
     <meta name="description" content="Créez et éditez des URLs d’overlays Twitch (Chat, Valorant, Sub Goal) directement depuis GitViz. Pas d’installation, prêt pour OBS." />
     <meta name="color-scheme" content="dark light" />
@@ -39,16 +41,12 @@
     </header>
 
     <!-- Top Supporters Banner -->
-    <div id="supportersBannerTop" class="supporters-banner" style="display: none;">
+    <div id="supportersBannerTop" class="supporters-banner">
         <div class="supporters-banner-content">
             <span class="supporters-label">☕ Supporters:</span>
             <div class="supporters-scroll-container">
-                <div class="supporters-scroll" id="supportersScrollTop1">
-                    <span class="supporters-list"></span>
-                </div>
-                <div class="supporters-scroll" id="supportersScrollTop2">
-                    <span class="supporters-list"></span>
-                </div>
+                <div class="supporters-scroll supporters-scroll-1"></div>
+                <div class="supporters-scroll supporters-scroll-2"></div>
             </div>
         </div>
     </div>
@@ -452,16 +450,12 @@
     </main>
 
     <!-- Bottom Supporters Banner -->
-    <div id="supportersBannerBottom" class="supporters-banner" style="display: none;">
+    <div id="supportersBannerBottom" class="supporters-banner">
         <div class="supporters-banner-content">
             <span class="supporters-label">☕ Supporters:</span>
             <div class="supporters-scroll-container">
-                <div class="supporters-scroll" id="supportersScrollBottom1">
-                    <span class="supporters-list"></span>
-                </div>
-                <div class="supporters-scroll" id="supportersScrollBottom2">
-                    <span class="supporters-list"></span>
-                </div>
+                <div class="supporters-scroll supporters-scroll-1"></div>
+                <div class="supporters-scroll supporters-scroll-2"></div>
             </div>
         </div>
     </div>

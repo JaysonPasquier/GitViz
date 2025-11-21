@@ -663,8 +663,9 @@
     }
 
     fetchGitHubStars();
+    // OLD SUPPORTERS CODE - DISABLED (using supporters-banner-clean.js instead)
     // Load and display supporters from Ko-fi API
-    async function loadSupporters() {
+    /* async function loadSupporters() {
         try {
             const response = await fetch('https://kofi-supporters.jaysonpasquier-contact.workers.dev/supporters', {
                 method: 'GET',
@@ -835,7 +836,7 @@
         document.addEventListener('DOMContentLoaded', initSupporters);
     } else {
         initSupporters();
-    }
+    } */
 })();
 
 
