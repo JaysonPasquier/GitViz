@@ -779,5 +779,80 @@
     }
 })();
 
+// ========================
+// Overlay Stats Loader
+// ========================
+(function() {
+    async function loadOverlayStats() {
+        const STATS_URL = 'https://gitviz-overlay-tracker.jaysonpasquier-contact.workers.dev/stats';
+
+        try {
+            const response = await fetch(STATS_URL);
+            if (!response.ok) throw new Error('Stats fetch failed');
+
+            const stats = await response.json();
+
+            // Update each stat display
+            const types = ['chat', 'valorant', 'sub', 'spotify', 'lol'];
+            types.forEach(type => {
+                const element = document.getElementById(`stat-${type}`);
+                if (element) {
+                    const count = stats[type] || 0;
+                    // Animate the number
+                    animateNumber(element, count);
+                }
+            });
+        } catch (error) {
+            console.error('Failed to load overlay stats:', error);
+            // Show zeros on error
+            const types = ['chat', 'valorant', 'sub', 'spotify', 'lol'];
+            types.forEach(type => {
+                const element = document.getElementById(`stat-${type}`);
+                if (element) element.textContent = '0';
+            });
+        }
+    }
+
+    function animateNumber(element, target) {
+        const duration = 1000; // 1 second
+        const start = 0;
+        const startTime = performance.now();
+
+        function update(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Easing function (ease-out)
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const current = Math.floor(start + (target - start) * easeOut);
+
+            element.textContent = current.toLocaleString('fr-FR');
+
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            } else {
+                element.textContent = target.toLocaleString('fr-FR');
+            }
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    function initStats() {
+        loadOverlayStats();
+        // Refresh every 5 minutes
+        setInterval(loadOverlayStats, 300000);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initStats);
+    } else {
+        initStats();
+    }
+})();
+
+
+
+
 
 
