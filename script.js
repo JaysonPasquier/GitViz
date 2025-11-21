@@ -665,6 +665,30 @@
     fetchGitHubStars();
     // Load and display supporters from Ko-fi API
     async function loadSupporters() {
+        const fallbackText = '☕ Vous pouvez faire un petit don sur Ko-fi pour soutenir le projet !';
+
+        const showFallback = () => {
+            const topBanner = $('#supportersBannerTop .supporters-scroll');
+            const bottomBanner = $('#supportersBannerBottom .supporters-scroll');
+
+            // Create scrolling fallback message (repeat and duplicate for seamless loop)
+            const singleLoop = Array(10).fill(fallbackText).join('   ✦   ');
+            const doubleLoop = singleLoop + '   ✦   ' + singleLoop;
+
+            [topBanner, bottomBanner].forEach(banner => {
+                if (banner) {
+                    const listElement = document.createElement('span');
+                    listElement.className = 'supporters-list';
+                    listElement.textContent = doubleLoop;
+                    banner.innerHTML = '';
+                    banner.appendChild(listElement);
+                }
+            });
+
+            $('#supportersBannerTop').style.display = 'block';
+            $('#supportersBannerBottom').style.display = 'block';
+        };
+
         try {
             const response = await fetch('https://kofi-supporters.jaysonpasquier-contact.workers.dev/supporters', {
                 method: 'GET',
@@ -677,8 +701,7 @@
 
             if (!response.ok) {
                 console.warn('Supporters API returned non-OK status:', response.status, response.statusText);
-                $('#supportersBannerTop').style.display = 'none';
-                $('#supportersBannerBottom').style.display = 'none';
+                showFallback();
                 return;
             }
 
@@ -686,25 +709,14 @@
 
             // Check if it's an array and has data
             if (!Array.isArray(supporters) || supporters.length === 0) {
-                // Hide banners if no supporters
-                $('#supportersBannerTop').style.display = 'none';
-                $('#supportersBannerBottom').style.display = 'none';
+                showFallback();
                 return;
             }
 
-            // Format supporters: "Name - $amount currency"
-            const formatCurrency = (amount, currency) => {
-                const symbolMap = {
-                    'USD': '$',
-                    'EUR': '€',
-                    'GBP': '£',
-                    'CAD': 'C$',
-                    'AUD': 'A$',
-                    'JPY': '¥',
-                    'CNY': '¥'
-                };
-                const symbol = symbolMap[currency] || currency + ' ';
-                return symbol + parseFloat(amount).toFixed(2) + ' ' + currency;
+            // Format supporters: "NAME — AMOUNT CURRENCY ☕"
+            const formatAmount = (amount, currency) => {
+                const num = parseFloat(amount);
+                return `${num.toFixed(2)} ${currency}`;
             };
 
             const supportersText = supporters
@@ -712,29 +724,30 @@
                     const name = supporter.name || 'Anonymous';
                     const amount = supporter.amount || '0.00';
                     const currency = supporter.currency || 'USD';
-                    return `${name} - ${formatCurrency(amount, currency)}`;
+                    return `${name} — ${formatAmount(amount, currency)} ☕`;
                 })
-                .join(' • ');
+                .join('   ✦   ');
 
-            // Duplicate for seamless infinite scroll
-            const fullText = supportersText + ' • ';
-            const duplicateText = fullText + fullText;
+            // Duplicate content for seamless infinite loop
+            const singleLoop = Array(8).fill(supportersText).join('   ✦   ');
+            const doubleLoop = singleLoop + '   ✦   ' + singleLoop;
 
             // Update both banners
-            const topBanner = $('#supportersBannerTop .supporters-list');
-            const bottomBanner = $('#supportersBannerBottom .supporters-list');
+            const topBanner = $('#supportersBannerTop .supporters-scroll');
+            const bottomBanner = $('#supportersBannerBottom .supporters-scroll');
 
-            if (topBanner) {
-                topBanner.textContent = duplicateText;
-                topBanner.setAttribute('data-duplicate', duplicateText);
-                $('#supportersBannerTop').style.display = 'block';
-            }
+            [topBanner, bottomBanner].forEach(banner => {
+                if (banner) {
+                    const listElement = document.createElement('span');
+                    listElement.className = 'supporters-list';
+                    listElement.textContent = doubleLoop;
+                    banner.innerHTML = '';
+                    banner.appendChild(listElement);
+                }
+            });
 
-            if (bottomBanner) {
-                bottomBanner.textContent = duplicateText;
-                bottomBanner.setAttribute('data-duplicate', duplicateText);
-                $('#supportersBannerBottom').style.display = 'block';
-            }
+            $('#supportersBannerTop').style.display = 'block';
+            $('#supportersBannerBottom').style.display = 'block';
         } catch (error) {
             // Log detailed error for debugging
             if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
@@ -746,8 +759,7 @@
             } else {
                 console.error('Error loading supporters:', error);
             }
-            $('#supportersBannerTop').style.display = 'none';
-            $('#supportersBannerBottom').style.display = 'none';
+            showFallback();
         }
     }
 
