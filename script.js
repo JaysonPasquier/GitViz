@@ -688,20 +688,21 @@
             if (!Array.isArray(supporters) || supporters.length === 0) {
                 // Show message if no supporters
                 const noSupportersText = '☕ Vous pouvez faire un petit don sur Ko-fi pour soutenir le projet !';
-                const duplicateText = noSupportersText + ' • ' + noSupportersText;
 
-                const topBanner = $('#supportersBannerTop .supporters-list');
-                const bottomBanner = $('#supportersBannerBottom .supporters-list');
+                const topBanner1 = $('#supportersScrollTop1 .supporters-list');
+                const topBanner2 = $('#supportersScrollTop2 .supporters-list');
+                const bottomBanner1 = $('#supportersScrollBottom1 .supporters-list');
+                const bottomBanner2 = $('#supportersScrollBottom2 .supporters-list');
 
-                if (topBanner) {
-                    topBanner.textContent = duplicateText;
-                    topBanner.setAttribute('data-duplicate', duplicateText);
+                if (topBanner1 && topBanner2) {
+                    topBanner1.textContent = noSupportersText;
+                    topBanner2.textContent = noSupportersText;
                     $('#supportersBannerTop').style.display = 'block';
                 }
 
-                if (bottomBanner) {
-                    bottomBanner.textContent = duplicateText;
-                    bottomBanner.setAttribute('data-duplicate', duplicateText);
+                if (bottomBanner1 && bottomBanner2) {
+                    bottomBanner1.textContent = noSupportersText;
+                    bottomBanner2.textContent = noSupportersText;
                     $('#supportersBannerBottom').style.display = 'block';
                 }
                 return;
@@ -741,24 +742,24 @@
                 repeatedSupporters = [...formattedSupporters, ...formattedSupporters];
             }
 
-            // Join with separators and duplicate for seamless infinite scroll
-            // We need exactly 2 copies for seamless looping (animation moves 50% = one full copy)
+            // Join with separators - no need to duplicate since we have two scroll elements
             const supportersText = repeatedSupporters.join(' • ');
-            const duplicateText = supportersText + ' • ' + supportersText;
 
-            // Update both banners
-            const topBanner = $('#supportersBannerTop .supporters-list');
-            const bottomBanner = $('#supportersBannerBottom .supporters-list');
+            // Update both scroll elements in each banner
+            const topBanner1 = $('#supportersScrollTop1 .supporters-list');
+            const topBanner2 = $('#supportersScrollTop2 .supporters-list');
+            const bottomBanner1 = $('#supportersScrollBottom1 .supporters-list');
+            const bottomBanner2 = $('#supportersScrollBottom2 .supporters-list');
 
-            if (topBanner) {
-                topBanner.textContent = duplicateText;
-                topBanner.setAttribute('data-duplicate', duplicateText);
+            if (topBanner1 && topBanner2) {
+                topBanner1.textContent = supportersText;
+                topBanner2.textContent = supportersText;
                 $('#supportersBannerTop').style.display = 'block';
             }
 
-            if (bottomBanner) {
-                bottomBanner.textContent = duplicateText;
-                bottomBanner.setAttribute('data-duplicate', duplicateText);
+            if (bottomBanner1 && bottomBanner2) {
+                bottomBanner1.textContent = supportersText;
+                bottomBanner2.textContent = supportersText;
                 $('#supportersBannerBottom').style.display = 'block';
             }
         } catch (error) {
