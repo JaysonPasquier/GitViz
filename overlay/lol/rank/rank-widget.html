@@ -301,7 +301,8 @@
                 this.fontSize = parseInt(urlParams.get('font_size')) || 24;
                 this.fontEffect = urlParams.get('font_effect') || 'normal';
                 this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
-                this.gap = parseInt(urlParams.get('gap')) || 15;
+                const gapParam = urlParams.get('gap');
+                this.gap = gapParam !== null ? parseInt(gapParam) : 15;
                 this.overlayStyle = urlParams.get('overlay_style') || 'default';
 
                 // Apply styles immediately
@@ -606,8 +607,8 @@
                     this.rankImageSize = parseInt(newRankImageSize) || this.rankImageSize;
                 }
                 const newGap = urlParams.get('gap');
-                if (newGap) {
-                    this.gap = parseInt(newGap) || this.gap;
+                if (newGap !== null) {
+                    this.gap = parseInt(newGap);
                 }
                 const newOverlayStyle = urlParams.get('overlay_style');
                 if (newOverlayStyle) {

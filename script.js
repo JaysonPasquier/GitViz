@@ -532,6 +532,11 @@
             if (vals.font_size) previewParams.set('font_size', vals.font_size);
             if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
             if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
+            if (vals.gap !== undefined && vals.gap !== null && vals.gap !== '') {
+                previewParams.set('gap', vals.gap);
+            } else {
+                previewParams.set('gap', '15'); // Default value
+            }
             if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
             previewParams.set('update_interval', vals.update_interval || '3000');
 
