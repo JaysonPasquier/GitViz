@@ -152,6 +152,12 @@
             gap: 10px;
         }
 
+        .rank-display {
+            font-size: var(--font-size-main, 24px);
+            font-weight: bold;
+            color: #ffffff;
+        }
+
         .lp-display {
             font-size: var(--font-size-main, 24px);
             font-weight: bold;
@@ -263,6 +269,7 @@
             <!-- Will be populated dynamically -->
         </div>
         <div class="rank-info">
+            <div class="rank-display" id="rankDisplay">--</div>
             <div class="lp-display" id="lpDisplay">-- LP</div>
         </div>
     </div>
@@ -484,10 +491,16 @@
                 root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
 
                 const lpDisplay = document.getElementById('lpDisplay');
+                const rankDisplay = document.getElementById('rankDisplay');
 
                 if (lpDisplay) {
                     lpDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
                     lpDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+
+                if (rankDisplay) {
+                    rankDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    rankDisplay.classList.add(`font-${this.fontEffect}`);
                 }
 
                 root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
@@ -865,12 +878,14 @@
 
             displayCurrentRank() {
                 const lpDisplay = document.getElementById('lpDisplay');
+                const rankDisplay = document.getElementById('rankDisplay');
                 const rankIcon = document.getElementById('rankIcon');
 
                 const data = this.currentRankData;
 
                 if (data.tier === 'UNRANKED' || !data.tier) {
                     rankIcon.innerHTML = `<img src="images/Unrated.png" alt="Unranked" style="width: ${this.rankImageSize}px; height: ${this.rankImageSize}px;">`;
+                    rankDisplay.textContent = '';
                     lpDisplay.textContent = 'Unranked';
                     lpDisplay.style.display = 'block';
                     console.log(`✅ Affichage mis à jour: Unranked`);
@@ -891,6 +906,16 @@
                 } else {
                     currentImage.style.width = `${this.rankImageSize}px`;
                     currentImage.style.height = `${this.rankImageSize}px`;
+                }
+
+                // Display rank (I, II, III, IV) - only for ranked tiers, not for Master/Grandmaster/Challenger
+                if (data.rank && ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND'].includes(data.tier)) {
+                    rankDisplay.textContent = data.rank;
+                    rankDisplay.style.display = 'block';
+                } else {
+                    // For Master, Grandmaster, Challenger, or if no rank
+                    rankDisplay.textContent = '';
+                    rankDisplay.style.display = 'none';
                 }
 
                 if (!this.isAnimating) {
