@@ -25,6 +25,43 @@
         return Math.abs(hash).toString(36);
     }
 
+    // Extract stable identifier based on overlay type
+    function getStableIdentifier(overlayType) {
+        const params = new URLSearchParams(window.location.search);
+
+        switch(overlayType) {
+            case 'chat':
+                // Unique per channel
+                return params.get('channel') || 'unknown';
+
+            case 'valorant':
+                // Unique per player (name + tag)
+                const vName = params.get('name') || 'unknown';
+                const vTag = params.get('tag') || 'unknown';
+                return `${vName}#${vTag}`;
+
+            case 'lol':
+                // Unique per player (name + tag + region)
+                const lName = params.get('name') || 'unknown';
+                const lTag = params.get('tag') || 'unknown';
+                const region = params.get('region') || 'unknown';
+                return `${lName}#${lTag}@${region}`;
+
+            case 'sub':
+                // Unique per broadcaster
+                const broadcasterId = params.get('broadcaster_id') || params.get('channel') || 'unknown';
+                return broadcasterId;
+
+            case 'spotify':
+                // Spotify is per user - use access_token hash (first 16 chars for uniqueness)
+                const token = params.get('access_token') || 'unknown';
+                return token.substring(0, 16);
+
+            default:
+                return 'unknown';
+        }
+    }
+
     // Check if overlay has URL parameters (meaning it's actually being used)
     function hasActiveParams() {
         const params = new URLSearchParams(window.location.search);
@@ -40,13 +77,13 @@
         }
 
         const overlayType = getOverlayType();
-        const urlParams = window.location.search;
-        const hash = simpleHash(urlParams + overlayType + Date.now());
+        const stableId = getStableIdentifier(overlayType);
+        const hash = simpleHash(stableId + overlayType);
 
-        // Check if we've already tracked this session (avoid double counting)
-        const sessionKey = `gitviz_tracked_${overlayType}`;
+        // Check if we've already tracked this specific overlay (avoid double counting same overlay)
+        const sessionKey = `gitviz_tracked_${hash}`;
         if (sessionStorage.getItem(sessionKey)) {
-            return; // Already tracked in this session
+            return; // Already tracked this overlay in this session
         }
 
         // Send tracking data
@@ -67,7 +104,7 @@
             if (response.ok) {
                 // Mark as tracked for this session
                 sessionStorage.setItem(sessionKey, 'true');
-                console.log(`[GitViz] Overlay tracked: ${overlayType}`);
+                console.log(`[GitViz] Overlay tracked: ${overlayType} (${stableId})`);
             }
         })
         .catch(error => {
