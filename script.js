@@ -568,6 +568,174 @@
         setTimeout(() => (copyUrlBtn.textContent = 'Copier'), 1200);
     });
 
+    let currentEditorTemplateKey = null;
+    let currentEditorTemplate = null;
+
+    const updateEditorPreview = (tKey, vals) => {
+        const editorPreviewSection = document.getElementById('editorPreviewSection');
+        if (!editorPreviewSection) return;
+
+        // Hide all preview containers
+        const allContainers = ['editorValorantPreviewContainer', 'editorChatPreviewContainer', 'editorSubPreviewContainer', 'editorSpotifyPreviewContainer', 'editorLolPreviewContainer'];
+        allContainers.forEach(id => {
+            const container = document.getElementById(id);
+            if (container) container.style.display = 'none';
+        });
+
+        if (!tKey) {
+            editorPreviewSection.style.display = 'none';
+            return;
+        }
+
+        editorPreviewSection.style.display = 'block';
+
+        if (tKey === 'valorant') {
+            const previewIframe = document.getElementById('editorValorantPreview');
+            const previewContainer = document.getElementById('editorValorantPreviewContainer');
+
+            const previewParams = new URLSearchParams();
+            previewParams.set('name', vals.name || 'Player');
+            previewParams.set('tag', vals.tag || 'TAG');
+            if (vals.api_key) previewParams.set('api_key', vals.api_key);
+            if (vals.region) previewParams.set('region', vals.region);
+            if (vals.platform) previewParams.set('platform', vals.platform);
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+            previewParams.set('update_interval', vals.update_interval || '3000');
+            previewParams.set('show_leaderboard', vals.show_leaderboard || 'true');
+
+            const previewUrl = `overlay/valorant/rang/rank-preview.html?${previewParams.toString()}`;
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe && previewContainer) {
+                previewContainer.style.display = 'block';
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
+        if (tKey === 'sub') {
+            const previewIframe = document.getElementById('editorSubPreview');
+            const previewContainer = document.getElementById('editorSubPreviewContainer');
+
+            const previewParams = new URLSearchParams();
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+            if (vals.goals) previewParams.set('goals', vals.goals);
+
+            const previewUrl = `overlay/sub/sub-count-widget-preview.html?${previewParams.toString()}`;
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe && previewContainer) {
+                previewContainer.style.display = 'block';
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
+        if (tKey === 'spotify') {
+            const previewIframe = document.getElementById('editorSpotifyPreview');
+            const previewContainer = document.getElementById('editorSpotifyPreviewContainer');
+
+            const previewParams = new URLSearchParams();
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+
+            const previewUrl = `overlay/spotify/spotify-widget-preview.html?${previewParams.toString()}`;
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe && previewContainer) {
+                previewContainer.style.display = 'block';
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
+        if (tKey === 'chat') {
+            const previewIframe = document.getElementById('editorChatPreview');
+            const previewContainer = document.getElementById('editorChatPreviewContainer');
+
+            const previewParams = new URLSearchParams();
+            previewParams.set('channel', vals.channel || 'streamer_channel');
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.chat_style) previewParams.set('chat_style', vals.chat_style);
+            if (vals.moderators && String(vals.moderators).trim()) previewParams.set('moderators', vals.moderators);
+            if (vals.vips && String(vals.vips).trim()) previewParams.set('vips', vals.vips);
+            if (vals.twitch_client_id && String(vals.twitch_client_id).trim()) previewParams.set('twitch_client_id', vals.twitch_client_id);
+            if (vals.twitch_auth_token && String(vals.twitch_auth_token).trim()) previewParams.set('twitch_auth_token', vals.twitch_auth_token);
+            if (vals.broadcaster_id && String(vals.broadcaster_id).trim()) previewParams.set('broadcaster_id', vals.broadcaster_id);
+            if (vals.seventv_emote_set && String(vals.seventv_emote_set).trim()) previewParams.set('seventv_emote_set', vals.seventv_emote_set);
+
+            const previewUrl = `overlay/chat/chat-widget-preview.html?${previewParams.toString()}`;
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe && previewContainer) {
+                previewContainer.style.display = 'block';
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+
+        if (tKey === 'lol') {
+            const previewIframe = document.getElementById('editorLolPreview');
+            const previewContainer = document.getElementById('editorLolPreviewContainer');
+
+            const previewParams = new URLSearchParams();
+            previewParams.set('name', vals.name || 'username');
+            previewParams.set('tag', vals.tag || 'tags');
+            previewParams.set('region', vals.region || 'euw1');
+            const fontValue = vals.font || 'Arial';
+            previewParams.set('font', fontValue);
+            if (vals.font_size) previewParams.set('font_size', vals.font_size);
+            if (vals.font_effect) previewParams.set('font_effect', vals.font_effect);
+            if (vals.rank_image_size) previewParams.set('rank_image_size', vals.rank_image_size);
+            if (vals.gap !== undefined && vals.gap !== null && vals.gap !== '') {
+                previewParams.set('gap', vals.gap);
+            } else {
+                previewParams.set('gap', '15'); // Default value
+            }
+            if (vals.overlay_style) previewParams.set('overlay_style', vals.overlay_style);
+            previewParams.set('update_interval', vals.update_interval || '3000');
+
+            const previewUrl = `overlay/lol/rank/rank-widget-preview.html?${previewParams.toString()}`;
+            const timestamp = Date.now();
+            const previewUrlWithCache = `${previewUrl}&_t=${timestamp}`;
+
+            if (previewIframe && previewContainer) {
+                previewContainer.style.display = 'block';
+                previewIframe.src = '';
+                setTimeout(() => {
+                    previewIframe.src = previewUrlWithCache;
+                }, 50);
+            }
+        }
+    };
+
     const loadUrlIntoEditor = () => {
         editorFields.innerHTML = '';
         editedUrl.value = '';
@@ -582,6 +750,8 @@
             return;
         }
         const t = TEMPLATES[tKey];
+        currentEditorTemplateKey = tKey;
+        currentEditorTemplate = t;
 
         // Section Configuration
         const configSection = document.createElement('div');
@@ -623,9 +793,10 @@
 
         const updateEdited = () => {
             const vals = readValues(editorFields);
-            const url = makeUrl(t.path, vals);
+            const url = makeUrl(currentEditorTemplate.path, vals);
             editedUrl.value = url;
             openEditedUrlBtn.href = url;
+            updateEditorPreview(currentEditorTemplateKey, vals);
         };
         $$('input, select', editorFields).forEach(el => el.addEventListener('input', updateEdited));
         updateEdited();

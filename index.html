@@ -411,6 +411,25 @@
 
                     <div id="editorFields" class="fields"></div>
 
+                    <div id="editorPreviewSection" style="display: none; margin-top: 24px;">
+                        <label style="margin-bottom: 8px; display: block;">Aperçu en direct</label>
+                        <div id="editorValorantPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background-image: url('overlay/valorant/rang/valorant-preview-background.jpg'); display: none;">
+                            <iframe id="editorValorantPreview" src=""></iframe>
+                        </div>
+                        <div id="editorChatPreviewContainer" class="preview-container" style="width: 100%; height: 300px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                            <iframe id="editorChatPreview" src=""></iframe>
+                        </div>
+                        <div id="editorSubPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                            <iframe id="editorSubPreview" src=""></iframe>
+                        </div>
+                        <div id="editorSpotifyPreviewContainer" class="preview-container" style="width: 100%; height: 150px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: transparent; display: none;">
+                            <iframe id="editorSpotifyPreview" src=""></iframe>
+                        </div>
+                        <div id="editorLolPreviewContainer" class="preview-container" style="width: 100%; height: 200px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: linear-gradient(135deg, #0a1929 0%, #1a1a2e 50%, #16213e 100%); display: none;">
+                            <iframe id="editorLolPreview" src=""></iframe>
+                        </div>
+                    </div>
+
                     <div class="output">
                         <label for="editedUrl">URL mise à jour</label>
                         <div class="output-row">
