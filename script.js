@@ -120,6 +120,7 @@
                 { key: 'font_size', label: 'Taille de police (px)', type: 'number', min: 8, max: 200, step: 1, default: 24 },
                 { key: 'font_effect', label: 'Effet de police', type: 'select', options: ['normal', 'hollow', 'border'], default: 'normal' },
                 { key: 'rank_image_size', label: 'Taille de l\'image du rang (px)', type: 'number', min: 20, max: 200, step: 5, default: 60 },
+                { key: 'gap', label: 'Espacement entre éléments (px)', type: 'number', min: 0, max: 100, step: 1, default: 15 },
                 { key: 'overlay_style', label: 'Style d\'overlay', type: 'select', options: ['default', 'card', 'bubble', 'minimal', 'gradient', 'glass'], default: 'default' },
             ]
         }

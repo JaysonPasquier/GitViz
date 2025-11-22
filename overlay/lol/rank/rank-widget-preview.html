@@ -111,7 +111,7 @@
         .rank-container {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: var(--rank-gap, 15px);
             position: fixed;
             left: 50%;
             top: 50%;
@@ -138,6 +138,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .rank-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffffff;
         }
 
         .lp-display {
@@ -248,6 +254,7 @@
             <!-- Will be populated dynamically -->
         </div>
         <div class="rank-info">
+            <div class="rank-display" id="rankDisplay">--</div>
             <div class="lp-display" id="lpDisplay">-- LP</div>
         </div>
     </div>
@@ -270,6 +277,7 @@
                 this.fontSize = parseInt(urlParams.get('font_size')) || 24;
                 this.fontEffect = urlParams.get('font_effect') || 'normal';
                 this.rankImageSize = parseInt(urlParams.get('rank_image_size')) || 60;
+                this.gap = parseInt(urlParams.get('gap')) || 15;
                 this.overlayStyle = urlParams.get('overlay_style') || 'default';
 
                 this.applyStyles();
@@ -413,11 +421,19 @@
                 const root = document.documentElement;
                 root.style.setProperty('--font-size-main', `${this.fontSize}px`);
                 root.style.setProperty('--font-size-change', `${Math.max(8, this.fontSize - 4)}px`);
+                root.style.setProperty('--rank-gap', `${this.gap}px`);
 
                 const lpDisplay = document.getElementById('lpDisplay');
+                const rankDisplay = document.getElementById('rankDisplay');
+
                 if (lpDisplay) {
                     lpDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
                     lpDisplay.classList.add(`font-${this.fontEffect}`);
+                }
+
+                if (rankDisplay) {
+                    rankDisplay.classList.remove('font-normal', 'font-hollow', 'font-border');
+                    rankDisplay.classList.add(`font-${this.fontEffect}`);
                 }
 
                 root.style.setProperty('--rank-image-size', `${this.rankImageSize}px`);
@@ -465,6 +481,10 @@
                 const newRankImageSize = urlParams.get('rank_image_size');
                 if (newRankImageSize) {
                     this.rankImageSize = parseInt(newRankImageSize) || this.rankImageSize;
+                }
+                const newGap = urlParams.get('gap');
+                if (newGap) {
+                    this.gap = parseInt(newGap) || this.gap;
                 }
                 const newOverlayStyle = urlParams.get('overlay_style');
                 if (newOverlayStyle) {
@@ -528,12 +548,15 @@
 
             displayCurrentRank() {
                 const lpDisplay = document.getElementById('lpDisplay');
+                const rankDisplay = document.getElementById('rankDisplay');
                 const rankIcon = document.getElementById('rankIcon');
 
                 const data = this.currentRankData;
 
                 if (data.tier === 'UNRANKED' || !data.tier) {
                     rankIcon.innerHTML = `<img src="images/Unrated.png" alt="Unranked">`;
+                    rankDisplay.textContent = '';
+                    rankDisplay.style.display = 'none';
                     lpDisplay.textContent = 'Unranked';
                     lpDisplay.style.display = 'block';
                     return;
@@ -549,6 +572,16 @@
                 const newImageName = rankImagePath.split('/').pop();
                 if (!currentImage || !currentImageSrc.includes(newImageName)) {
                     rankIcon.innerHTML = `<img src="${rankImagePath}" alt="${data.tier} ${data.rank}">`;
+                }
+
+                // Display rank (I, II, III, IV) - only for ranked tiers, not for Master/Grandmaster/Challenger
+                if (data.rank && ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND'].includes(data.tier)) {
+                    rankDisplay.textContent = data.rank;
+                    rankDisplay.style.display = 'block';
+                } else {
+                    // For Master, Grandmaster, Challenger, or if no rank
+                    rankDisplay.textContent = '';
+                    rankDisplay.style.display = 'none';
                 }
 
                 if (!this.isAnimating) {
